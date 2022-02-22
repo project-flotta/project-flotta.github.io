@@ -3,13 +3,13 @@
 
 
 - title: blog
-  url: /blog
+  url: blog
 
 - title: documentation
-  url: /documentation
+  url: documentation
 
 - title: Search
-  url: /search.html
+  url: search.html
 
 - title: Events
-  url: "/calendar"     
+  url: "calendar"     
