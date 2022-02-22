@@ -1,0 +1,35 @@
+---
+layout: default
+---
+<div class="search-body">
+
+
+
+{% include search.html %}
+<div class="search-container">
+{% for post in site.posts %}
+{% unless post.categories contains 'meetings-meetups' %}
+<article class="search-card">
+   <div><h2>
+      <a class="search-link"href="{{ post.url }}">
+        {{ post.title }}
+      </a>
+    </h2>
+    <time datetime="{{ post.date | date: "%Y-%m-%d" }}">{{ post.date | date_to_long_string }}</time>
+   <br> {{ post.summary-1 }}
+</div> </article>
+{% endunless %}
+{% endfor %}
+
+{% for document in site.document_search %}
+<article class="document-search">
+<div><h2>
+    <a class="search-link"href="{{ document.url }}">
+      {{ document.title }}
+    </a>
+  </h2>
+  {{ document.content | truncatewords: 60 }}
+</div> </article>
+{% endfor %}
+</div>
+</div>

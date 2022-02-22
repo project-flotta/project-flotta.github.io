@@ -1,0 +1,41 @@
+@import 'variables';
+@mixin large {
+    @media screen and (min-width: #{$large-breakpoint}) {
+      @content;
+    }
+  }
+  
+  @mixin medium {
+    @media screen and (min-width: #{$medium-breakpoint}) and (max-width: #{$large-breakpoint}) {
+      @content;
+    }
+  }
+  
+  @mixin small {
+    @media screen and (max-width: #{$medium-breakpoint}) {
+      @content;
+    }
+  }
+.contents{
+  margin-bottom: 4rem;
+ @include large{
+     margin-left: auto;
+     margin-right: auto;
+     text-align: center;
+ }
+}
+.content-heading{
+  text-align: left;
+}
+.toc{
+  text-align: left;
+
+  line-height: 3rem;
+  @include large{
+    margin-left: 10rem;
+  }
+ 
+}
+.doc-link{
+    color: $doc-a-color;
+}

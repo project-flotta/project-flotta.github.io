@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap');
+@import 'variables';
+
+@mixin large {
+  @media screen and (min-width: #{$large-breakpoint}) {
+    @content;
+  }
+}
+
+@mixin medium {
+  @media screen and (min-width: #{$medium-breakpoint}) and (max-width: #{$large-breakpoint}) {
+    @content;
+  }
+}
+
+@mixin small {
+  @media screen and (max-width: #{$medium-breakpoint}) {
+    @content;
+  }
+}
+
+.card-title{
+  font-size: 50px;
+}
+.fc-view .fc-month-view .fc-basic-view{
+   table{
+       width:20rem
+   }
+    
+}
+.fc-head{
+    width: 900px;
+}
+.move-today{
+  font-size: 24px;
+  
+  color: $calendar-today-color;
+}
+.fas, .move-day:hover{
+    color: $header-bg-color;
+  }
+.move-today:hover{
+  color: $header-bg-color;
+}
+.fas{
+  font-size: 24px;
+  color: $calender-prev-color;
+}
+.move-day{
+  font-size: 24px;
+  color:$calender-prev-color;
+}
+.next-day{
+  margin-right: 20px;
+}

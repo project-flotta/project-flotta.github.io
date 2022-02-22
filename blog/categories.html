@@ -1,0 +1,16 @@
+---
+layout: default
+index: false
+---
+
+<div class="category-container">
+    {% for category in site.categories %}
+      <h1><a class="category-title" >{{ category | first }}</a></h1>
+        
+        {% for post in category.last %}
+          <p><a class="category-list" href="{{ post.url }}">{{ post.title }}</a></p>
+        {% endfor %}
+     
+    {% endfor %}
+  
+  </div>    

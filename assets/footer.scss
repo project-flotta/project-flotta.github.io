@@ -1,0 +1,105 @@
+@import 'variables';
+@mixin large {
+    @media screen and (min-width: #{$large-breakpoint}) {
+      @content;
+    }
+  }
+  
+  @mixin medium {
+    @media screen and (min-width: #{$medium-breakpoint}) and (max-width: #{$large-breakpoint}) {
+      @content;
+    }
+  }
+  
+  @mixin small {
+    @media screen and (max-width: #{$medium-breakpoint}) {
+      @content;
+    }
+  }
+footer {
+  
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    height: 72px;
+	background-color: $footer-color;
+	text-decoration: none;
+    opacity: 1;
+    
+}
+#extend-footer{
+    min-height: 100vh;
+}
+.footerLogo{
+    margin-top: 20px ;
+    height: 30px;  
+} 
+
+.footer-banner{
+    height: 10rem;
+    position: relative;
+    text-align: center;
+    margin-top: 4rem;
+    margin-bottom: 1rem;
+    @include small{
+        margin-top: 1rem;
+        margin-bottom:4rem;
+    }
+}
+.footer-list{
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin-top: 0px;
+    a{
+        color: darkmagenta;
+        margin-right: 20px;
+    }
+
+    @include small{
+        left: 0;
+        right: 0;
+        margin-left: 9px;
+        position: absolute;
+        top: 80px;
+    }
+   
+    
+}
+
+.footer-end{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -25px;
+    a{
+        color: green;
+    }
+    @include small{
+     position: relative;   
+     margin-top: 40px;  
+    }
+}
+.footer-social{
+ position: relative;
+ margin-bottom: 10px;
+}
+
+.fb{
+
+    height: 40px;
+    width: 40px;
+}
+.tt{
+    height: 45px;
+    width: 45px;
+}
+.gh{
+    height: 40px;
+    width: 40px;
+}
+.email{
+    height: 40px;
+    width: 40px;
+}

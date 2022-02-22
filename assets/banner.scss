@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap');
+@import 'variables';
+
+@mixin large {
+  @media screen and (min-width: #{$large-breakpoint}) {
+    @content;
+  }
+}
+
+@mixin medium {
+  @media screen and (min-width: #{$medium-breakpoint}) and (max-width: #{$large-breakpoint}) {
+    @content;
+  }
+}
+
+@mixin small {
+  @media screen and (max-width: #{$medium-breakpoint}) {
+    @content;
+  }
+}
+
+.social-media{
+    display: flex;
+    margin-top: 22.3rem;
+    position: absolute;
+    right: 3em;
+
+    @include small{
+        margin-top: 23.5rem;
+    }
+  }
+  
+  .github{
+    margin-top: 0.25em;
+    height: 4.5em;
+    width: 4em;   
+    @include small{
+        height: 2.5em;
+        width: 2.5em;
+    }
+  }
+  .twitter{
+    height: 5em;
+    width: 5em;
+    @include small{
+        height: 3em;
+        width: 3em;
+    }
+  }

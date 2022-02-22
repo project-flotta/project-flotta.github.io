@@ -1,0 +1,24 @@
+---
+layout: default
+index: false
+---
+
+{% assign items_grouped = site.posts | group_by: 'author' %}
+<div class="author-card">
+{% for group in items_grouped %}
+   <div class="author-sort">
+    <h1>{{group.name}}</h1>
+    
+    <div class="author-container">
+    {% for item in group.items %}
+    {% unless item.categories contains 'meetings-meetups' %}
+    <div class="author-item">
+       <a href="{{ item.url }}"> <p>{{item.title}}</p></a>
+    </div>
+    {% endunless %}
+    {% endfor %}
+    
+</div>
+</div>
+  {% endfor %}
+</div>   

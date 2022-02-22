@@ -1,0 +1,29 @@
+<div class="search-box">
+   
+    <input type="text" id="query" class="query" placeholder="Search here">
+    <button type="submit" class="submit" onclick="myFunction();">Search</button>  
+</div>
+ 
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script type="text/javascript">
+ 
+ function myFunction() {
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById("query");
+    console.log(input);
+    filter = input.value.toUpperCase();
+    
+    li = document.getElementsByTagName("article");
+    console.log(li);
+    for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName("div")[0];
+        console.log(a);
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+</script>

@@ -1,0 +1,4 @@
+---
+---
+
+{% include assets/something.js %}

@@ -1,0 +1,13 @@
+{% assign post_set = include.posts | default: site.posts %}
+<div class="blog-posts">
+   
+  
+      {% for post in post_set limit: limiter %}
+  
+        {% unless post.categories contains 'meetings-meetups' %}
+          {% include post.html post=post excerpt=true link=true heading_summary=heading_summary %}
+        {% endunless %}
+      {% endfor %}
+
+  </div>
+  
