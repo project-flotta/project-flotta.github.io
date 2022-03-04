@@ -32,8 +32,13 @@ $ kubectl wait --for=condition=Ready pods --all -n cert-manager --timeout=60s
 
 To deploy the latest version of the `flotta` operator execute following command:
 
+For OCP:
 ```bash
-$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/flotta-operator.yaml
+$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/ocp-flotta-operator.yaml
+```
+For kubernetes:
+```bash
+$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/k8s-flotta-operator.yaml
 ```
 
 By default the `flotta` operator is deployed in `flotta` namespace.
