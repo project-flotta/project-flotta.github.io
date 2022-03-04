@@ -32,7 +32,7 @@ $ kubectl wait --for=condition=Ready pods --all -n cert-manager --timeout=60s
 
 To deploy the latest version of the `flotta` operator execute following command:
 
-For OCP:
+For OpenShift Container Platform (OCP):
 ```bash
 $ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/ocp-flotta-operator.yaml
 ```
@@ -40,6 +40,11 @@ For kubernetes:
 ```bash
 $ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/k8s-flotta-operator.yaml
 ```
+
+The only difference between the two files is in how [OCP and Kubernetes](https://cloud.redhat.com/blog/kubernetes-ingress-vs-openshift-route) enable external access to services.
+
+Kubernetes uses the `Ingress` object to signal the Kubernetes platform that a certain service needs to be accessible to the outside world and it contains the configuration needed.
+OCP uses the `Route`, that is equivalent to `Ingress` with additional capabilities.
 
 By default the `flotta` operator is deployed in `flotta` namespace.
 
@@ -60,7 +65,9 @@ NAME                                                           DESIRED   CURRENT
 replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1         1       18h
 ```
 
-Flotta operator deploy two CRDs. First CRD called [edgedeployments](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml), used to manage the workloads. The second CRD called [edgedevices](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml) used to manage the devices.
+`Flotta` operator deploys two [CustomResourceDefinitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions):
+1. [edgedeployments](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml), used to manage the workloads.
+2. [edgedevices](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml) used to manage the devices.
 
 ```bash
 $ kubectl get crd | grep project-flotta.io
