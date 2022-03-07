@@ -11,7 +11,7 @@ tags:
 summary-1: Deploying workloads with images from private repositories
 ---
 
-Users can deploy their containerized workloads to edge devices using Flotta and very often images they want to use are 
+Users can deploy their containerized workloads (applications built as [container images](https://developers.redhat.com/blog/2018/02/22/container-terminology-practical-introduction#h.dqlu6589ootw)) to edge devices using Flotta and very often images they want to use are 
 not public and are available only for users or services having proper credentials. 
 
 Flotta supports that use case and allows users to use private images in their `EdgeDeployments`; this post shows how to 
@@ -19,10 +19,10 @@ make use of that support by walking you through all the required steps.
 
 ### Prerequisites
 
-1. `podman` installed
-2. Private image repository (quay.io, for example)
+1. `podman` [installed](https://podman.io/getting-started/installation) (you can use `docker` instead) 
+2. Private image repository ([quay.io](http://quay.io), for example)
 3. Image of the workload to deploy
-4. Running `EdgeDevice` labelled with `dc=home` 
+4. `EdgeDevice` [running and registered](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md) in the cluster, labelled with `dc=home`  
  
 #### Image of the workload to deploy
 
@@ -66,9 +66,13 @@ $ kubectl get edgedevice -l dc=home
 NAME                                          AGE
 fedora-54b9dd17-9971-11ec-bcee-7085c256610d   149m
 ```
+If it's not, use following command to add the label:
+```bash
+kubectl label edgedevice <your device CR name> dc=home
+```
 
 1. Create the `EdgeDeployment` that will be deployed to each `EdgeDevice` with `dc=home` label
-```shell
+```bash
 kubectl apply -f -<<EOF
 apiVersion: management.project-flotta.io/v1alpha1
 kind: EdgeDeployment
@@ -83,16 +87,17 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: quay.io/jdzon/nginx:1.14.2
+          image: quay.io/<your quay.io username>/nginx:1.14.2
           ports:
             - containerPort: 80
               hostPort: 9090
 EOF
 ```
+You can read more about deploying workloads to edge devices in the [documentation](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/deploying-workloads.md).
 
 1. Confirm that `nginx-deployment` pod wouldn't start on the edge device by checking deployment phase (not `Running`) and events reported for your `EdgeDevice` object: 
-```shell
-$ kubectl describe edgedevice
+```bash
+$ kubectl describe edgedevice -l dc=home
 Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
 Namespace:    default
 Labels:       dc=home
@@ -107,7 +112,7 @@ Status:
 Events:
   Type     Reason  Age                  From                       Message
   ----     ------  ----                 ----                       -------
-  Warning  Failed  4m10s (x2 over 16m)  edgedeployment-controller  error playing YAML file: initializing source docker://quay.io/jdzon/nginx:1.14.2: reading manifest 1.14.2 in quay.io/jdzon/nginx: unauthorized: access to the requested resource is not authorized
+  Warning  Failed  4m10s (x2 over 16m)  edgedeployment-controller  error playing YAML file: initializing source docker://quay.io/<your quay.io username>/nginx:1.14.2: reading manifest 1.14.2 in quay.io/<your quay.io username>/nginx: unauthorized: access to the requested resource is not authorized
 ```
 
 #### Creating auth file secret
@@ -118,7 +123,7 @@ podman login quay.io
 
 Usually that would be `$HOME/.docker/config.json` or `${XDG_RUNTIME_DIR}/containers/auth.json` file.
 
-When you have the auth file, you need to create a kubernetes secret containing it under `.dockerconfigjson` key:
+When you have the auth file, you need to create a kubernetes [secret](https://kubernetes.io/docs/concepts/configuration/secret) containing it under `.dockerconfigjson` key:
 ```bash
 kubectl create secret generic pull-secret \
   --type=kubernetes.io/dockerconfigjson \
@@ -155,36 +160,14 @@ spec:
   ...
 ```
 
-
 After you update your `EdgeDeployment`:
-
-```shell
-kubectl apply -f -<<EOF
-apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeployment
-metadata:
-  name: nginx-deployment
-spec:
-  type: pod
-  deviceSelector:
-    matchLabels:
-      dc: home
-  imageRegistries:
-    secretRef:
-      name: pull-secret
-  pod:
-    spec:
-      containers:
-        - name: nginx
-          image: quay.io/jdzon/nginx:1.14.2
-          ports:
-            - containerPort: 80
-              hostPort: 9090
-EOF
+```bash
+kubectl patch edgedeployment nginx-deployment --type=merge -p '{"spec":{"imageRegistries":{"secretRef":{"name": "pull-secret"}}}}' 
 ```
+
 After the next heartbeat received from the device, you will see the phase of the deployment to be `Running`:
-```shell
-$ kubectl describe edgedevice
+```bash
+$ kubectl describe edgedevice -l dc=home
 Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
 Namespace:    default
 Labels:       dc=home
