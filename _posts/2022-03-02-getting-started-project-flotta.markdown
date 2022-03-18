@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Getting started with flotta operator 1"
+title:  "Getting started with Flotta Operator Part 1"
 date:   2022-02-03 11:44:17 -0400
 categories: flotta
 author: Ondra Machacek
