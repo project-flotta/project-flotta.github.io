@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Introduction to edge device groups"
+title:  "Introduction to edge device sets"
 date:   2022-04-08 12:00:00 +0100
 categories: flotta
 author: Jakub Dżon
@@ -8,36 +8,36 @@ tags:
   - guide
   - flotta
   
-summary-1: Introduction to edge device groups
+summary-1: Introduction to edge device sets
 ---
 
-If you are Flotta user that needs to manage large numbers of devices and doesn't want to change configuration of each 
-of them separately, using Edge Device Groups is the perfect approach. With the use of Edge Device Groups you can change 
-configuration of any number of device by changing only one CR - `EdgeDeviceGroup` and this blog post will show you how.
+If you are Flotta user who needs to manage large numbers of devices and doesn't want to change configuration of each 
+of them separately, using Edge Device Sets is the perfect approach. With the use of Edge Device Sets you can change 
+configuration of any number of device by changing only one CR - `EdgeDeviceSet` and this blog post will show you how.
 
-### EdgeDeviceGroup configuration
+### EdgeDeviceSet configuration
 
-User may define the same configuration elements using `EdgeDeviceGroup` as one would with `EdgeDevice` and configuration 
-defined in the `EdgeDeviceGroup` would be applied to all edge devices using it. `EdgeDeviceGroup`  **always** takes 
+User may define the same configuration elements using `EdgeDeviceSet` as one would with `EdgeDevice` and configuration 
+defined in the `EdgeDeviceSet` would be applied to all edge devices using it. `EdgeDeviceSet`  **always** takes 
 precedence over whatever is defined in the `EdgeDevice` as a whole. It means that even if some element is not present in 
-the `EdgeDeviceGroup`, usual default values are used for it, even if it is defined at the level of `EdgeDevice`.
+the `EdgeDeviceSet`, usual default values are used for it, even if it is defined at the level of `EdgeDevice`.
 
-If corresponding `EdgeDeviceGroup` cannot be found, `EdgeDevice` configuration is used.
+If corresponding `EdgeDeviceSet` cannot be found, `EdgeDevice` configuration is used.
 
-Configuration that can be defined with `EdgeDeviceGroup`:
+Configuration that can be defined with `EdgeDeviceSet`:
 - heartbeat (`spec.heartbeat`);
 - metrics (`spec.metrics`);
 - data transfer (`spec.storage`);
 - log collection (`spec.logCollection`);
 - OS configuration (`spec.osInformation`).
 
-Full `EdgeDeviceGroup` CR might look as follows:
+Full `EdgeDeviceSet` CR might look as follows:
 
 ```yaml
 apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeviceGroup
+kind: EdgeDeviceSet
 metadata:
-  name: sample-group
+  name: sample-set
 spec:
   heartbeat:
     periodSeconds: 5 # Interval in seconds with which the heartbeat messages should be sent from the agent 
@@ -70,18 +70,18 @@ spec:
         name: syslog-config-map # Name of a config map containing syslog connection configuration
 ```
 
-To make specific `EdgeDevice` use specific `EdgeDeviceGroup` configuration, user needs to add
-`flotta/member-of: <edge device group name>` label to the `EdgeDevice`.
-For example, if there is a `group-1` `EdgeDeviceGroup` and `device-1` `EdgeDevice`, user needs to issue following
+To make specific `EdgeDevice` use specific `EdgeDeviceSet` configuration, user needs to add
+`flotta/member-of: <edge device set name>` label to the `EdgeDevice`.
+For example, if there is a `set-1` `EdgeDeviceSet` and `device-1` `EdgeDevice`, user needs to issue following
 command to build the relationship between them:
 ```shell
-kubectl label edgedevice device-1 flotta/member-of=group-1
+kubectl label edgedevice device-1 flotta/member-of=set-1
 ```
 
 ### Managing multiple devices configuration
-Let's have a look how `EdgeDeviceGroups` can be used in practice - let's register three different edge devices 
-(`device-1`, `device-2`, `device-3`), create two edge device groups (`group-1` and `group-2`) and then assign devices 
-to chosen groups. To illustrate how the configuration defined in the `EdgeDeviceGroup` influences device configuration, 
+Let's have a look how `EdgeDeviceSets` can be used in practice - let's register three different edge devices 
+(`device-1`, `device-2`, `device-3`), create two edge device sets (`set-1` and `set-2`) and then assign devices 
+to chosen sets. To illustrate how the configuration defined in the `EdgeDeviceSet` influences device configuration, 
 two of the devices will have different initial configuration.
 
 #### Preparations
@@ -99,7 +99,7 @@ Let's configure `device-1` heartbeat interval to 15 seconds:
 kubectl patch edgedevice device-1 --type merge -p '{"spec":{"heartbeat": {"periodSeconds": 15}}}'
 ```
 
-which will result in on-device configuration file (`/etc/yggdrasil/device/device-config.json`) to look like this:
+which will result in configuration file (`/etc/yggdrasil/device/device-config.json`) on `device-1` to look like this:
 ```json
 {
  "configuration": {
@@ -126,7 +126,7 @@ Next let's configure `device-2` to have system metrics collection disabled:
 kubectl patch edgedevice device-2 --type merge -p '{"spec":{"metrics": {"system": {"disabled": true}}}}'
 ```
 
-which will cause the on-device to be set to:
+which will cause the `device-2` configuration to be set to:
 ```json
 {
  "configuration": {
@@ -172,15 +172,15 @@ The `device-3` will remain unchanged and use default values:
 }
 ```
 
-#### EdgeDeviceGroup creation
-Let's create two edge device groups, that will be later used by the devices above:
+#### EdgeDeviceSet creation
+Let's create two edge device sets, that will be later used by the devices above:
 
 ```shell
 kubectl apply -f -<<EOF
 apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeviceGroup
+kind: EdgeDeviceSet
 metadata:
-  name: group-1
+  name: set-1
 spec:
   heartbeat:
     periodSeconds: 5
@@ -195,9 +195,9 @@ EOF
 ```shell
 kubectl apply -f -<<EOF
 apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeviceGroup
+kind: EdgeDeviceSet
 metadata:
-  name: group-2
+  name: set-2
 spec:
   heartbeat:
     periodSeconds: 5
@@ -209,21 +209,21 @@ spec:
 EOF
 ```
 
-#### EdgeDeviceGroup membership
-Creation of the groups doesn't change the configuration of the existing edge devices yet. To make the devices use the 
-group-level configuration, the devices need to be labelled:
+#### EdgeDeviceSet membership
+Creation of the sets doesn't change the configuration of the existing edge devices yet. To make the devices use the 
+set-level configuration, the devices need to be labelled:
 
-Assignment of `device-1` `EdgeDevice` to `group-1` `EdgeDeviceGroup`:
+Assignment of `device-1` `EdgeDevice` to `set-1` `EdgeDeviceSet`:
 ```shell
-kubectl label edgedevice device-1 flotta/member-of=group-1
+kubectl label edgedevice device-1 flotta/member-of=set-1
 ```
 
-Assignment of `device-3` `EdgeDevice` to `group-1` `EdgeDeviceGroup`:
+Assignment of `device-3` `EdgeDevice` to `set-1` `EdgeDeviceSet`:
 ```shell
-kubectl label edgedevice device-3 flotta/member-of=group-1
+kubectl label edgedevice device-3 flotta/member-of=set-1
 ```
 
-After issuing the above commands, the on-device configuration of both `device-1` and `device-3` are group-driven and are 
+After issuing the above commands, the device configuration of both `device-1` and `device-3` are set-driven and are 
 exactly the same:
 
 `device-1`:
@@ -278,9 +278,9 @@ exactly the same:
 }
 ```
 
-Assigning `device-2` to `group-2`:
+Assigning `device-2` to `set-2`:
 ```shell
-kubectl label edgedevice device-2 flotta/member-of=group-2
+kubectl label edgedevice device-2 flotta/member-of=set-2
 ```
 
 results in following configuration being changed on the device to:
@@ -307,12 +307,12 @@ results in following configuration being changed on the device to:
 }
 ```
 
-Now increasing the heartbeat frequency of `device-1` and `device-3` to 10 minutes at one time is as easy as patching `group-1`:
+Now increasing the heartbeat frequency of `device-1` and `device-3` to 10 minutes at one time is as easy as patching `set-1`:
 ```shell
-kubectl patch edgedevicegroup group-1 --type merge -p '{"spec":{"heartbeat": {"periodSeconds": 600}}}'
+kubectl patch edgedeviceset set-1 --type merge -p '{"spec":{"heartbeat": {"periodSeconds": 600}}}'
 ```
 
-the on-device configuration on both `device-1` and `device-3` will show the above change:
+the device configuration files on both `device-1` and `device-3` will show the above change:
 
 `device-1`:
 ```json
@@ -366,12 +366,12 @@ the on-device configuration on both `device-1` and `device-3` will show the abov
 }
 ```
 
-#### EdgeDeviceGroup removal
-As mentioned earlier, removal of an `EdgeDeviceGroup` will result in devices switching to `EdgeDevice`-level defined settings.
+#### EdgeDeviceSet removal
+As mentioned earlier, removal of an `EdgeDeviceSet` will result in devices switching to `EdgeDevice`-level defined settings.
 
-Removal of the `group-2` `EdgeDeviceGroup`:
+Removal of the `set-2` `EdgeDeviceSet`:
 ```shell
-kubectl delete edgedevicegroup group-2
+kubectl delete edgedeviceset set-2
 ```
 
 will cause `device-2` to use the configuration specified in its `EdgeDevice` CR:
