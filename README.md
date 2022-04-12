@@ -11,7 +11,8 @@ This template is based on jekyll, a static website generator. This template can 
 
 ## Get Started 
 ### Easy way - To build and run the template you can use docker
-Run the script run.sh, the documention website will be available at https://localhost:3000
+Run ```make build``` to build and ```make run``` to build and run. 
+The documention website will be available at http://localhost:3000
 
 ### Manual way - To run the template you need install Ruby,Bundler and Jekyll
 
