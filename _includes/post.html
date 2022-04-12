@@ -16,7 +16,7 @@
     <div class="post-container">
     <h2 class="post-title">
       {% if link_title %}
-        <a class="post-title"href="{{ post.url | prepend: site.baseurl }}">{{ post.title | escape }}</a>
+      <a class="post-title"href="{{ post.url}}">{{site.baseurl}} {{ post.title | escape }}</a>
       {% else %}
         {{ post.title | escape }}
       {% endif %}
