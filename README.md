@@ -10,8 +10,11 @@ This template is based on jekyll, a static website generator. This template can 
 - Social media widgets
 
 ## Get Started 
+### Easy way - To build and run the template you can use docker
+Run ```make build``` to build and ```make run``` to build and run. 
+The documention website will be available at http://localhost:3000
 
-### To run the template you need install Ruby,Bundler and Jekyll
+### Manual way - To run the template you need install Ruby,Bundler and Jekyll
 
 1. Install Ruby & Bundler (as root):
 
