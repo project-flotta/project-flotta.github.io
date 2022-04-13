@@ -59,7 +59,7 @@
 
   <li  {% if page.url contains {{nav.url}} %} class="active" {%endif%} role="menuitem">
     {% if nav.url %}
-      <a href="{{ nav.url | prepend: baseurl }}">{{
+      <a href="/{{ nav.url | prepend: baseurl }}">{{
         nav_icon | strip
         }}{{
         nav_label | strip

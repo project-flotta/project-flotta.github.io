@@ -11,5 +11,5 @@
 - title: Search
   url: search.html
 
-- title: Events
-  url: "calendar"
+# - title: Events
+#   url: "calendar"

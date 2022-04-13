@@ -7,7 +7,7 @@ index: false
 <div class="author-card">
 {% for group in items_grouped %}
    <div class="author-sort">
-    <h1>{{group.name}}</h1>
+    <h1 id="{{group.name}}"> {{group.name}}</h1>
     
     <div class="author-container">
     {% for item in group.items %}
