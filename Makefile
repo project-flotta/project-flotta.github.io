@@ -24,9 +24,14 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ##@ Build
-build: 
-	$(DOCKER) run --rm --volume="$(PWD):/srv/jekyll" -it jekyll/jekyll:$(JEKYLL_VERSION) jekyll build
 
-run: build
+build:  ## build the site
+	$(DOCKER) run --rm --volume="$(PWD):/srv/jekyll" jekyll/jekyll:$(JEKYLL_VERSION) jekyll build
+
+check-links: ## Check that all links are working
+check-links: build
+	$(DOCKER) run --rm -v $(PWD)/_site:/src klakegg/html-proofer:3.19.2 --allow-hash-href --empty-alt-ignore --disable-external
+
+run: build ## run the site on localhost:3000
 	$(DOCKER) run --rm --name $(CONTAINER_NAME) --volume="$(PWD):/srv/jekyll" -p 3000:4000 -it jekyll/jekyll:$(JEKYLL_VERSION) jekyll serve --watch --drafts 
 
