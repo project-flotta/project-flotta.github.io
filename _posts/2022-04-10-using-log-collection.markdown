@@ -26,7 +26,7 @@ For that, Flotta introduces log collection targets, so each device - or
 deviceSets- will have a set of custom logs servers that one workload can use to
 send the logs to.
 
-![Device Logs diagram](./assets/images/DeviceLogsConfig.png)
+![Device Logs diagram](/assets/images/DeviceLogsConfig.png)
 
 The main use case is to be able to define servers in edge devices and these
 servers to be consumed by the workloads; this way user roles are very well
