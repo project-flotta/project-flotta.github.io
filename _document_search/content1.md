@@ -9,13 +9,19 @@ The resources to accomplish this can be found on this page, which will grow as C
 
 
 
-- **Contributor guidelines.** Looking for a project? Or you've found a project that you really like and aren't sure how to begin? Our [contributor guidelines](/contribguide) will walk you through the process of getting your started in open source quickly and seamlessly!
-- **Community guidelines.** If your project is actively seeking new contributors, there are some easy paths to take to ensure your [community onboarding process](/communityguide) is simple and clear.
-
-    
+- **Contributor guidelines.** Looking for a project? Or you've found a project
+  that you really like and aren't sure how to begin? Our [contributor
+  guidelines](https://github.com/project-flotta/flotta-operator/blob/main/CONTRIBUTING.md)
+  will walk you through the process of getting your started in open source
+  quickly and seamlessly!
+- **Community guidelines.** If your project is actively seeking new
+  contributors, there are some easy paths to take to ensure your [community
+  onboarding
+  process](https://github.com/project-flotta/flotta-operator/blob/main/CONTRIBUTING.md)
+  is simple and clear.
 
 # test code
-   
+
     <html>
     <head>
         <title>Test</title>
