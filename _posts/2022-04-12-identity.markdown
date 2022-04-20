@@ -1,0 +1,80 @@
+---
+layout: post
+title:  "How Flotta project proofs identity on the far edge"
+date:   2022-04-12 12:00:00 +0100
+categories: flotta
+author: Eloy Coto <eloy.coto@acalustra.com>
+tags:
+  - authentication
+  - flotta
+
+summary-1: How Flotta project proofs identity on the far edge
+---
+
+When speaking about the edge the most problematic thing is the security. At the
+edge, you cannot assume there is security at all, so we assume that all your
+devices are compromised by default and we adopt a [Zero
+trust](https://cloud.google.com/beyondcorp) approach.
+
+Edge Authentication is getting traction, and at the moment, there are multiple
+projects out there that take care of it. The most promising one to us is
+[FDO](https://fidoalliance.org/specs/FDO/FIDO-Device-Onboard-RD-v1.0-20201202.html)
+- protocol-driven Device Onboarding project by [FIDO
+alliance](https://fidoalliance.org/).That protocol is to onboard new devices to
+the fleet of devices, but making sure that it's taking place at manufacturer
+level with the approval of the edge-administrator. To get more information, we
+highly recommend this
+[presentation](https://www.youtube.com/watch?v=fAGCkenbKCA&ab_channel=DevConf).
+
+Flotta will use FDO for initialization, but regarding edge security there are
+more steps than that, like TLS Certificate renewals, certificates expiration
+and much more, for that Flotta has some flows in place.
+
+
+## Device Onboarding
+
+Right now, Flotta uses [Mutual
+TLS](https://en.wikipedia.org/wiki/Mutual_authentication) certificates to
+onboard new devices to the Operator. That certificate will be injected into the
+ISO creation using kickstart files where Manufacturer or Edge administrator can
+initialise the device. That ISO is managed by the Flotta OS lifecycle.
+
+When the device boots on the final destination, it uses that Register
+certificate to register (the only action that can do with that certificate);
+such API call also contains a Certificate signed Request, needed to get the
+device public key to be able to sign it and returned to the device. That
+certificate can only be obtained if the Edge-administrator approves the device
+to register first.
+
+To avoid security issues with that certificates, Flotta will implement TPM keys
+for that certificates, even if someone has access to the certificate, it cannot
+be used outside of the device. At the same time, in the API a new security
+check will be added so that only devices with a Key TPM based can be registered.
+
+
+## Authentication
+
+When designing the authentication system in Flotta we knew that there are some
+special cases: Edge network is not reliable, devices can be turned off for a
+long period of time, the API Server should scale horizontally to be able to
+server to millions of devices. Because of all of this, we implement an MTLS
+certificate where API should only get the CA certificate and validate that the
+client certificate is correctly signed.
+
+Those client certificates have a short expiration because Flotta also
+implements a way to renew those certificates, to make sure that a edge device
+is able to run a workload if a certificate is expired.
+
+## Authorization
+
+To continue our work at scale, where Flotta wants to achieve millions of
+devices, the authorization is made on client certificate. Because the
+Certificate signing is made by Flotta, so the API is scaling horizontally and
+validation can happen on any API server.
+
+All information needed to make any authorization is provided by metadata stored
+in the certificate subject - there is no need to reach to any RBAC server.
+
+To try the device onboarding connection, you can follow the getting started
+guide that is available
+[here](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md).
