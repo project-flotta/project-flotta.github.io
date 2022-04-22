@@ -39,7 +39,9 @@ disqus-identifier: # Add your shortname for Disqus Comment. For example mr-brown
 # Hero Section
 
 hero:
-  hero-title: Project Flotta. Edge device management for k8s workloads.
+  hero-title: |
+    Project Flotta<br>
+    Edge device management for k8s workloads.
   hero-text: Manage, deploy, observe edge workloads from a single k8s instance. 
   hero-image: assets/images/flotta-device-diagram.png
 social:
@@ -54,8 +56,10 @@ social:
 # About (Section and Page)
 
 # About Section
-blurb:
-  Project Flotta is designed to manage containerized workload on small-footprint devices found on the edges of networks by managing the lifecycle of edge-focused operating systems and securing connectivity between K8s/OCP and the edge. Flotta provides a pipeline for operating system images across ARM and x86 architectures and enables atomic upgrades and rollbacks of an edge-focused operating system, while maintaining a minimal footprint. Because edge computing networks have the potential for instability, Flotta can provide continuity when connectivity is sporadic or down for long periods of time. Enhanced edge observability is also provided through improved metrics and log collection capabilities.
+blurb: |
+  Project Flotta is designed to manage containerized workload on small-footprint devices found on the edges of networks by managing the lifecycle of edge-focused operating systems and securing connectivity between K8s/OCP and the edge. <br>
+  Flotta provides a pipeline for operating system images across ARM and x86 architectures and enables atomic upgrades and rollbacks of an edge-focused operating system, while maintaining a minimal footprint. Because edge computing networks have the potential for instability, Flotta can provide continuity when connectivity is sporadic or down for long periods of time.<br>
+  Enhanced edge observability is also provided through improved metrics and log collection capabilities.
 
 blurb-btn-link: '/documentation'
 blurb-btn-name: know more
@@ -76,19 +80,19 @@ work-process:
     content : "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 
 
-# My Team Section
-team:
-  - title : "Jack Schenziwe"
-    image : "assets/images/team/member-1.png"
-    designation : "Project Manager"
+# # My Team Section
+# team:
+#   - title : "Jack Schenziwe"
+#     image : "assets/images/team/member-1.png"
+#     designation : "Project Manager"
     
-  - title : "Julias Carlie"
-    image : "assets/images/team/member-2.png"
-    designation : "Web Developer"
+#   - title : "Julias Carlie"
+#     image : "assets/images/team/member-2.png"
+#     designation : "Web Developer"
     
-  - title : "John Doe"
-    image : "assets/images/team/member-3.png"
-    designation : "Designer"
+#   - title : "John Doe"
+#     image : "assets/images/team/member-3.png"
+#     designation : "Designer"
 
 
 
@@ -135,7 +139,7 @@ features:
 - {
     name: Identity aware,
     icon:  ti-shield,
-    description: 'All devices have their own identity managed by X509 certificates and all communication with the Fleet Management API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.',
+    description: 'All devices have their own identity managed by X509 certificates and all communication with the Flotta Management API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.',
     active: # Add true to select section
   }
 
@@ -148,7 +152,7 @@ features:
 - {
     name: Data Upload,
     icon: ti-upload,
-    description: 'Upload any data produced by your workload to a centrallized location from all of your devices',
+    description: 'Upload any data produced by your workload to a centralized location from all of your devices',
     active: false # Add true to select section
   }
 - {
