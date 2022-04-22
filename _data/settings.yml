@@ -2,19 +2,20 @@
 # General Site Settings
 
 title: Project Flotta
-logo: 
+logo: assets/images/flotta-logo.png
 author: themefisher
 description: this is meta description
-email: steve.fruits@email.com
-phone: 
-address: 
+email: flotta@redhat.com
+phone:
+address:
 copyright: Copyright &copy; 2020 Designed by [Themefisher](https://themefisher.com) & Developed by [Getjekyllthemes](https://getjekyllthemes.com)
 
 menu:
-- {name: About, link: '/about'}
-- {name: Blog, link: '/blog'}
-- {name: Portfolio, link: '/portfolio'}
-- {name: Contact, link: '/contact'}
+# - {name: About, link: '/about'}
+- {name: Blog, link: '/blog.html'}
+- {name: Documentation, link: '/documentation'}
+# - {name: Portfolio, link: '/portfolio'}
+# - {name: Contact, link: '/contact'}
 
 
 #-------------------------------
@@ -38,13 +39,15 @@ disqus-identifier: # Add your shortname for Disqus Comment. For example mr-brown
 # Hero Section
 
 hero:
-  hero-title: Hi! I’m <br> Christoher <br> UX designer
-
+  hero-title: Project Flotta. Edge device management for k8s workloads.
+  hero-text: Manage, deploy, observe edge workloads from a single k8s instance. 
+  hero-image: assets/images/flotta-device-diagram.png
 social:
-- {icon: "ti-facebook", link: "#"}
-- {icon: "ti-instagram", link: "#"}
-- {icon: "ti-dribbble", link: "#"}
-- {icon: "ti-twitter", link: "#"}
+# - {icon: "ti-facebook", link: "#"}
+# - {icon: "ti-instagram", link: "#"}
+# - {icon: "ti-dribbble", link: "#"}
+# - {icon: "ti-twitter", link: "#"}
+- {icon: "ti-github", link: "https://github.com/project-flotta/"}
 
 
 #-------------------------------
@@ -52,9 +55,9 @@ social:
 
 # About Section
 blurb:
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+  Project Flotta is designed to manage containerized workload on small-footprint devices found on the edges of networks by managing the lifecycle of edge-focused operating systems and securing connectivity between K8s/OCP and the edge. Flotta provides a pipeline for operating system images across ARM and x86 architectures and enables atomic upgrades and rollbacks of an edge-focused operating system, while maintaining a minimal footprint. Because edge computing networks have the potential for instability, Flotta can provide continuity when connectivity is sporadic or down for long periods of time. Enhanced edge observability is also provided through improved metrics and log collection capabilities.
 
-blurb-btn-link: '/about'
+blurb-btn-link: '/documentation'
 blurb-btn-name: know more
 
 
@@ -65,11 +68,9 @@ work-process:
   - title : "Research and Plan"
     icon : "assets/images/icons/plan.png"
     content : "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    
   - title : "Design and Develop"
     icon : "assets/images/icons/design.png"
     content : "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    
   - title : "Deliver"
     icon : "assets/images/icons/print.png"
     content : "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
@@ -90,15 +91,6 @@ team:
     designation : "Designer"
 
 
-#-------------------------------
-# Skills Section
-
-skills-title: Skills
-skills:
-- {name: Web Design, color: '#fdb157', value: '90%'}
-- {name: Logo Design, color: '#9473e6', value: '60%'}
-- {name: After Effects, color: '#bdecf6', value: '80%'}
-- {name: Web App, color: '#ffbcaa', value: '70%'}
 
 
 #-------------------------------
@@ -125,27 +117,60 @@ education:
 #-------------------------------
 # Services Section
 
-services-title: Services
-services:
+features-title: Features
+features:
 - {
-    name: UI Design,
-    icon: ti-palette,
-    description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    name: OS Managmenet,
+    icon: ti-package,
+    description: 'Manage Operating system lifecycle using RPM ostree technology and manage the current state of the device.',
     active: # Add true to select section
   }
 - {
-    name: UX Design,
-    icon: ti-vector,
-    description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    name: Observability,
+    icon: ti-search,
+    description: 'Get any information on the workloads running in the Edgedevice and export it to a central Prometheus instance with limited bandwidth, at the same time export all logs to a central device in case it’s needed.',
     active: true # Add true to select section
   }
+
 - {
-    name: Interaction Design,
-    icon: ti-panel,
-    description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    name: Identity aware,
+    icon:  ti-shield,
+    description: 'All devices have their own identity managed by X509 certificates and all communication with the Fleet Management API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.',
     active: # Add true to select section
   }
 
+- {
+    name: Low footprint,
+    icon: ti-wand,
+    description: 'Flotta device is a lightweight daemon that is able to run on disconnected environments or not reliable networks, also managed to limit the control-plane bandwidth.',
+    active: true # Add true to select section
+  }
+- {
+    name: Data Upload,
+    icon: ti-upload,
+    description: 'Upload any data produced by your workload to a centrallized location from all of your devices',
+    active: false # Add true to select section
+  }
+- {
+    name: Ansible integration,
+    icon: ti-plug,
+    description: 'Execute Ansible playbooks on specific subset of Flotta devices and check their execution status',
+    active: true # Add true to select section
+  }
+
+# - {
+#     name: FDO,
+#     icon: ti-vector,
+#     description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+#     active: true # Add true to select section
+#   }
+
+# - {
+#     name: GIT OPS friendly,
+#     icon: ti-vector,
+#     description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+#     active: true # Add true to select section
+#   }
 
 
 #-------------------------------
@@ -259,38 +284,38 @@ testimonial-items:
 # Client Slider Section
 
 client-slider-items:
-  - logo: "assets/images/clients-logo/client-logo-1.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-1.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-2.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-2.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-3.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-3.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-4.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-4.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-5.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-5.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-1.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-1.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-2.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-2.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-3.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-3.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-4.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-4.png"
+  #   url: "#"
     
-  - logo: "assets/images/clients-logo/client-logo-5.png"
-    url: "#"
+  # - logo: "assets/images/clients-logo/client-logo-5.png"
+  #   url: "#"
 
 #-------------------------------
 # Contact Section
 
 contact-title: Contact Info
-contact-email: steve.fruits@email.com
+contact-email: flotta@redhat.com

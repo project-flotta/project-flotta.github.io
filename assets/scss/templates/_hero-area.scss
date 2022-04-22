@@ -1,5 +1,5 @@
 .hero-area {
-  padding: 300px 0 200px;
+  padding: 300px 0 100px;
   position: relative;
   @include tablet {
     padding: 250px 0 150px;
@@ -8,6 +8,10 @@
   h1{
     position: relative;
     z-index: 2;
+    font-size: 25px;
+  }
+  p {
+    color: white;
   }
 }
 
