@@ -1,0 +1,24 @@
+{% if site.data.settings.features %}
+<!-- features -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">{{ site.data.settings.features-title }}</h2>
+      </div>
+      {% for feature in site.data.settings.features %}
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body {% if feature.active %}active-bg-primary{% endif %} text-center px-4 py-5">
+            <i class="{{ feature.icon }} icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">{{ feature.name }}</h4>
+            <p>{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<!-- /features -->
+{% endif %}

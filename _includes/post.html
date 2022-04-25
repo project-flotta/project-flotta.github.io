@@ -1,37 +1,14 @@
-{% assign post = include.post | default: post %}
-{% assign excerpt = include.excerpt | default: false %}
-{% assign link_title = include.link | default: false %}
-{% assign author_card = include.author_card | default: false %}
-{% assign author = site.data.authors[post.author] %}
-{% assign separator = site.excerpt_separator | prepend: "<p>" | append: "</p>" %}
-{% assign summary_length = site.blog_summary_length | default: 50 %}
-{% assign ignore = include.ignore | default: site.blog_ignore | split: ',' %}
-{% assign summary_headings = site.blog_summary_headings %}
-{% assign heading_summary = include.heading_summary %}
-{% assign newline = '
-' %}
-
-<article class="post">
-  <header class="post-header">
-    <div class="post-container">
-    <h2 class="post-title">
-      {% if link_title %}
-      <a class="post-title"href="{{ post.url}}">{{site.baseurl}} {{ post.title | escape }}</a>
-      {% else %}
-        {{ post.title | escape }}
-      {% endif %}
-    </h2>
-    <span class="date">-{{ post.date | date: "%-d %B %Y" }}</span> 
-    <div class="post-detail"> 
-     <span class="author">  <a href="{{ site.baseurl }}/blog/authors.html#{{ post.author }}">by {{ post.author }}</a></span>
-     <!-- <span class="tags">  <a href="{{ site.baseurl }}/blog/tags#{{ post.tags }}">by {{ post.tags }}</a></span> -->
-     <div class="categories">  <a href="{{ site.baseurl }}/blog/categories.html#{{ post.categories }}">Category: {{ post.categories }}</a></span>
-     </div>
+<div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    {% if  post.image %}
+      <img class="rounded card-img-top" src="{{ post.image | relative_url }}" alt="{{ post.title }}">
+    {% endif %}
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      </h4>
+      <p class="card-text">{% assign curlyend = '}' %}{{ post.excerpt | markdownify | strip_html | replace: "{% include JB/setup %", "" | replace: curlyend, "" | truncatewords: 30 }}</p>
+      <a href="{{ post.url | relative_url }}" class="btn btn-xs btn-primary">Read More</a>
     </div>
-       
-  </header>
- <div class="post-desc">
-  <p > {%if post.summary-1%}
-      {{post.summary-1}}
-    {%endif%}</p></div>
-</article>
+  </article>
+</div>

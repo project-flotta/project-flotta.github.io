@@ -1,10 +1,21 @@
 ---
-layout: essential
+layout: compress
 ---
+<!DOCTYPE html>
+<html lang="en">
 
+{% include head.html %}
 
-<main class="main-content" {% if page.url contains "authors" or page.url contains "search" or page.url contains "documentation" or page.url contains ".html" %} id="extend-footer" {% endif %} role="main">
-{{ content }}
-</main>
+<body>
 
-{% include page_footer.html %} 
+  {% include header.html %}
+
+  {{ content }}
+
+  {% include contact-section.html %}
+
+  {% include footer.html %}
+
+</body>
+
+</html>

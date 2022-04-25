@@ -2,13 +2,12 @@
 layout: post
 title:  "How Flotta project proofs identity on the far edge"
 date:   2022-04-12 12:00:00 +0100
+<!-- image:  /assets/images/blog/post-2.jpg -->
 categories: flotta
 author: Eloy Coto <eloy.coto@acalustra.com>
 tags:
   - authentication
   - flotta
-
-summary-1: How Flotta project proofs identity on the far edge
 ---
 
 When speaking about the edge the most problematic thing is the security. At the
@@ -18,8 +17,8 @@ trust](https://cloud.google.com/beyondcorp) approach.
 
 Edge Authentication is getting traction, and at the moment, there are multiple
 projects out there that take care of it. The most promising one to us is
-[FDO](https://fidoalliance.org/specs/FDO/FIDO-Device-Onboard-RD-v1.0-20201202.html)
-- protocol-driven Device Onboarding project by [FIDO
+[FDO](https://fidoalliance.org/specs/FDO/FIDO-Device-Onboard-RD-v1.0-20201202.html),
+protocol-driven Device Onboarding project by [FIDO
 alliance](https://fidoalliance.org/).That protocol is to onboard new devices to
 the fleet of devices, but making sure that it's taking place at manufacturer
 level with the approval of the edge-administrator. To get more information, we

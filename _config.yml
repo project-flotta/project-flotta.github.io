@@ -27,19 +27,17 @@ twitter_username: flotta-project
 github_username:  flotta-project
 
 # Build settings
-theme: minima
+# theme: minima
 markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-redirect-from
 
-
 sass:
-  sass_dir: assets/
+  sass_dir: assets/scss
   add_charset: true
   style: :compressed
 
-  
 # for document search
 collections:
   document_search:
@@ -51,19 +49,24 @@ collections:
 
 
 
+include:
+  - _pages
 
 # YAML defaults for pages
 defaults:
-  -
-    scope:
+  - scope:
       path: ""
     values:
       layout: "page"
-  -
-    scope:
+  - scope:
       type: posts
     values:
       layout: "post"
+
+  - scope:
+      path: '_pages'
+    values:
+      permalink: /:basename:output_ext
 
 
 # Exclude from processing.
