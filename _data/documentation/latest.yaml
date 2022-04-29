@@ -1,0 +1,44 @@
+---
+# - Name: test
+#   Link: "/documentation/latest/into/test.md"
+#   Childs:
+#   - Name: test
+#     Link: "/documentation/latest/into/test.md"
+#   - Name: test
+#     Link: "/documentation/latest/into/test.md"
+# - Name: test
+#   Link: "/documentation/latest/into/test.md"
+#   Childs:
+#   - Name: test
+#     Link: "/documentation/latest/into/test.md"
+#   - Name: test
+#     Link: "/documentation/latest/into/test.md"
+#
+#
+- Name: Intro
+  Link: "/documentation/latest/into/test.md"
+  Childs:
+  - Name: What is flotta
+    Link: "/documentation/latest/into/test.md"
+  - Name: Use cases
+    Link: "/documentation/latest/into/test.md"
+  - Name: Flotta vs others
+    Link: "/documentation/latest/into/test.md"
+
+- Name: Getting started
+  Link: "/documentation/latest/into/test.md"
+  Childs:
+  - Name: Minikube
+    Link: "/documentation/latest/into/test.md"
+  - Name: Kind
+    Link: "/documentation/latest/into/test.md"
+  - Name: OCP
+    Link: "/documentation/latest/into/test.md"
+
+- Name: Os Management
+  Link: "/documentation/latest/into/test.md"
+  Childs:
+  - Name: Pipelines
+    Link: "/documentation/latest/into/test.md"
+  - Name: RPM-Osstree
+    Link: "/documentation/latest/into/test.md"

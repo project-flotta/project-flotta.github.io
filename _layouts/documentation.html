@@ -1,0 +1,41 @@
+---
+layout: default
+---
+
+<section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        {% assign urlParts = page.url | split: "/" %}
+        {% assign version = urlParts[2] %}
+        <ul class="list-group list-group-collapse border-0">
+          {% for item in site.data.documentation[version] %}
+            <li class="list-group-item border-0">
+              <h5><a href="{{item.Link}}">{{ item.Name}}</a></h5>
+              {% if item.Childs.size > 0 %}
+                <ul class="list-group border-0">
+                  {% for val in item.Childs %}
+                    <li class="list-group-item border-0"> <a href="{{val.Link}}">{{ val.Name }}</a> </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <h1 class="font-tertiary mb-5">{{ page.title | escape }}</h1>
+        <!-- <p class="font-secondary">Published on {{ page.date | date: '%b %d, %Y' }} by <span class="text-primary">{{ page.author }}</span -->
+        <!--     class="text-primary"> on {% for tag in page.tags %}<span>{{ tag }} </span>{% endfor %}</p> -->
+        <div class="content">
+          {% if page.image %}
+            <img src="{{page.image | relative_url }}" class="img-fluid rounded float-left mr-5 mb-4" alt="{{page.title}}">
+          {% endif %}
+
+          {{ content }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
