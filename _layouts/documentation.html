@@ -11,11 +11,18 @@ layout: default
         <ul class="list-group list-group-collapse border-0">
           {% for item in site.data.documentation[version] %}
             <li class="list-group-item border-0">
-              <h5><a href="{{item.Link}}">{{ item.Name}}</a></h5>
+              <h5>
+                {% if item.Link %}
+                  <a href="{{item.Link}}">{{ item.Name}}</a>
+                {% else %}
+                  {{item.Name}}
+                {% endif %}
+              </h5>
               {% if item.Childs.size > 0 %}
                 <ul class="list-group border-0">
                   {% for val in item.Childs %}
-                    <li class="list-group-item border-0"> <a href="{{val.Link}}">{{ val.Name }}</a> </li>
+                    {% capture BaseLink %}documentation/{{version}}/{{val.Link}}{% endcapture %}
+                    <li class="list-group-item border-0"> <a href="{% link {{ BaseLink }} %}">{{ val.Name }}</a> </li>
                   {% endfor %}
                 </ul>
               {% endif %}
@@ -25,10 +32,8 @@ layout: default
       </div>
 
       <div class="col-lg-8">
-        <h1 class="font-tertiary mb-5">{{ page.title | escape }}</h1>
-        <!-- <p class="font-secondary">Published on {{ page.date | date: '%b %d, %Y' }} by <span class="text-primary">{{ page.author }}</span -->
-        <!--     class="text-primary"> on {% for tag in page.tags %}<span>{{ tag }} </span>{% endfor %}</p> -->
-        <div class="content">
+        <div class="content documentation">
+          <h1 class="font-tertiary mb-5">{{ page.title | escape }}</h1>
           {% if page.image %}
             <img src="{{page.image | relative_url }}" class="img-fluid rounded float-left mr-5 mb-4" alt="{{page.title}}">
           {% endif %}
