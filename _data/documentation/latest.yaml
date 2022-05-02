@@ -28,6 +28,8 @@
     Link: "operations/data_upload.md"
   - Name: Troubleshooting
     Link: "operations/troubleshooting.md"
+  - Name: API reference
+    Link: "operations/api.html"
 
 - Name: For developers
   Childs:
