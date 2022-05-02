@@ -22,10 +22,14 @@
     Link: "operations/requirements.md"
   - Name: Configuration
     Link: "operations/configuration.md"
+  - Name: Observability
+    Link: "operations/observability.md"
+  - Name: Data upload
+    Link: "operations/data_upload.md"
   - Name: Troubleshooting
     Link: "operations/troubleshooting.md"
 
 - Name: For developers
   Childs:
-  - Name: Development Guide 
+  - Name: Development Guide
     Link: "dev/guide.md"

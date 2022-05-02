@@ -29,11 +29,15 @@ layout: default
             </li>
           {% endfor %}
         </ul>
+        <p>Documentation version: {{ version }}</p>
       </div>
 
       <div class="col-lg-8">
-        <div class="content documentation">
-          <h1 class="font-tertiary mb-5">{{ page.title | escape }}</h1>
+        <div class="documentation content">
+          {% if page.title %}
+            <!-- Some cases we don't want to show the title -->
+            <h1 class="font-tertiary mb-5">{{ page.title | escape }}</h1>
+          {% endif %}
           {% if page.image %}
             <img src="{{page.image | relative_url }}" class="img-fluid rounded float-left mr-5 mb-4" alt="{{page.title}}">
           {% endif %}
