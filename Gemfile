@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 gem 'bundler'
 gem 'jekyll-redirect-from'
+gem 'jekyll-relative-links'
 gem 'jekyll-mermaid'
 gem "jekyll", "~> 4.2.0"
 gem "minima", "~> 2.5"

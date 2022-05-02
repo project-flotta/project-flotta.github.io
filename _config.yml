@@ -33,6 +33,7 @@ plugins:
   - jekyll-feed
   - jekyll-redirect-from
   - jekyll-mermaid
+  - jekyll-relative-links
 
 sass:
   sass_dir: assets/scss
@@ -99,3 +100,6 @@ mermaid:
 meeting-day: Thursday
 meeting-place: Jitsi (see Calendar)
 meeting-time: 5:00PM - 6:00PM
+
+relative_links:
+  enabled:     true
