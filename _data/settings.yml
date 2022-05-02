@@ -61,7 +61,7 @@ blurb: |
   Flotta provides a pipeline for operating system images across ARM and x86 architectures and enables atomic upgrades and rollbacks of an edge-focused operating system, while maintaining a minimal footprint. Because edge computing networks have the potential for instability, Flotta can provide continuity when connectivity is sporadic or down for long periods of time.<br>
   Enhanced edge observability is also provided through improved metrics and log collection capabilities.
 
-blurb-btn-link: '/documentation'
+blurb-btn-link: '/documentation/latest/intro/overview.html'
 blurb-btn-name: know more
 
 
