@@ -30,6 +30,8 @@
     Link: "operations/troubleshooting.md"
   - Name: API reference
     Link: "operations/api.html"
+  - Name: CRD reference
+    Link: "operations/crd.md"
 
 - Name: For developers
   Childs:
