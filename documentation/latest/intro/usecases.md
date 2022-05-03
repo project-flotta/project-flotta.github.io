@@ -1,6 +1,6 @@
 ---
 layout: documentation
-title: Flotta usecases
+title: Flotta use cases
 ---
 
 ## Retail

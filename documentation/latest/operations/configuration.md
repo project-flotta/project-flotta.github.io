@@ -7,8 +7,8 @@ layout: documentation
 ## Deploying workloads
 
 Workload can be deployed to devices **after** they are registered with the
-cluster. At the same time, `EdgeWorkload` can be deployed only on edge devices
-in the same namespace.
+cluster. `EdgeWorkload` can be deployed only on edge devices in the same
+namespace.
 
 ### Deploying by device ID
 
