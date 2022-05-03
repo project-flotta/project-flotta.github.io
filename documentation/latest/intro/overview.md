@@ -16,6 +16,41 @@ At the same time, you can schedule a container workload to run in the device
 using a Workload CRD, where a container workload can be scheduled for an
 unlimited number of devices.
 
+{% mermaid %}
+flowchart TB
+  classDef plain fill:#ddd,stroke:#fff,stroke-width:4px,color:#000;
+  classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
+  classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
+
+  subgraph "Kubernetes"
+    direction TB
+    EdgeDevice(EdgeDevice CRD)
+    EdgeDeviceSet(EdgeDeviceSet CRD)
+    EdgeWorkload(EdgeWorkload CRD)
+    ing(Ingress) --> api(Fleet API)
+    op(Flotta Operator)
+
+    op -.- EdgeDevice
+    op -.- EdgeDeviceSet
+    op -.- EdgeWorkload
+
+    api -.- EdgeDevice
+    api -.- EdgeDeviceSet
+    api -.- EdgeWorkload
+  end
+
+  class ing,op,api,EdgeDevice,EdgeDeviceSet,EdgeWorkload k8s;
+  class kube cluster;
+
+  subgraph Device
+    direction LR;
+    Agent((Agent daemon));
+    Agent --> Podman --> Workloads;
+  end
+
+  Agent ---> Device ---> ing
+{% endmermaid%}
+
 ### Fleet observability
 
 Running container workloads in the edge device is the first part, but at the
