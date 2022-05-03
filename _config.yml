@@ -32,6 +32,8 @@ markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-redirect-from
+  - jekyll-mermaid
+  - jekyll-relative-links
 
 sass:
   sass_dir: assets/scss
@@ -69,6 +71,9 @@ defaults:
       permalink: /:basename:output_ext
 
 
+mermaid:
+  src: 'https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.0.1/mermaid.min.js'
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
@@ -95,3 +100,6 @@ defaults:
 meeting-day: Thursday
 meeting-place: Jitsi (see Calendar)
 meeting-time: 5:00PM - 6:00PM
+
+relative_links:
+  enabled:     true
