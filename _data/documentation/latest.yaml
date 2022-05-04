@@ -15,6 +15,8 @@
     Link: "gsg/kind.md"
   - Name: OCP
     Link: "gsg/ocp.md"
+  - Name: Running workloads
+    Link: "gsg/running_workloads.md"
 
 - Name: Operations
   Childs:
