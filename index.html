@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Project Flotta</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <!-- hero area -->
+<section class="hero-area bg-primary" id="parallax">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6 mx-auto">
+        <h1 class="text-white font-tertiary">Project Flotta<br>
+Edge device management for k8s workloads.
+</h1>
+        <p><b>Manage, deploy, observe edge workloads from a single k8s instance.</b></p>
+      </div>
+
+      <div class="col-lg-6 mx-auto">
+        <img class="img-fluid w-100" src="assets/images/flotta-device-diagram.png" alt="bg-shape">
+      </div>
+    </div>
+  </div>
+  <div class="layer-bg w-100">
+    <ul class="list-unstyled ml-5 mt-3 position-relative zindex-1">
+      
+      <li class="mb-3"><a class="text-white" href="https://github.com/project-flotta/"><i class="ti-github"></i></a></li>
+      
+    </ul>
+  </div>
+</section>
+<!-- /hero area -->
+
+
+<!-- about -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-10 mx-auto text-center">
+        <p class="font-secondary paragraph-lg text-dark">Project Flotta is designed to manage containerized workload on small-footprint devices found on the edges of networks by managing the lifecycle of edge-focused operating systems and securing connectivity between K8s/OCP and the edge. <br>
+Flotta provides a pipeline for operating system images across ARM and x86 architectures and enables atomic upgrades and rollbacks of an edge-focused operating system, while maintaining a minimal footprint. Because edge computing networks have the potential for instability, Flotta can provide continuity when connectivity is sporadic or down for long periods of time.<br>
+Enhanced edge observability is also provided through improved metrics and log collection capabilities.
+</p>
+        <a href="/documentation/latest/intro/overview.html" class="btn btn-transparent">know more</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /about -->
+
+
+
+<!-- features -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Features</h2>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body  text-center px-4 py-5">
+            <i class="ti-package icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">OS Managmenet</h4>
+            <p>Manage Operating system lifecycle using RPM ostree technology and manage the current state of the device.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body active-bg-primary text-center px-4 py-5">
+            <i class="ti-search icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">Observability</h4>
+            <p>Get any information on the workloads running in the Edgedevice and export it to a central Prometheus instance with limited bandwidth, at the same time export all logs to a central device in case it’s needed.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body  text-center px-4 py-5">
+            <i class="ti-shield icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">Identity aware</h4>
+            <p>All devices have their own identity managed by X509 certificates and all communication with the Flotta Management API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body active-bg-primary text-center px-4 py-5">
+            <i class="ti-wand icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">Low footprint</h4>
+            <p>Flotta device is a lightweight daemon that is able to run on disconnected environments or not reliable networks, also managed to limit the control-plane bandwidth.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body  text-center px-4 py-5">
+            <i class="ti-upload icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">Data Upload</h4>
+            <p>Upload any data produced by your workload to a centralized location from all of your devices</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4 mb-md-0">
+        <div class="card hover-shadow shadow">
+          <div class="card-body active-bg-primary text-center px-4 py-5">
+            <i class="ti-plug icon mb-5 d-inline-block"></i>
+            <h4 class="mb-4">Ansible integration</h4>
+            <p>Execute Ansible playbooks on specific subset of Flotta devices and check their execution status</p>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+<!-- /features -->
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Blog</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/15/flotta-and-raspberry-pi.html">Using Flotta to manage Raspberry Pi running Fedora IoT</a>
+      </h4>
+      <p class="card-text">Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases....</p>
+      <a href="/flotta/2022/04/15/flotta-and-raspberry-pi.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/12/identity.html">How Flotta project proofs identity on the far edge</a>
+      </h4>
+      <p class="card-text">When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices...</p>
+      <a href="/flotta/2022/04/12/identity.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/11/writing-metrics-to-control-plane.html">Writing metrics to control plane</a>
+      </h4>
+      <p class="card-text">Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can...</p>
+      <a href="/flotta/2022/04/11/writing-metrics-to-control-plane.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

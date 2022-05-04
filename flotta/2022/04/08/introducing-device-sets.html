@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Introduction to edge device sets</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3 class="font-tertiary mb-5">Introduction to edge device sets</h3>
+        <p class="font-secondary">Published on Apr 08, 2022 by <span class="text-primary">Jakub Dżon</span
+            class="text-primary"> on <span>guide </span><span>flotta </span></p>
+        <div class="content">
+          
+
+          <p>If you are Flotta user who needs to manage large numbers of devices and doesn’t want to change configuration of each 
+of them separately, using Edge Device Sets is the perfect approach. With the use of Edge Device Sets you can change 
+configuration of any number of device by changing only one CR - <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> and this blog post will show you how.</p>
+
+<h3 id="edgedeviceset-configuration">EdgeDeviceSet configuration</h3>
+
+<p>User may define the same configuration elements using <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> as one would with <code class="language-plaintext highlighter-rouge">EdgeDevice</code> and configuration 
+defined in the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> would be applied to all edge devices using it. <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>  <strong>always</strong> takes 
+precedence over whatever is defined in the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> as a whole. It means that even if some element is not present in 
+the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>, usual default values are used for it, even if it is defined at the level of <code class="language-plaintext highlighter-rouge">EdgeDevice</code>.</p>
+
+<p>If corresponding <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> cannot be found, <code class="language-plaintext highlighter-rouge">EdgeDevice</code> configuration is used.</p>
+
+<p>Configuration that can be defined with <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<ul>
+  <li>heartbeat (<code class="language-plaintext highlighter-rouge">spec.heartbeat</code>);</li>
+  <li>metrics (<code class="language-plaintext highlighter-rouge">spec.metrics</code>);</li>
+  <li>data transfer (<code class="language-plaintext highlighter-rouge">spec.storage</code>);</li>
+  <li>log collection (<code class="language-plaintext highlighter-rouge">spec.logCollection</code>);</li>
+  <li>OS configuration (<code class="language-plaintext highlighter-rouge">spec.osInformation</code>).</li>
+</ul>
+
+<p>Full <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> CR might look as follows:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeDeviceSet</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">sample-set</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">heartbeat</span><span class="pi">:</span>
+    <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span> <span class="c1"># Interval in seconds with which the heartbeat messages should be sent from the agent </span>
+    <span class="na">hardwareProfile</span><span class="pi">:</span> <span class="c1"># Defines the scope of hardware information sent with the heartbeat messages; currently unused</span>
+      <span class="na">include</span><span class="pi">:</span> <span class="no">true</span> <span class="c1"># Specifies whether the hardware should be sent at all</span>
+      <span class="na">scope</span><span class="pi">:</span> <span class="s">full</span> <span class="c1"># Specifies how much information should be provided; "full" - everything; "delta" - only changes compared to the previous updated</span>
+  <span class="na">metrics</span><span class="pi">:</span>
+    <span class="na">retention</span><span class="pi">:</span>
+      <span class="na">maxMiB</span><span class="pi">:</span> <span class="m">200</span> <span class="c1"># Specifies how much disk space should be used for storing persisted metrics on the device</span>
+      <span class="na">maxHours</span><span class="pi">:</span> <span class="m">24</span> <span class="c1"># Specifies how long should persisted metrics be stored on the device disk</span>
+    <span class="na">system</span><span class="pi">:</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="m">60</span> <span class="c1"># Interval in seconds with which the device system metrics should be collected</span>
+      <span class="na">allowList</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">allow-list-map</span> <span class="c1"># Defines name of a ConfigMap containing list of system metrics that should be scraped</span>
+        <span class="na">disabled</span><span class="pi">:</span> <span class="no">true</span> <span class="c1">#  When set to true instructs the device to turn off system metrics collection</span>
+  <span class="na">osInformation</span><span class="pi">:</span>
+    <span class="na">automaticallyUpgrade</span><span class="pi">:</span> <span class="no">true</span> <span class="c1"># Flag defining whether OS upgrade should be performed automatically when the commitID changes</span>
+    <span class="na">commitID</span><span class="pi">:</span> <span class="s">0305686e69d673cb15ad459990fab4a3e4c5aba1</span> <span class="c1"># Commit ID of desired OS ostree version for the device</span>
+    <span class="na">hostedObjectsURL</span><span class="pi">:</span> <span class="s">http://images.project-flotta.io</span> <span class="c1"># URL of the hosted commits web server</span>
+  <span class="na">storage</span><span class="pi">:</span>
+    <span class="na">s3</span><span class="pi">:</span>
+      <span class="na">secretName</span><span class="pi">:</span> <span class="s">common-s3-secret</span> <span class="c1"># Name of the secret containing S3 API access credentials</span>
+      <span class="na">configMapName</span><span class="pi">:</span> <span class="s">common-s3-config</span> <span class="c1">#Name of a config map containing S3 API access configuration options</span>
+      <span class="na">createOBC</span><span class="pi">:</span> <span class="no">false</span> <span class="c1"># Flag defining whether the OBC should be automatically created for the device (if this feature is disabled for the operator)</span>
+  <span class="na">logCollection</span><span class="pi">:</span>
+    <span class="na">syslog</span><span class="pi">:</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span> <span class="c1"># Kind of a log collection system. Currently, only `syslog` is available</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">12</span> <span class="c1"># Size of a log sending buffer in kilobytes</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span> 
+        <span class="na">name</span><span class="pi">:</span> <span class="s">syslog-config-map</span> <span class="c1"># Name of a config map containing syslog connection configuration</span>
+</code></pre></div></div>
+
+<p>To make specific <code class="language-plaintext highlighter-rouge">EdgeDevice</code> use specific <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> configuration, user needs to add
+<code class="language-plaintext highlighter-rouge">flotta/member-of: &lt;edge device set name&gt;</code> label to the <code class="language-plaintext highlighter-rouge">EdgeDevice</code>.
+For example, if there is a <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> and <code class="language-plaintext highlighter-rouge">device-1</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code>, user needs to issue following
+command to build the relationship between them:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-1 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<h3 id="managing-multiple-devices-configuration">Managing multiple devices configuration</h3>
+<p>Let’s have a look how <code class="language-plaintext highlighter-rouge">EdgeDeviceSets</code> can be used in practice - let’s register three different edge devices 
+(<code class="language-plaintext highlighter-rouge">device-1</code>, <code class="language-plaintext highlighter-rouge">device-2</code>, <code class="language-plaintext highlighter-rouge">device-3</code>), create two edge device sets (<code class="language-plaintext highlighter-rouge">set-1</code> and <code class="language-plaintext highlighter-rouge">set-2</code>) and then assign devices 
+to chosen sets. To illustrate how the configuration defined in the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> influences device configuration, 
+two of the devices will have different initial configuration.</p>
+
+<h4 id="preparations">Preparations</h4>
+<p>Our starting point is three edge devices registered with our cluster:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$kubectl</span> get edgedevice
+NAME       AGE
+device-1   13s
+device-2   22s
+device-3   51s
+</code></pre></div></div>
+
+<p>Let’s configure <code class="language-plaintext highlighter-rouge">device-1</code> heartbeat interval to 15 seconds:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedevice device-1 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"heartbeat": {"periodSeconds": 15}}}'</span>
+</code></pre></div></div>
+
+<p>which will result in configuration file (<code class="language-plaintext highlighter-rouge">/etc/yggdrasil/device/device-config.json</code>) on <code class="language-plaintext highlighter-rouge">device-1</code> to look like this:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54429"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Be aware that <code class="language-plaintext highlighter-rouge">metrics</code> settings are set to default values, not explicitly set in the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR.</p>
+
+<p>Next let’s configure <code class="language-plaintext highlighter-rouge">device-2</code> to have system metrics collection disabled:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedevice device-2 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"metrics": {"system": {"disabled": true}}}}'</span>
+</code></pre></div></div>
+
+<p>which will cause the <code class="language-plaintext highlighter-rouge">device-2</code> configuration to be set to:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54651"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In this case <code class="language-plaintext highlighter-rouge">metrics.receiver</code> and <code class="language-plaintext highlighter-rouge">heartbeat</code> settings are set to default values.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">device-3</code> will remain unchanged and use default values:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54249"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-creation">EdgeDeviceSet creation</h4>
+<p>Let’s create two edge device sets, that will be later used by the devices above:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeviceSet
+metadata:
+  name: set-1
+spec:
+  heartbeat:
+    periodSeconds: 5
+  metrics:
+    system:
+      interval: 600
+  osInformation:
+    automaticallyUpgrade: true
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeviceSet
+metadata:
+  name: set-2
+spec:
+  heartbeat:
+    periodSeconds: 5
+  metrics:
+    system:
+      interval: 1200
+  osInformation:
+    automaticallyUpgrade: false
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-membership">EdgeDeviceSet membership</h4>
+<p>Creation of the sets doesn’t change the configuration of the existing edge devices yet. To make the devices use the 
+set-level configuration, the devices need to be labelled:</p>
+
+<p>Assignment of <code class="language-plaintext highlighter-rouge">device-1</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code> to <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-1 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<p>Assignment of <code class="language-plaintext highlighter-rouge">device-3</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code> to <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-3 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<p>After issuing the above commands, the device configuration of both <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> are set-driven and are 
+exactly the same:</p>
+
+<p><code class="language-plaintext highlighter-rouge">device-1</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+      </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55501"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">device-3</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+      </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55497"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Assigning <code class="language-plaintext highlighter-rouge">device-2</code> to <code class="language-plaintext highlighter-rouge">set-2</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-2 flotta/member-of<span class="o">=</span>set-2
+</code></pre></div></div>
+
+<p>results in following configuration being changed on the device to:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55941"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now increasing the heartbeat frequency of <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> to 10 minutes at one time is as easy as patching <code class="language-plaintext highlighter-rouge">set-1</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedeviceset set-1 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"heartbeat": {"periodSeconds": 600}}}'</span>
+</code></pre></div></div>
+
+<p>the device configuration files on both <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> will show the above change:</p>
+
+<p><code class="language-plaintext highlighter-rouge">device-1</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55507"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">device-3</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55505"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-removal">EdgeDeviceSet removal</h4>
+<p>As mentioned earlier, removal of an <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> will result in devices switching to <code class="language-plaintext highlighter-rouge">EdgeDevice</code>-level defined settings.</p>
+
+<p>Removal of the <code class="language-plaintext highlighter-rouge">set-2</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl delete edgedeviceset set-2
+</code></pre></div></div>
+
+<p>will cause <code class="language-plaintext highlighter-rouge">device-2</code> to use the configuration specified in its <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55948"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/15/flotta-and-raspberry-pi.html">Using Flotta to manage Raspberry Pi running Fedora IoT</a>
+      </h4>
+      <p class="card-text">Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases....</p>
+      <a href="/flotta/2022/04/15/flotta-and-raspberry-pi.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/12/identity.html">How Flotta project proofs identity on the far edge</a>
+      </h4>
+      <p class="card-text">When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices...</p>
+      <a href="/flotta/2022/04/12/identity.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/11/writing-metrics-to-control-plane.html">Writing metrics to control plane</a>
+      </h4>
+      <p class="card-text">Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can...</p>
+      <a href="/flotta/2022/04/11/writing-metrics-to-control-plane.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

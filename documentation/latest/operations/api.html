@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>API  reference</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Intro
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html">What is flotta</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/usecases.html">Use cases</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/vs.html">Flotta vs others</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Getting started
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/minikube.md">Minikube</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/kind.md">Kind</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/ocp.md">OCP</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Operations
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/requirements.md">System Requirements</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/configuration.html">Configuration</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/observability.html">Observability</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/data_upload.html">Data upload</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/troubleshooting.md">Troubleshooting</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/api.html">API reference</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  For developers
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/dev/guide.html">Development Guide</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+        </ul>
+        <p>Documentation version: latest</p>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+            <!-- Some cases we don't want to show the title -->
+            <h1 class="font-tertiary mb-5">API  reference</h1>
+          
+          
+
+          <link rel="stylesheet" type="text/css" href="/assets/swagger/swagger-ui.css" />
+<style> .swagger-ui .scheme-container, .swagger-ui .topbar { display: none !important; } </style>
+<div id="swagger-ui"></div>
+<script src="/assets/swagger/swagger-ui-bundle.js" charset="UTF-8"> </script>
+<script src="/assets/swagger/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+<script language="javascript">
+window.onload = function() {
+
+  window.ui = SwaggerUIBundle({
+    url: "https://raw.githubusercontent.com/project-flotta/flotta-operator/main/swagger.yaml",
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  });
+};
+</script>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

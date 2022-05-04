@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Deploying workloads with images from private repositories</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3 class="font-tertiary mb-5">Deploying workloads with images from private repositories</h3>
+        <p class="font-secondary">Published on Feb 07, 2022 by <span class="text-primary">Jakub Dżon</span
+            class="text-primary"> on <span>guide </span><span>flotta </span></p>
+        <div class="content">
+          
+
+          <p>Users can deploy their containerized workloads (applications built as <a href="https://developers.redhat.com/blog/2018/02/22/container-terminology-practical-introduction#h.dqlu6589ootw">container images</a>) to edge devices using Flotta and very often images they want to use are 
+not public and are available only for users or services having proper credentials.</p>
+
+<p>Flotta supports that use case and allows users to use private images in their <code class="language-plaintext highlighter-rouge">EdgeDeployments</code>; this post shows how to 
+make use of that support by walking you through all the required steps.</p>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">podman</code> <a href="https://podman.io/getting-started/installation">installed</a> (you can use <code class="language-plaintext highlighter-rouge">docker</code> instead)</li>
+  <li>Private image repository (<a href="http://quay.io">quay.io</a>, for example)</li>
+  <li>Image of the workload to deploy</li>
+  <li><code class="language-plaintext highlighter-rouge">EdgeDevice</code> <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md">running and registered</a> in the cluster, labelled with <code class="language-plaintext highlighter-rouge">dc=home</code></li>
+</ol>
+
+<h4 id="image-of-the-workload-to-deploy">Image of the workload to deploy</h4>
+
+<p>For the purpose of this walk-through we will use nginx server image (docker.io/nginx:1.14.2) as the one that would be put 
+in a private quay.io repository. You can, of course, use any private container image repository.</p>
+
+<ol>
+  <li>Login to quay.io:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman login quay.io
+</code></pre></div>    </div>
+    <p>You will be prompted for your username and password:</p>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>podman login quay.io                                                                                                     
+Username: xxxxxx
+Password: <span class="k">******</span>
+Login Succeeded!
+</code></pre></div>    </div>
+  </li>
+  <li>Pull <code class="language-plaintext highlighter-rouge">docker.io/nginx:1.14.2</code>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman pull docker.io/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+  <li>Tag <code class="language-plaintext highlighter-rouge">docker.io/nginx:1.14.2</code> with a private name
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman tag docker.io/nginx:1.14.2 quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+  <li>Push <code class="language-plaintext highlighter-rouge">nginx:1.14.2</code> to quay.io
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman push quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="deployment">Deployment</h3>
+
+<h4 id="sanity-check">Sanity check</h4>
+<p>Before we start using private repository feature of Flotta, let’s see what happens when you try to deploy private image in a simple <code class="language-plaintext highlighter-rouge">EdgeDeployment</code>:</p>
+<ol>
+  <li>Confirm that you have an <code class="language-plaintext highlighter-rouge">EdgeDevice</code> labelled with <code class="language-plaintext highlighter-rouge">dc=home</code>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+NAME                                          AGE
+fedora-54b9dd17-9971-11ec-bcee-7085c256610d   149m
+</code></pre></div>    </div>
+    <p>If it’s not, use following command to add the label:</p>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice &lt;your device CR name&gt; <span class="nv">dc</span><span class="o">=</span>home
+</code></pre></div>    </div>
+  </li>
+  <li>Create the <code class="language-plaintext highlighter-rouge">EdgeDeployment</code> that will be deployed to each <code class="language-plaintext highlighter-rouge">EdgeDevice</code> with <code class="language-plaintext highlighter-rouge">dc=home</code> label
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeployment
+metadata:
+  name: nginx-deployment
+spec:
+  type: pod
+  deviceSelector:
+ matchLabels:
+   dc: home
+  pod:
+ spec:
+   containers:
+     - name: nginx
+       image: quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+       ports:
+         - containerPort: 80
+           hostPort: 9090
+</span><span class="no">EOF
+</span></code></pre></div>    </div>
+    <p>You can read more about deploying workloads to edge devices in the <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/deploying-workloads.md">documentation</a>.</p>
+  </li>
+  <li>Confirm that <code class="language-plaintext highlighter-rouge">nginx-deployment</code> pod wouldn’t start on the edge device by checking deployment phase (not <code class="language-plaintext highlighter-rouge">Running</code>) and events reported for your <code class="language-plaintext highlighter-rouge">EdgeDevice</code> object:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl describe edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
+Namespace:    default
+Labels:       <span class="nv">dc</span><span class="o">=</span>home
+           device.cpu-architecture<span class="o">=</span>x86_64
+...
+Status:
+  Deployments:
+ Last Transition Time:  2022-03-07T10:35:53Z
+ Name:                  nginx-deployment
+ Phase:                 Created
+...
+Events:
+  Type     Reason  Age                  From                       Message
+  <span class="nt">----</span>     <span class="nt">------</span>  <span class="nt">----</span>                 <span class="nt">----</span>                       <span class="nt">-------</span>
+  Warning  Failed  4m10s <span class="o">(</span>x2 over 16m<span class="o">)</span>  edgedeployment-controller  error playing YAML file: initializing <span class="nb">source </span>docker://quay.io/&lt;your quay.io username&gt;/nginx:1.14.2: reading manifest 1.14.2 <span class="k">in </span>quay.io/&lt;your quay.io username&gt;/nginx: unauthorized: access to the requested resource is not authorized
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="creating-auth-file-secret">Creating auth file secret</h4>
+<p>To use private container image, user needs to obtain credentials for their image repository - contents of the auth file generated when one executes</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman login quay.io
+</code></pre></div></div>
+
+<p>Usually that would be <code class="language-plaintext highlighter-rouge">$HOME/.docker/config.json</code> or <code class="language-plaintext highlighter-rouge">${XDG_RUNTIME_DIR}/containers/auth.json</code> file.</p>
+
+<p>When you have the auth file, you need to create a kubernetes <a href="https://kubernetes.io/docs/concepts/configuration/secret">secret</a> containing it under <code class="language-plaintext highlighter-rouge">.dockerconfigjson</code> key:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic pull-secret <span class="se">\</span>
+  <span class="nt">--type</span><span class="o">=</span>kubernetes.io/dockerconfigjson <span class="se">\</span>
+  <span class="nt">--from-file</span><span class="o">=</span>.dockerconfigjson<span class="o">=</span><span class="k">${</span><span class="nv">XDG_RUNTIME_DIR</span><span class="k">}</span>/containers/auth.json
+</code></pre></div></div>
+
+<p>The created secret will look similar to the following one:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">pull-secret</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">.dockerconfigjson</span><span class="pi">:</span> <span class="s">ewoJImF1dGhzIjogewoJCSJxdWF5LmlvIjogewoJCQkiYXV0aCI6ICJabTl2SUdKaGNpQm1iMjhnWW1GeUNnPT0iCgkJfQoJfQp9Cg==</span> 
+<span class="na">type</span><span class="pi">:</span> <span class="s">kubernetes.io/dockerconfigjson</span>
+</code></pre></div></div>
+
+<h4 id="deploying-the-workload">Deploying the workload</h4>
+
+<p>To deploy workloads with a private image stored in the repository, you need to instruct Flotta operator to use the 
+secret with valid credentials for the repository hosting that image. You do that by referencing it in the EdgeDeployment 
+specification, under <code class="language-plaintext highlighter-rouge">imageRegistries</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeDeployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">nginx-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="s">...</span>
+  <span class="s">imageRegistries</span><span class="err">:</span>
+    <span class="na">secretRef</span><span class="pi">:</span>
+      <span class="na">name</span><span class="pi">:</span> <span class="s">pull-secret</span>
+  <span class="s">...</span>
+</code></pre></div></div>
+
+<p>After you update your <code class="language-plaintext highlighter-rouge">EdgeDeployment</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedeployment nginx-deployment <span class="nt">--type</span><span class="o">=</span>merge <span class="nt">-p</span> <span class="s1">'{"spec":{"imageRegistries":{"secretRef":{"name": "pull-secret"}}}}'</span> 
+</code></pre></div></div>
+
+<p>After the next heartbeat received from the device, you will see the phase of the deployment to be <code class="language-plaintext highlighter-rouge">Running</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl describe edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
+Namespace:    default
+Labels:       <span class="nv">dc</span><span class="o">=</span>home
+              device.cpu-architecture<span class="o">=</span>x86_64
+...
+Status:
+  Deployments:
+    Last Transition Time:  2022-03-07T08:37:12Z
+    Name:                  nginx-deployment
+    Phase:                 Running
+...
+</code></pre></div></div>
+
+<p>Congratulations! Now you have your private container image running on your edge device!</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/15/flotta-and-raspberry-pi.html">Using Flotta to manage Raspberry Pi running Fedora IoT</a>
+      </h4>
+      <p class="card-text">Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases....</p>
+      <a href="/flotta/2022/04/15/flotta-and-raspberry-pi.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/12/identity.html">How Flotta project proofs identity on the far edge</a>
+      </h4>
+      <p class="card-text">When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices...</p>
+      <a href="/flotta/2022/04/12/identity.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/11/writing-metrics-to-control-plane.html">Writing metrics to control plane</a>
+      </h4>
+      <p class="card-text">Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can...</p>
+      <a href="/flotta/2022/04/11/writing-metrics-to-control-plane.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

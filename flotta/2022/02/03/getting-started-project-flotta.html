@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Getting started with Flotta Operator Part 1</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3 class="font-tertiary mb-5">Getting started with Flotta Operator Part 1</h3>
+        <p class="font-secondary">Published on Feb 03, 2022 by <span class="text-primary">Ondra Machacek</span
+            class="text-primary"> on <span>guide </span><span>flotta </span></p>
+        <div class="content">
+          
+
+          <p>In this blog post series we would like to show you how to get started with the <code class="language-plaintext highlighter-rouge">flotta</code> project.
+The <code class="language-plaintext highlighter-rouge">flotta</code> operator is the Kubernetes operator used to manage the workloads of the edge devices via
+Kubernetes API. In order to manage the edgedevices and workloads you need to have Kubernetes or OpenShift up and
+running. Unfortunatelly the <code class="language-plaintext highlighter-rouge">flotta</code> operator is not yet published on the operator hub, so we have to deploy it manually from the github repo.</p>
+
+<p>Following are the prerequisites:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> - Kubernetes or OpenShift cluster running with kubectl configured
+ - Cert manager
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta</code> requires the <a href="https://cert-manager.io/docs/">cert manager</a> for TLS key management for webhooks, so if you don’t have it up and running on your cluster,
+you can execute following command to install it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+<span class="nv">$ </span>kubectl <span class="nb">wait</span> <span class="nt">--for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready pods <span class="nt">--all</span> <span class="nt">-n</span> cert-manager <span class="nt">--timeout</span><span class="o">=</span>60s
+</code></pre></div></div>
+
+<p>To deploy the latest version of the <code class="language-plaintext highlighter-rouge">flotta</code> operator execute following command:</p>
+
+<p>For OpenShift Container Platform (OCP):</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/ocp-flotta-operator.yaml
+</code></pre></div></div>
+<p>For kubernetes:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/k8s-flotta-operator.yaml
+</code></pre></div></div>
+
+<p>The only difference between the two files is in how <a href="https://cloud.redhat.com/blog/kubernetes-ingress-vs-openshift-route">OCP and Kubernetes</a> enable external access to services.</p>
+
+<p>Kubernetes uses the <code class="language-plaintext highlighter-rouge">Ingress</code> object to signal the Kubernetes platform that a certain service needs to be accessible to the outside world and it contains the configuration needed.
+OCP uses the <code class="language-plaintext highlighter-rouge">Route</code>, that is equivalent to <code class="language-plaintext highlighter-rouge">Ingress</code> with additional capabilities.</p>
+
+<p>By default the <code class="language-plaintext highlighter-rouge">flotta</code> operator is deployed in <code class="language-plaintext highlighter-rouge">flotta</code> namespace.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get all <span class="nt">-n</span> flotta
+NAME                                                     READY   STATUS    RESTARTS   AGE
+pod/flotta-operator-controller-manager-b7758f7b8-gww7d   2/2     Running   0          18h
+
+NAME                                                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT<span class="o">(</span>S<span class="o">)</span>             AGE
+service/flotta-operator-controller-manager                   ClusterIP   10.103.155.185   &lt;none&gt;        8888/TCP,8043/TCP   18h
+service/flotta-operator-controller-manager-metrics-service   ClusterIP   10.98.35.222     &lt;none&gt;        8443/TCP,8080/TCP   18h
+service/flotta-operator-webhook-service                      ClusterIP   10.96.199.135    &lt;none&gt;        443/TCP             18h
+
+NAME                                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/flotta-operator-controller-manager   1/1     1            1           18h
+
+NAME                                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1         1       18h
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta</code> operator deploys two <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions">CustomResourceDefinitions (CRDs)</a>:</p>
+<ol>
+  <li><a href="https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml">edgedeployments</a>, used to manage the workloads.</li>
+  <li><a href="https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml">edgedevices</a> used to manage the devices.</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get crd | <span class="nb">grep </span>project-flotta.io
+edgedeployments.management.project-flotta.io   2022-03-01T14:07:17Z
+edgedevices.management.project-flotta.io       2022-03-01T14:07:17Z
+</code></pre></div></div>
+
+<p>That’s it for the operator side, next time we will take a look how to provision a machine with edgedevice, where we will deploy a simple nginx workload.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/15/flotta-and-raspberry-pi.html">Using Flotta to manage Raspberry Pi running Fedora IoT</a>
+      </h4>
+      <p class="card-text">Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases....</p>
+      <a href="/flotta/2022/04/15/flotta-and-raspberry-pi.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/12/identity.html">How Flotta project proofs identity on the far edge</a>
+      </h4>
+      <p class="card-text">When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices...</p>
+      <a href="/flotta/2022/04/12/identity.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/11/writing-metrics-to-control-plane.html">Writing metrics to control plane</a>
+      </h4>
+      <p class="card-text">Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can...</p>
+      <a href="/flotta/2022/04/11/writing-metrics-to-control-plane.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

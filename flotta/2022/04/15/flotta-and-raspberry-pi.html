@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Using Flotta to manage Raspberry Pi running Fedora IoT</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h3 class="font-tertiary mb-5">Using Flotta to manage Raspberry Pi running Fedora IoT</h3>
+        <p class="font-secondary">Published on Apr 15, 2022 by <span class="text-primary">Jakub Dżon</span
+            class="text-primary"> on <span>guide </span><span>raspberry pi </span><span>fedora </span><span>flotta </span></p>
+        <div class="content">
+          
+
+          <p>Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, 
+sensors deployment, vehicle deployment or many other cases.</p>
+
+<p>Let’s learn how Flotta can be used to manage it by following steps described in this article.</p>
+
+<h1 id="fedora-iot-on-raspberry-pi-4-installation">Fedora IoT on Raspberry Pi 4 installation</h1>
+
+<ol>
+  <li>Download <a href="https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz">Fedora IoT 35 Raw Image</a></li>
+  <li>Plug your SD card to your computer;  in my case it will be available as <code class="language-plaintext highlighter-rouge">/dev/sdb</code> device:
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>lsblk
+ NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+ sda                                             8:0    1     0B  0 disk  
+ sdb                                             8:16   1  14.5G  0 disk  
+ sdc                                             8:32   1     0B  0 disk  
+ sdd                                             8:48   1     0B  0 disk  
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Make sure that you have <code class="language-plaintext highlighter-rouge">arm-image-installer</code> installed in your system.</p>
+
+    <p>In Fedora:</p>
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nb">install </span>arm-image-installer
+</code></pre></div>    </div>
+  </li>
+  <li>Use <code class="language-plaintext highlighter-rouge">arm-image-installer</code> tool to burn downloaded Fedora image to the SD card:
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>arm-image-installer <span class="nt">--image</span><span class="o">=</span>Fedora-IoT-35-20220101.0.aarch64.raw.xz <span class="nt">--target</span><span class="o">=</span>rpi4 <span class="nt">--media</span><span class="o">=</span>/dev/sdb <span class="nt">--addkey</span><span class="o">=</span>/home/jdzon/.ssh/id_rsa.pub <span class="nt">--norootpass</span>
+</code></pre></div>    </div>
+    <p>Options used:</p>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">--image</code> specifies which image file needs to be used for card preparation;</li>
+      <li><code class="language-plaintext highlighter-rouge">--target</code> specifies that the card is prepared for Raspberry Pi 4;</li>
+      <li><code class="language-plaintext highlighter-rouge">--media</code> specifies path to SD card device - will vary from system to system;</li>
+      <li><code class="language-plaintext highlighter-rouge">--addkey</code> will install given public key in the target system;</li>
+      <li><code class="language-plaintext highlighter-rouge">--norootpass</code> will allow root to login to the device without password.</li>
+    </ul>
+
+    <p><img src="/assets/images/rpi4_burn.png" alt="Burning SD Card" />
+<img src="/assets/images/rpi4_card-ready.png" alt="Burnt SD Card" /></p>
+  </li>
+  <li>Plug freshly-prepared card into your Raspberry Pi and boot it.</li>
+</ol>
+
+<h1 id="flotta-agent-installation">Flotta Agent installation</h1>
+
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+  <li>
+    <p>Raspberry Pi running Fedora 35 IoT;</p>
+
+    <p><img src="/assets/images/rpi4.jpg" alt="Raspberry Pi 4" />
+<img src="/assets/images/rpi4_up.jpg" alt="Booted RPI4" /></p>
+  </li>
+  <li>
+    <p>Flotta Operator installed in a Kuberenetes Cluster - follow <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md#operator">operator installation instructions</a>.</p>
+  </li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+<p>At the begining there are no edge devices registered with our cluster:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice
+No resources found <span class="k">in </span>default namespace.
+</code></pre></div></div>
+
+<p>Brand new Raspberry Pi does not have Flotta agent configured (in this case, the service is called yggdrasild):</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl status yggdrasild
+Unit yggdrasild.service could not be found.
+</code></pre></div></div>
+
+<p>On the machine with <code class="language-plaintext highlighter-rouge">$KUBECONFIG</code> pointing to our cluster with Flotta Operator installed execute following command in the 
+<a href="https://github.com/project-flotta/flotta-operator">flotta-operator repository</a> to create dedicated agent bootstrap script:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>make agent-install-scripts
+</code></pre></div></div>
+<p>As a result <code class="language-plaintext highlighter-rouge">hack/install-agent-rpm-ostree.sh</code> script is generated, and it needs to be transferred to our Raspberry Pi device.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>sftp root@10.220.200.110                                                                                                                                                1 ↵ jdzon@fedora
+Connected to 10.220.200.110.
+sftp&gt; put hack/install-agent-rpm-ostree.sh
+Uploading hack/install-agent-rpm-ostree.sh to /var/roothome/install-agent-rpm-ostree.sh
+install-agent-rpm.sh
+<span class="nv">$ </span>                          
+</code></pre></div></div>
+
+<p>On the computer with $KUBECONFIG pointing to our cluster, let’s forward required port to make HTTPS API public:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl port-forward service/flotta-operator-controller-manager <span class="nt">-n</span> flotta 8043 <span class="nt">--address</span> 0.0.0.0
+Forwarding from 0.0.0.0:8043 -&gt; 8043
+</code></pre></div></div>
+
+<p>IP address of the machine exposing the API is <code class="language-plaintext highlighter-rouge">10.220.200.106</code>.</p>
+
+<p>On the device, let’s execute the uploaded script, providing IP address of machine making Flotta Operator HTTP API public.</p>
+
+<p>At the end of its execution, the script will restart the Raspberry Pi device; it may take a while for the device to
+be available again.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./install-agent-rpm-ostree.sh <span class="nt">-i</span> 10.220.200.106
+</code></pre></div></div>
+
+<p>Let’s monitor <code class="language-plaintext highlighter-rouge">EdgeDevice</code> object in our cluster to see when the device becomes available:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice
+NAME                               AGE
+171303c8224e4b27a0f4dbb4a351e397   5s
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">yggdrasild</code> service is running on the device:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl is-active yggdrasild
+active
+</code></pre></div></div>
+
+<h1 id="deploying-workloads-to-raspberry-pi-with-flotta">Deploying workloads to Raspberry Pi with Flotta</h1>
+<p>Let’s make some use of our Flotta-configured device - let’s deploy an HTTP server there - we will use Nginx for arm64 
+container image in our <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>.</p>
+
+<p>To pick device to run our workload, we need to specify labels the device must have to run our Nginx server. Because we 
+use arm64 version of Nginx, let’s use a label that shows that; the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR already has <code class="language-plaintext highlighter-rouge">device.cpu-architecture</code> 
+label assigned thanks to Flotta agent hardware discovery:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.metadata.labels}"</span>
+<span class="o">{</span><span class="s2">"device.cpu-architecture"</span>:<span class="s2">"aarch64"</span>,<span class="s2">"device.cpu-model"</span>:<span class="s2">"cortex-a72"</span>,<span class="s2">"device.hostname"</span>:<span class="s2">"fedora"</span>,<span class="s2">"device.system-manufacturer"</span>:<span class="s2">"unknown"</span>,<span class="s2">"device.system-product"</span>:<span class="s2">"unknownproduct"</span>,<span class="s2">"device.system-serial"</span>:<span class="s2">"10000000935120b5"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>To be more picky about the devices we want to use, let’s create custom <code class="language-plaintext highlighter-rouge">profile=http</code> label to show that the device is an HTTP server. Let’s add it:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nv">profile</span><span class="o">=</span>http
+</code></pre></div></div>
+
+<p>After all that preparation, we can create our Nginx arm64 <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeWorkload
+metadata:
+  name: http-nginx
+spec:
+  deviceSelector:
+    matchLabels:
+      profile: http
+      device.cpu-architecture: aarch64
+  type: pod
+  pod:
+    spec:
+      containers:
+        - name: nginx
+          image: quay.io/jdzon/nginx-rpi:latest
+          ports:
+            - containerPort: 80
+              hostPort: 9090
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>and monitor for the workload to be running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>
+</code></pre></div></div>
+
+<p>At first it will be just:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"http-nginx"</span><span class="p">,</span><span class="nl">"phase"</span><span class="p">:</span><span class="s2">"Deploying"</span><span class="p">}]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>but after a while it would show that our nginx server is running:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span><span class="nl">"lastTransitionTime"</span><span class="p">:</span><span class="s2">"2022-04-15T13:38:37Z"</span><span class="p">,</span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"http-nginx"</span><span class="p">,</span><span class="nl">"phase"</span><span class="p">:</span><span class="s2">"Running"</span><span class="p">}]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The device should show our nginx pod running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>podman pod ps
+POD ID        NAME        STATUS      CREATED        INFRA ID      <span class="c"># OF CONTAINERS</span>
+5837e232f808  http-nginx  Running     2 minutes ago  69c7dc07a3f3  2
+
+</code></pre></div></div>
+
+<p>The device should have our Nginx server available under port <code class="language-plaintext highlighter-rouge">9090</code> - let’s check if it’s working:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl 10.220.200.110:9090
+&lt;<span class="o">!</span>DOCTYPE html&gt;
+&lt;html&gt;
+        &lt;<span class="nb">head</span><span class="o">&gt;</span>
+                &lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+html <span class="o">{</span> color-scheme: light dark<span class="p">;</span> <span class="o">}</span>
+body <span class="o">{</span> width: 35em<span class="p">;</span> margin: 0 auto<span class="p">;</span>
+        font-family: Tahoma, Verdana, Arial, sans-serif<span class="p">;</span> <span class="o">}</span>
+&lt;/style&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+                &lt;h1&gt;Welcome to Flotta on Raspberry Pi!&lt;/h1&gt;
+                &lt;p&gt;If you see this page, the nginx web server is successfully installed and
+                serving.&lt;/p&gt;
+        &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre></div></div>
+
+<p><img src="/assets/images/rpi4-nginx.png" alt="Nginx-served website" /></p>
+
+<p>Having read the above description you should be well-equipped to use Flotta to run your aarch64 workloads on your own 
+Raspberry Pi ran under Fedora IoT supervision.</p>
+
+<p>Thank you for reading!</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/15/flotta-and-raspberry-pi.html">Using Flotta to manage Raspberry Pi running Fedora IoT</a>
+      </h4>
+      <p class="card-text">Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases....</p>
+      <a href="/flotta/2022/04/15/flotta-and-raspberry-pi.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/12/identity.html">How Flotta project proofs identity on the far edge</a>
+      </h4>
+      <p class="card-text">When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices...</p>
+      <a href="/flotta/2022/04/12/identity.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/04/11/writing-metrics-to-control-plane.html">Writing metrics to control plane</a>
+      </h4>
+      <p class="card-text">Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can...</p>
+      <a href="/flotta/2022/04/11/writing-metrics-to-control-plane.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>

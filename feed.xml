@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://project-flotta.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://project-flotta.github.io/" rel="alternate" type="text/html" /><updated>2022-05-04T10:31:05+00:00</updated><id>https://project-flotta.github.io/feed.xml</id><title type="html">Flotta</title><subtitle>Flotta edge device management.</subtitle><entry><title type="html">Using Flotta to manage Raspberry Pi running Fedora IoT</title><link href="https://project-flotta.github.io/flotta/2022/04/15/flotta-and-raspberry-pi.html" rel="alternate" type="text/html" title="Using Flotta to manage Raspberry Pi running Fedora IoT" /><published>2022-04-15T11:00:00+00:00</published><updated>2022-04-15T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/04/15/flotta-and-raspberry-pi</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/04/15/flotta-and-raspberry-pi.html"><![CDATA[<p>Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, 
+sensors deployment, vehicle deployment or many other cases.</p>
+
+<p>Let’s learn how Flotta can be used to manage it by following steps described in this article.</p>
+
+<h1 id="fedora-iot-on-raspberry-pi-4-installation">Fedora IoT on Raspberry Pi 4 installation</h1>
+
+<ol>
+  <li>Download <a href="https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz">Fedora IoT 35 Raw Image</a></li>
+  <li>Plug your SD card to your computer;  in my case it will be available as <code class="language-plaintext highlighter-rouge">/dev/sdb</code> device:
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>lsblk
+ NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+ sda                                             8:0    1     0B  0 disk  
+ sdb                                             8:16   1  14.5G  0 disk  
+ sdc                                             8:32   1     0B  0 disk  
+ sdd                                             8:48   1     0B  0 disk  
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Make sure that you have <code class="language-plaintext highlighter-rouge">arm-image-installer</code> installed in your system.</p>
+
+    <p>In Fedora:</p>
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nb">install </span>arm-image-installer
+</code></pre></div>    </div>
+  </li>
+  <li>Use <code class="language-plaintext highlighter-rouge">arm-image-installer</code> tool to burn downloaded Fedora image to the SD card:
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>arm-image-installer <span class="nt">--image</span><span class="o">=</span>Fedora-IoT-35-20220101.0.aarch64.raw.xz <span class="nt">--target</span><span class="o">=</span>rpi4 <span class="nt">--media</span><span class="o">=</span>/dev/sdb <span class="nt">--addkey</span><span class="o">=</span>/home/jdzon/.ssh/id_rsa.pub <span class="nt">--norootpass</span>
+</code></pre></div>    </div>
+    <p>Options used:</p>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">--image</code> specifies which image file needs to be used for card preparation;</li>
+      <li><code class="language-plaintext highlighter-rouge">--target</code> specifies that the card is prepared for Raspberry Pi 4;</li>
+      <li><code class="language-plaintext highlighter-rouge">--media</code> specifies path to SD card device - will vary from system to system;</li>
+      <li><code class="language-plaintext highlighter-rouge">--addkey</code> will install given public key in the target system;</li>
+      <li><code class="language-plaintext highlighter-rouge">--norootpass</code> will allow root to login to the device without password.</li>
+    </ul>
+
+    <p><img src="/assets/images/rpi4_burn.png" alt="Burning SD Card" />
+<img src="/assets/images/rpi4_card-ready.png" alt="Burnt SD Card" /></p>
+  </li>
+  <li>Plug freshly-prepared card into your Raspberry Pi and boot it.</li>
+</ol>
+
+<h1 id="flotta-agent-installation">Flotta Agent installation</h1>
+
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+  <li>
+    <p>Raspberry Pi running Fedora 35 IoT;</p>
+
+    <p><img src="/assets/images/rpi4.jpg" alt="Raspberry Pi 4" />
+<img src="/assets/images/rpi4_up.jpg" alt="Booted RPI4" /></p>
+  </li>
+  <li>
+    <p>Flotta Operator installed in a Kuberenetes Cluster - follow <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md#operator">operator installation instructions</a>.</p>
+  </li>
+</ul>
+
+<h2 id="installation">Installation</h2>
+<p>At the begining there are no edge devices registered with our cluster:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice
+No resources found <span class="k">in </span>default namespace.
+</code></pre></div></div>
+
+<p>Brand new Raspberry Pi does not have Flotta agent configured (in this case, the service is called yggdrasild):</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl status yggdrasild
+Unit yggdrasild.service could not be found.
+</code></pre></div></div>
+
+<p>On the machine with <code class="language-plaintext highlighter-rouge">$KUBECONFIG</code> pointing to our cluster with Flotta Operator installed execute following command in the 
+<a href="https://github.com/project-flotta/flotta-operator">flotta-operator repository</a> to create dedicated agent bootstrap script:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>make agent-install-scripts
+</code></pre></div></div>
+<p>As a result <code class="language-plaintext highlighter-rouge">hack/install-agent-rpm-ostree.sh</code> script is generated, and it needs to be transferred to our Raspberry Pi device.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>sftp root@10.220.200.110                                                                                                                                                1 ↵ jdzon@fedora
+Connected to 10.220.200.110.
+sftp&gt; put hack/install-agent-rpm-ostree.sh
+Uploading hack/install-agent-rpm-ostree.sh to /var/roothome/install-agent-rpm-ostree.sh
+install-agent-rpm.sh
+<span class="nv">$ </span>                          
+</code></pre></div></div>
+
+<p>On the computer with $KUBECONFIG pointing to our cluster, let’s forward required port to make HTTPS API public:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl port-forward service/flotta-operator-controller-manager <span class="nt">-n</span> flotta 8043 <span class="nt">--address</span> 0.0.0.0
+Forwarding from 0.0.0.0:8043 -&gt; 8043
+</code></pre></div></div>
+
+<p>IP address of the machine exposing the API is <code class="language-plaintext highlighter-rouge">10.220.200.106</code>.</p>
+
+<p>On the device, let’s execute the uploaded script, providing IP address of machine making Flotta Operator HTTP API public.</p>
+
+<p>At the end of its execution, the script will restart the Raspberry Pi device; it may take a while for the device to
+be available again.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./install-agent-rpm-ostree.sh <span class="nt">-i</span> 10.220.200.106
+</code></pre></div></div>
+
+<p>Let’s monitor <code class="language-plaintext highlighter-rouge">EdgeDevice</code> object in our cluster to see when the device becomes available:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice
+NAME                               AGE
+171303c8224e4b27a0f4dbb4a351e397   5s
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">yggdrasild</code> service is running on the device:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl is-active yggdrasild
+active
+</code></pre></div></div>
+
+<h1 id="deploying-workloads-to-raspberry-pi-with-flotta">Deploying workloads to Raspberry Pi with Flotta</h1>
+<p>Let’s make some use of our Flotta-configured device - let’s deploy an HTTP server there - we will use Nginx for arm64 
+container image in our <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>.</p>
+
+<p>To pick device to run our workload, we need to specify labels the device must have to run our Nginx server. Because we 
+use arm64 version of Nginx, let’s use a label that shows that; the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR already has <code class="language-plaintext highlighter-rouge">device.cpu-architecture</code> 
+label assigned thanks to Flotta agent hardware discovery:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.metadata.labels}"</span>
+<span class="o">{</span><span class="s2">"device.cpu-architecture"</span>:<span class="s2">"aarch64"</span>,<span class="s2">"device.cpu-model"</span>:<span class="s2">"cortex-a72"</span>,<span class="s2">"device.hostname"</span>:<span class="s2">"fedora"</span>,<span class="s2">"device.system-manufacturer"</span>:<span class="s2">"unknown"</span>,<span class="s2">"device.system-product"</span>:<span class="s2">"unknownproduct"</span>,<span class="s2">"device.system-serial"</span>:<span class="s2">"10000000935120b5"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>To be more picky about the devices we want to use, let’s create custom <code class="language-plaintext highlighter-rouge">profile=http</code> label to show that the device is an HTTP server. Let’s add it:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nv">profile</span><span class="o">=</span>http
+</code></pre></div></div>
+
+<p>After all that preparation, we can create our Nginx arm64 <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeWorkload
+metadata:
+  name: http-nginx
+spec:
+  deviceSelector:
+    matchLabels:
+      profile: http
+      device.cpu-architecture: aarch64
+  type: pod
+  pod:
+    spec:
+      containers:
+        - name: nginx
+          image: quay.io/jdzon/nginx-rpi:latest
+          ports:
+            - containerPort: 80
+              hostPort: 9090
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>and monitor for the workload to be running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice 171303c8224e4b27a0f4dbb4a351e397 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>
+</code></pre></div></div>
+
+<p>At first it will be just:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"http-nginx"</span><span class="p">,</span><span class="nl">"phase"</span><span class="p">:</span><span class="s2">"Deploying"</span><span class="p">}]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>but after a while it would show that our nginx server is running:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span><span class="nl">"lastTransitionTime"</span><span class="p">:</span><span class="s2">"2022-04-15T13:38:37Z"</span><span class="p">,</span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"http-nginx"</span><span class="p">,</span><span class="nl">"phase"</span><span class="p">:</span><span class="s2">"Running"</span><span class="p">}]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The device should show our nginx pod running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>podman pod ps
+POD ID        NAME        STATUS      CREATED        INFRA ID      <span class="c"># OF CONTAINERS</span>
+5837e232f808  http-nginx  Running     2 minutes ago  69c7dc07a3f3  2
+
+</code></pre></div></div>
+
+<p>The device should have our Nginx server available under port <code class="language-plaintext highlighter-rouge">9090</code> - let’s check if it’s working:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl 10.220.200.110:9090
+&lt;<span class="o">!</span>DOCTYPE html&gt;
+&lt;html&gt;
+        &lt;<span class="nb">head</span><span class="o">&gt;</span>
+                &lt;title&gt;Welcome to nginx!&lt;/title&gt;
+&lt;style&gt;
+html <span class="o">{</span> color-scheme: light dark<span class="p">;</span> <span class="o">}</span>
+body <span class="o">{</span> width: 35em<span class="p">;</span> margin: 0 auto<span class="p">;</span>
+        font-family: Tahoma, Verdana, Arial, sans-serif<span class="p">;</span> <span class="o">}</span>
+&lt;/style&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+                &lt;h1&gt;Welcome to Flotta on Raspberry Pi!&lt;/h1&gt;
+                &lt;p&gt;If you see this page, the nginx web server is successfully installed and
+                serving.&lt;/p&gt;
+        &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre></div></div>
+
+<p><img src="/assets/images/rpi4-nginx.png" alt="Nginx-served website" /></p>
+
+<p>Having read the above description you should be well-equipped to use Flotta to run your aarch64 workloads on your own 
+Raspberry Pi ran under Fedora IoT supervision.</p>
+
+<p>Thank you for reading!</p>]]></content><author><name>Jakub Dżon</name></author><category term="flotta" /><category term="guide" /><category term="raspberry pi" /><category term="fedora" /><category term="flotta" /><summary type="html"><![CDATA[Raspberry Pi is a very popular platform for running as an edge device in many, very different use cases like home automation, sensors deployment, vehicle deployment or many other cases.]]></summary></entry><entry><title type="html">How Flotta project proofs identity on the far edge</title><link href="https://project-flotta.github.io/flotta/2022/04/12/identity.html" rel="alternate" type="text/html" title="How Flotta project proofs identity on the far edge" /><published>2022-04-12T11:00:00+00:00</published><updated>2022-04-12T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/04/12/identity</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/04/12/identity.html"><![CDATA[<p>When speaking about the edge the most problematic thing is the security. At the
+edge, you cannot assume there is security at all, so we assume that all your
+devices are compromised by default and we adopt a <a href="https://cloud.google.com/beyondcorp">Zero
+trust</a> approach.</p>
+
+<p>Edge Authentication is getting traction, and at the moment, there are multiple
+projects out there that take care of it. The most promising one to us is
+<a href="https://fidoalliance.org/specs/FDO/FIDO-Device-Onboard-RD-v1.0-20201202.html">FDO</a>,
+protocol-driven Device Onboarding project by <a href="https://fidoalliance.org/">FIDO
+alliance</a>.That protocol is to onboard new devices to
+the fleet of devices, but making sure that it’s taking place at manufacturer
+level with the approval of the edge-administrator. To get more information, we
+highly recommend this
+<a href="https://www.youtube.com/watch?v=fAGCkenbKCA&amp;ab_channel=DevConf">presentation</a>.</p>
+
+<p>Flotta will use FDO for initialization, but regarding edge security there are
+more steps than that, like TLS Certificate renewals, certificates expiration
+and much more, for that Flotta has some flows in place.</p>
+
+<h2 id="device-onboarding">Device Onboarding</h2>
+
+<p>Right now, Flotta uses <a href="https://en.wikipedia.org/wiki/Mutual_authentication">Mutual
+TLS</a> certificates to
+onboard new devices to the Operator. That certificate will be injected into the
+ISO creation using kickstart files where Manufacturer or Edge administrator can
+initialise the device. That ISO is managed by the Flotta OS lifecycle.</p>
+
+<p>When the device boots on the final destination, it uses that Register
+certificate to register (the only action that can do with that certificate);
+such API call also contains a Certificate signed Request, needed to get the
+device public key to be able to sign it and returned to the device. That
+certificate can only be obtained if the Edge-administrator approves the device
+to register first.</p>
+
+<p>To avoid security issues with that certificates, Flotta will implement TPM keys
+for that certificates, even if someone has access to the certificate, it cannot
+be used outside of the device. At the same time, in the API a new security
+check will be added so that only devices with a Key TPM based can be registered.</p>
+
+<h2 id="authentication">Authentication</h2>
+
+<p>When designing the authentication system in Flotta we knew that there are some
+special cases: Edge network is not reliable, devices can be turned off for a
+long period of time, the API Server should scale horizontally to be able to
+server to millions of devices. Because of all of this, we implement an MTLS
+certificate where API should only get the CA certificate and validate that the
+client certificate is correctly signed.</p>
+
+<p>Those client certificates have a short expiration because Flotta also
+implements a way to renew those certificates, to make sure that a edge device
+is able to run a workload if a certificate is expired.</p>
+
+<h2 id="authorization">Authorization</h2>
+
+<p>To continue our work at scale, where Flotta wants to achieve millions of
+devices, the authorization is made on client certificate. Because the
+Certificate signing is made by Flotta, so the API is scaling horizontally and
+validation can happen on any API server.</p>
+
+<p>All information needed to make any authorization is provided by metadata stored
+in the certificate subject - there is no need to reach to any RBAC server.</p>
+
+<p>To try the device onboarding connection, you can follow the getting started
+guide that is available
+<a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md">here</a>.</p>]]></content><author><name>Eloy Coto &lt;eloy.coto@acalustra.com&gt;</name></author><category term="flotta" /><category term="authentication" /><category term="flotta" /><summary type="html"><![CDATA[When speaking about the edge the most problematic thing is the security. At the edge, you cannot assume there is security at all, so we assume that all your devices are compromised by default and we adopt a Zero trust approach.]]></summary></entry><entry><title type="html">Writing metrics to control plane</title><link href="https://project-flotta.github.io/flotta/2022/04/11/writing-metrics-to-control-plane.html" rel="alternate" type="text/html" title="Writing metrics to control plane" /><published>2022-04-11T11:00:00+00:00</published><updated>2022-04-11T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/04/11/writing-metrics-to-control-plane</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/04/11/writing-metrics-to-control-plane.html"><![CDATA[<p>Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can we view the metrics in control plane? These questions are what this blog post is about.</p>
+
+<h3 id="device-metrics---quick-overview">Device metrics - quick overview</h3>
+
+<p>Configuring a device to collect metrics is covered by the <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/device-metrics.md">device-metrics user guide</a>. Flotta agent in the device scrapes system and workloads metrics and writes to a local TSDB folder. For system metrics we use <code class="language-plaintext highlighter-rouge">node_exporter</code>. Thanks to that you can see metrics such as <code class="language-plaintext highlighter-rouge">node_memory_MemAvailable_bytes</code>. The local TSDB enforces a retention policy.</p>
+
+<h3 id="prometheus-remote-write-api">Prometheus Remote Write API</h3>
+
+<p><a href="https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write">Prometheus Remote Write API</a> is an HTTP API that allows a client to write metrics to a remote server (a.k.a. receiver). The <a href="https://prometheus.io/docs/operating/integrations/#remote-endpoints-and-storage">Prometheus Integrations page</a> lists various servers that implement the server side of Remote Write API. Flotta project includes an example for using <a href="https://thanos.io/tip/components/receive.md/#receiver">Thanos</a> as a receiver.</p>
+
+<h3 id="flotta-projects-solution">Flotta project’s solution</h3>
+
+<p>Flotta’s solution is to use the Prometheus Remote Write API for writing to a server in the control plane. Flotta agent, periodically reads from the local TSDB (5 minutes) and writes to a receiver in the control plane. The client in the agent is a reuse of <a href="https://github.com/prometheus/prometheus/tree/main/storage/remote">Prometheus Write Client</a>.
+Configuring the agent is explained <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/device-metrics.md">here</a>. The most important part is the URL for accessing the receiver from the device. It can be either HTTP or HTTPS.
+The configuration allows you to adjust the request size sent to the server and the timeout of the connection to the server.</p>
+
+<p>What happens if device can not connect to receiver for a few days? The agent saves the timestamp of the last written metric. It will start writing from that point in time until all the metrics in the TSDB are written. Metrics that were deleted by TSDB retention before having a chance to send them are lost.</p>
+
+<p>What happens to sent metrics? Saving the timestamp of last written metric avoids writing same metrics again. But who deletes these metrics? TSDB retention.</p>
+
+<h3 id="example-of-thanos-receiver">Example of Thanos receiver</h3>
+
+<p>The <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/device-metrics.md">Device Metrics user guide</a> includes an example of a Thanos deployment in K8S. The example includes two deployments one with TLS and one without. The deployment has two servers (containers). One is the receiver. Another is the querier. Querier is used for reading the metrics that the receiver saved. Thanos supports PromQL so you can use it in Grafana. The querier has two address configurations. One, is the connection to the receiver. Another, is the HTTP address to listen for queries. The receiver also has two address configurations. One, is the server address for accepting connections from querier. Another, is the HTTP address that listens from remote writes.</p>]]></content><author><name>Yaron Dayagi</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><summary type="html"><![CDATA[Flotta edge devices collect metrics from device’s system and workloads. These metrics are stored locally in the device. How do we get the metrics to the control plane? How can we view the metrics in control plane? These questions are what this blog post is about.]]></summary></entry><entry><title type="html">Log Collection on Flotta devices</title><link href="https://project-flotta.github.io/flotta/2022/04/10/using-log-collection.html" rel="alternate" type="text/html" title="Log Collection on Flotta devices" /><published>2022-04-10T11:00:00+00:00</published><updated>2022-04-10T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/04/10/using-log-collection</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/04/10/using-log-collection.html"><![CDATA[<p>When running thousands of devices on the far edge, log collection retrieval may
+differ from one site to another, as also the limit of data that can be sent
+from the device or stored in the device.</p>
+
+<p>At the same time, workload logs can vary in terms of importance, so the backup
+workload logs maybe need to be always pushed, and maybe another workload with
+less importance can lose logs on network connectivity issues. At the same time,
+maybe you don’t want workload that manages any personal information to send
+information outside the country.</p>
+
+<p>For that, Flotta introduces log collection targets, so each device - or
+deviceSets- will have a set of custom logs servers that one workload can use to
+send the logs to.</p>
+
+<p><img src="/assets/images/DeviceLogsConfig.png" alt="Device Logs diagram" /></p>
+
+<p>The main use case is to be able to define servers in edge devices and these
+servers to be consumed by the workloads; this way user roles are very well
+defined - edge-administrators define the servers and developers use the given
+values.</p>
+
+<p><em>A sample workflow for a retail store can be:</em></p>
+
+<p><strong>Edge Device Administrator:</strong> defines the device security, heartbeat and
+general options based on the device or deviceSet. In this case, will define two
+kinds of logs servers, LogSecure which always pushes the logs to the server,
+with big storing buffers. At the same time, there is a logGeneral, that is the
+server that may lose logs on network downtime, or maybe using different
+transports.</p>
+
+<p><strong>Edge developer:</strong> In this case, the developer knows that for running the
+workload in all stores, there are always two kinds of log servers that can be
+used, because Edge Administration shared all the details about buffer, quotas
+and destination.</p>
+
+<p>To collect logs, a subprocess reads the workloads stdout and pushes it to a
+buffer, even if the device is disconnected from network for a while, it’ll push
+the right timestamp to the server, due to the buffer being aware of the log was
+retrieved. When the buffer is full, some logs will be dropped to avoid filling
+the RAM on the device.</p>
+
+<p>Regarding transports, at the moment, the Flotta device agent only supports raw
+Syslog transport, but in the following releases, new transports will be added,
+like Loki, Kafka, Elastic and MQTT.</p>
+
+<h2 id="example-setup">Example setup</h2>
+
+<p>It’s quite easy to setup an edge device; in case of Syslog, the following
+config-maps should be in place:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dc1-syslog
+  namespace: default
+data:
+  Address: dc1.syslog.project-flotta.io:601
+  Protocol: tcp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secure-syslog
+  namespace: default
+data:
+  Address: secure.dc1.syslog.project-flotta.io:601
+  Protocol: tcp
+</code></pre></div></div>
+
+<p>Per each device, the following <code class="language-plaintext highlighter-rouge">logCollection</code> attribute should be added:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>—--
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: e5f44cc8ddfb408a9b85f54c0c3efa02
+  namespace: default
+spec:
+  requestTime: "2022-03-23T11:40:59Z"
+  logCollection:
+   dc1-syslog:
+     bufferSize: 10
+     kind: syslog
+     syslogConfig:
+       name: dc1-syslog
+   secure-syslog:
+     bufferSize: 100
+     kind: syslog
+     syslogConfig:
+       name: secure-syslog
+</code></pre></div></div>
+
+<p>So, dc1-syslog will only store 10Mb of logs in the buffer, meanwhile dc1-syslog
+can submit much bigger logs and make sure that logs are not dropped.</p>
+
+<h2 id="edge-deployment-setup">Edge Deployment setup</h2>
+
+<p>At the edgedeployment, the following information should be added:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeWorkload
+metadata:
+  name: random-workload
+spec:
+  logCollection: dc1-syslog
+  deviceSelector:
+    matchLabels:
+      app: foo
+  type: pod
+  pod:
+    spec:
+      containers:
+        - name: random-server
+          image: docker.io/eloycoto/logexample
+</code></pre></div></div>
+
+<p>And for secure syslog server can be the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeWorkload
+metadata:
+  name: payment-workload
+spec:
+  logCollection: secure-syslog
+  deviceSelector:
+    matchLabels:
+      app: foo
+  type: pod
+  pod:
+    spec:
+      containers:
+        - name: random-server
+          image: docker.io/eloycoto/payments:v1
+</code></pre></div></div>
+
+<p>So each deployment will use the log collection given by the edge-administrator.</p>]]></content><author><name>Eloy Coto &lt;eloycoto@acalustra.com&gt;</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><category term="logs" /><summary type="html"><![CDATA[When running thousands of devices on the far edge, log collection retrieval may differ from one site to another, as also the limit of data that can be sent from the device or stored in the device.]]></summary></entry><entry><title type="html">Introduction to edge device sets</title><link href="https://project-flotta.github.io/flotta/2022/04/08/introducing-device-sets.html" rel="alternate" type="text/html" title="Introduction to edge device sets" /><published>2022-04-08T11:00:00+00:00</published><updated>2022-04-08T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/04/08/introducing-device-sets</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/04/08/introducing-device-sets.html"><![CDATA[<p>If you are Flotta user who needs to manage large numbers of devices and doesn’t want to change configuration of each 
+of them separately, using Edge Device Sets is the perfect approach. With the use of Edge Device Sets you can change 
+configuration of any number of device by changing only one CR - <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> and this blog post will show you how.</p>
+
+<h3 id="edgedeviceset-configuration">EdgeDeviceSet configuration</h3>
+
+<p>User may define the same configuration elements using <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> as one would with <code class="language-plaintext highlighter-rouge">EdgeDevice</code> and configuration 
+defined in the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> would be applied to all edge devices using it. <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>  <strong>always</strong> takes 
+precedence over whatever is defined in the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> as a whole. It means that even if some element is not present in 
+the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>, usual default values are used for it, even if it is defined at the level of <code class="language-plaintext highlighter-rouge">EdgeDevice</code>.</p>
+
+<p>If corresponding <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> cannot be found, <code class="language-plaintext highlighter-rouge">EdgeDevice</code> configuration is used.</p>
+
+<p>Configuration that can be defined with <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<ul>
+  <li>heartbeat (<code class="language-plaintext highlighter-rouge">spec.heartbeat</code>);</li>
+  <li>metrics (<code class="language-plaintext highlighter-rouge">spec.metrics</code>);</li>
+  <li>data transfer (<code class="language-plaintext highlighter-rouge">spec.storage</code>);</li>
+  <li>log collection (<code class="language-plaintext highlighter-rouge">spec.logCollection</code>);</li>
+  <li>OS configuration (<code class="language-plaintext highlighter-rouge">spec.osInformation</code>).</li>
+</ul>
+
+<p>Full <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> CR might look as follows:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeDeviceSet</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">sample-set</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">heartbeat</span><span class="pi">:</span>
+    <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span> <span class="c1"># Interval in seconds with which the heartbeat messages should be sent from the agent </span>
+    <span class="na">hardwareProfile</span><span class="pi">:</span> <span class="c1"># Defines the scope of hardware information sent with the heartbeat messages; currently unused</span>
+      <span class="na">include</span><span class="pi">:</span> <span class="no">true</span> <span class="c1"># Specifies whether the hardware should be sent at all</span>
+      <span class="na">scope</span><span class="pi">:</span> <span class="s">full</span> <span class="c1"># Specifies how much information should be provided; "full" - everything; "delta" - only changes compared to the previous updated</span>
+  <span class="na">metrics</span><span class="pi">:</span>
+    <span class="na">retention</span><span class="pi">:</span>
+      <span class="na">maxMiB</span><span class="pi">:</span> <span class="m">200</span> <span class="c1"># Specifies how much disk space should be used for storing persisted metrics on the device</span>
+      <span class="na">maxHours</span><span class="pi">:</span> <span class="m">24</span> <span class="c1"># Specifies how long should persisted metrics be stored on the device disk</span>
+    <span class="na">system</span><span class="pi">:</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="m">60</span> <span class="c1"># Interval in seconds with which the device system metrics should be collected</span>
+      <span class="na">allowList</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">allow-list-map</span> <span class="c1"># Defines name of a ConfigMap containing list of system metrics that should be scraped</span>
+        <span class="na">disabled</span><span class="pi">:</span> <span class="no">true</span> <span class="c1">#  When set to true instructs the device to turn off system metrics collection</span>
+  <span class="na">osInformation</span><span class="pi">:</span>
+    <span class="na">automaticallyUpgrade</span><span class="pi">:</span> <span class="no">true</span> <span class="c1"># Flag defining whether OS upgrade should be performed automatically when the commitID changes</span>
+    <span class="na">commitID</span><span class="pi">:</span> <span class="s">0305686e69d673cb15ad459990fab4a3e4c5aba1</span> <span class="c1"># Commit ID of desired OS ostree version for the device</span>
+    <span class="na">hostedObjectsURL</span><span class="pi">:</span> <span class="s">http://images.project-flotta.io</span> <span class="c1"># URL of the hosted commits web server</span>
+  <span class="na">storage</span><span class="pi">:</span>
+    <span class="na">s3</span><span class="pi">:</span>
+      <span class="na">secretName</span><span class="pi">:</span> <span class="s">common-s3-secret</span> <span class="c1"># Name of the secret containing S3 API access credentials</span>
+      <span class="na">configMapName</span><span class="pi">:</span> <span class="s">common-s3-config</span> <span class="c1">#Name of a config map containing S3 API access configuration options</span>
+      <span class="na">createOBC</span><span class="pi">:</span> <span class="no">false</span> <span class="c1"># Flag defining whether the OBC should be automatically created for the device (if this feature is disabled for the operator)</span>
+  <span class="na">logCollection</span><span class="pi">:</span>
+    <span class="na">syslog</span><span class="pi">:</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span> <span class="c1"># Kind of a log collection system. Currently, only `syslog` is available</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">12</span> <span class="c1"># Size of a log sending buffer in kilobytes</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span> 
+        <span class="na">name</span><span class="pi">:</span> <span class="s">syslog-config-map</span> <span class="c1"># Name of a config map containing syslog connection configuration</span>
+</code></pre></div></div>
+
+<p>To make specific <code class="language-plaintext highlighter-rouge">EdgeDevice</code> use specific <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> configuration, user needs to add
+<code class="language-plaintext highlighter-rouge">flotta/member-of: &lt;edge device set name&gt;</code> label to the <code class="language-plaintext highlighter-rouge">EdgeDevice</code>.
+For example, if there is a <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> and <code class="language-plaintext highlighter-rouge">device-1</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code>, user needs to issue following
+command to build the relationship between them:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-1 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<h3 id="managing-multiple-devices-configuration">Managing multiple devices configuration</h3>
+<p>Let’s have a look how <code class="language-plaintext highlighter-rouge">EdgeDeviceSets</code> can be used in practice - let’s register three different edge devices 
+(<code class="language-plaintext highlighter-rouge">device-1</code>, <code class="language-plaintext highlighter-rouge">device-2</code>, <code class="language-plaintext highlighter-rouge">device-3</code>), create two edge device sets (<code class="language-plaintext highlighter-rouge">set-1</code> and <code class="language-plaintext highlighter-rouge">set-2</code>) and then assign devices 
+to chosen sets. To illustrate how the configuration defined in the <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> influences device configuration, 
+two of the devices will have different initial configuration.</p>
+
+<h4 id="preparations">Preparations</h4>
+<p>Our starting point is three edge devices registered with our cluster:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$kubectl</span> get edgedevice
+NAME       AGE
+device-1   13s
+device-2   22s
+device-3   51s
+</code></pre></div></div>
+
+<p>Let’s configure <code class="language-plaintext highlighter-rouge">device-1</code> heartbeat interval to 15 seconds:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedevice device-1 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"heartbeat": {"periodSeconds": 15}}}'</span>
+</code></pre></div></div>
+
+<p>which will result in configuration file (<code class="language-plaintext highlighter-rouge">/etc/yggdrasil/device/device-config.json</code>) on <code class="language-plaintext highlighter-rouge">device-1</code> to look like this:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54429"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Be aware that <code class="language-plaintext highlighter-rouge">metrics</code> settings are set to default values, not explicitly set in the <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR.</p>
+
+<p>Next let’s configure <code class="language-plaintext highlighter-rouge">device-2</code> to have system metrics collection disabled:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedevice device-2 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"metrics": {"system": {"disabled": true}}}}'</span>
+</code></pre></div></div>
+
+<p>which will cause the <code class="language-plaintext highlighter-rouge">device-2</code> configuration to be set to:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54651"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In this case <code class="language-plaintext highlighter-rouge">metrics.receiver</code> and <code class="language-plaintext highlighter-rouge">heartbeat</code> settings are set to default values.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">device-3</code> will remain unchanged and use default values:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"54249"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-creation">EdgeDeviceSet creation</h4>
+<p>Let’s create two edge device sets, that will be later used by the devices above:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeviceSet
+metadata:
+  name: set-1
+spec:
+  heartbeat:
+    periodSeconds: 5
+  metrics:
+    system:
+      interval: 600
+  osInformation:
+    automaticallyUpgrade: true
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeviceSet
+metadata:
+  name: set-2
+spec:
+  heartbeat:
+    periodSeconds: 5
+  metrics:
+    system:
+      interval: 1200
+  osInformation:
+    automaticallyUpgrade: false
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-membership">EdgeDeviceSet membership</h4>
+<p>Creation of the sets doesn’t change the configuration of the existing edge devices yet. To make the devices use the 
+set-level configuration, the devices need to be labelled:</p>
+
+<p>Assignment of <code class="language-plaintext highlighter-rouge">device-1</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code> to <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-1 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<p>Assignment of <code class="language-plaintext highlighter-rouge">device-3</code> <code class="language-plaintext highlighter-rouge">EdgeDevice</code> to <code class="language-plaintext highlighter-rouge">set-1</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-3 flotta/member-of<span class="o">=</span>set-1
+</code></pre></div></div>
+
+<p>After issuing the above commands, the device configuration of both <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> are set-driven and are 
+exactly the same:</p>
+
+<p><code class="language-plaintext highlighter-rouge">device-1</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+      </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55501"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">device-3</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+      </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55497"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Assigning <code class="language-plaintext highlighter-rouge">device-2</code> to <code class="language-plaintext highlighter-rouge">set-2</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice device-2 flotta/member-of<span class="o">=</span>set-2
+</code></pre></div></div>
+
+<p>results in following configuration being changed on the device to:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55941"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now increasing the heartbeat frequency of <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> to 10 minutes at one time is as easy as patching <code class="language-plaintext highlighter-rouge">set-1</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedeviceset set-1 <span class="nt">--type</span> merge <span class="nt">-p</span> <span class="s1">'{"spec":{"heartbeat": {"periodSeconds": 600}}}'</span>
+</code></pre></div></div>
+
+<p>the device configuration files on both <code class="language-plaintext highlighter-rouge">device-1</code> and <code class="language-plaintext highlighter-rouge">device-3</code> will show the above change:</p>
+
+<p><code class="language-plaintext highlighter-rouge">device-1</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-1"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55507"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">device-3</code>:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">600</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"os"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"automatically_upgrade"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-3"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55505"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="edgedeviceset-removal">EdgeDeviceSet removal</h4>
+<p>As mentioned earlier, removal of an <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code> will result in devices switching to <code class="language-plaintext highlighter-rouge">EdgeDevice</code>-level defined settings.</p>
+
+<p>Removal of the <code class="language-plaintext highlighter-rouge">set-2</code> <code class="language-plaintext highlighter-rouge">EdgeDeviceSet</code>:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl delete edgedeviceset set-2
+</code></pre></div></div>
+
+<p>will cause <code class="language-plaintext highlighter-rouge">device-2</code> to use the configuration specified in its <code class="language-plaintext highlighter-rouge">EdgeDevice</code> CR:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+ </span><span class="nl">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"hardware_profile"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+   </span><span class="nl">"period_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"metrics"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="nl">"receiver"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"request_num_samples"</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="w">
+   </span><span class="p">},</span><span class="w">
+   </span><span class="nl">"system"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"disabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w">
+ </span><span class="nl">"device_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device-2"</span><span class="p">,</span><span class="w">
+ </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"55948"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>]]></content><author><name>Jakub Dżon</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><summary type="html"><![CDATA[If you are Flotta user who needs to manage large numbers of devices and doesn’t want to change configuration of each of them separately, using Edge Device Sets is the perfect approach. With the use of Edge Device Sets you can change configuration of any number of device by changing only one CR - EdgeDeviceSet and this blog post will show you how.]]></summary></entry><entry><title type="html">Deploying workloads with images from private repositories</title><link href="https://project-flotta.github.io/flotta/2022/02/07/using-private-image-repositories.html" rel="alternate" type="text/html" title="Deploying workloads with images from private repositories" /><published>2022-02-07T16:00:00+00:00</published><updated>2022-02-07T16:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/02/07/using-private-image-repositories</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/02/07/using-private-image-repositories.html"><![CDATA[<p>Users can deploy their containerized workloads (applications built as <a href="https://developers.redhat.com/blog/2018/02/22/container-terminology-practical-introduction#h.dqlu6589ootw">container images</a>) to edge devices using Flotta and very often images they want to use are 
+not public and are available only for users or services having proper credentials.</p>
+
+<p>Flotta supports that use case and allows users to use private images in their <code class="language-plaintext highlighter-rouge">EdgeDeployments</code>; this post shows how to 
+make use of that support by walking you through all the required steps.</p>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">podman</code> <a href="https://podman.io/getting-started/installation">installed</a> (you can use <code class="language-plaintext highlighter-rouge">docker</code> instead)</li>
+  <li>Private image repository (<a href="http://quay.io">quay.io</a>, for example)</li>
+  <li>Image of the workload to deploy</li>
+  <li><code class="language-plaintext highlighter-rouge">EdgeDevice</code> <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md">running and registered</a> in the cluster, labelled with <code class="language-plaintext highlighter-rouge">dc=home</code></li>
+</ol>
+
+<h4 id="image-of-the-workload-to-deploy">Image of the workload to deploy</h4>
+
+<p>For the purpose of this walk-through we will use nginx server image (docker.io/nginx:1.14.2) as the one that would be put 
+in a private quay.io repository. You can, of course, use any private container image repository.</p>
+
+<ol>
+  <li>Login to quay.io:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman login quay.io
+</code></pre></div>    </div>
+    <p>You will be prompted for your username and password:</p>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>podman login quay.io                                                                                                     
+Username: xxxxxx
+Password: <span class="k">******</span>
+Login Succeeded!
+</code></pre></div>    </div>
+  </li>
+  <li>Pull <code class="language-plaintext highlighter-rouge">docker.io/nginx:1.14.2</code>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman pull docker.io/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+  <li>Tag <code class="language-plaintext highlighter-rouge">docker.io/nginx:1.14.2</code> with a private name
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman tag docker.io/nginx:1.14.2 quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+  <li>Push <code class="language-plaintext highlighter-rouge">nginx:1.14.2</code> to quay.io
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman push quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="deployment">Deployment</h3>
+
+<h4 id="sanity-check">Sanity check</h4>
+<p>Before we start using private repository feature of Flotta, let’s see what happens when you try to deploy private image in a simple <code class="language-plaintext highlighter-rouge">EdgeDeployment</code>:</p>
+<ol>
+  <li>Confirm that you have an <code class="language-plaintext highlighter-rouge">EdgeDevice</code> labelled with <code class="language-plaintext highlighter-rouge">dc=home</code>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+NAME                                          AGE
+fedora-54b9dd17-9971-11ec-bcee-7085c256610d   149m
+</code></pre></div>    </div>
+    <p>If it’s not, use following command to add the label:</p>
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice &lt;your device CR name&gt; <span class="nv">dc</span><span class="o">=</span>home
+</code></pre></div>    </div>
+  </li>
+  <li>Create the <code class="language-plaintext highlighter-rouge">EdgeDeployment</code> that will be deployed to each <code class="language-plaintext highlighter-rouge">EdgeDevice</code> with <code class="language-plaintext highlighter-rouge">dc=home</code> label
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> -<span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDeployment
+metadata:
+  name: nginx-deployment
+spec:
+  type: pod
+  deviceSelector:
+ matchLabels:
+   dc: home
+  pod:
+ spec:
+   containers:
+     - name: nginx
+       image: quay.io/&lt;your quay.io username&gt;/nginx:1.14.2
+       ports:
+         - containerPort: 80
+           hostPort: 9090
+</span><span class="no">EOF
+</span></code></pre></div>    </div>
+    <p>You can read more about deploying workloads to edge devices in the <a href="https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/deploying-workloads.md">documentation</a>.</p>
+  </li>
+  <li>Confirm that <code class="language-plaintext highlighter-rouge">nginx-deployment</code> pod wouldn’t start on the edge device by checking deployment phase (not <code class="language-plaintext highlighter-rouge">Running</code>) and events reported for your <code class="language-plaintext highlighter-rouge">EdgeDevice</code> object:
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl describe edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
+Namespace:    default
+Labels:       <span class="nv">dc</span><span class="o">=</span>home
+           device.cpu-architecture<span class="o">=</span>x86_64
+...
+Status:
+  Deployments:
+ Last Transition Time:  2022-03-07T10:35:53Z
+ Name:                  nginx-deployment
+ Phase:                 Created
+...
+Events:
+  Type     Reason  Age                  From                       Message
+  <span class="nt">----</span>     <span class="nt">------</span>  <span class="nt">----</span>                 <span class="nt">----</span>                       <span class="nt">-------</span>
+  Warning  Failed  4m10s <span class="o">(</span>x2 over 16m<span class="o">)</span>  edgedeployment-controller  error playing YAML file: initializing <span class="nb">source </span>docker://quay.io/&lt;your quay.io username&gt;/nginx:1.14.2: reading manifest 1.14.2 <span class="k">in </span>quay.io/&lt;your quay.io username&gt;/nginx: unauthorized: access to the requested resource is not authorized
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h4 id="creating-auth-file-secret">Creating auth file secret</h4>
+<p>To use private container image, user needs to obtain credentials for their image repository - contents of the auth file generated when one executes</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman login quay.io
+</code></pre></div></div>
+
+<p>Usually that would be <code class="language-plaintext highlighter-rouge">$HOME/.docker/config.json</code> or <code class="language-plaintext highlighter-rouge">${XDG_RUNTIME_DIR}/containers/auth.json</code> file.</p>
+
+<p>When you have the auth file, you need to create a kubernetes <a href="https://kubernetes.io/docs/concepts/configuration/secret">secret</a> containing it under <code class="language-plaintext highlighter-rouge">.dockerconfigjson</code> key:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic pull-secret <span class="se">\</span>
+  <span class="nt">--type</span><span class="o">=</span>kubernetes.io/dockerconfigjson <span class="se">\</span>
+  <span class="nt">--from-file</span><span class="o">=</span>.dockerconfigjson<span class="o">=</span><span class="k">${</span><span class="nv">XDG_RUNTIME_DIR</span><span class="k">}</span>/containers/auth.json
+</code></pre></div></div>
+
+<p>The created secret will look similar to the following one:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">pull-secret</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">.dockerconfigjson</span><span class="pi">:</span> <span class="s">ewoJImF1dGhzIjogewoJCSJxdWF5LmlvIjogewoJCQkiYXV0aCI6ICJabTl2SUdKaGNpQm1iMjhnWW1GeUNnPT0iCgkJfQoJfQp9Cg==</span> 
+<span class="na">type</span><span class="pi">:</span> <span class="s">kubernetes.io/dockerconfigjson</span>
+</code></pre></div></div>
+
+<h4 id="deploying-the-workload">Deploying the workload</h4>
+
+<p>To deploy workloads with a private image stored in the repository, you need to instruct Flotta operator to use the 
+secret with valid credentials for the repository hosting that image. You do that by referencing it in the EdgeDeployment 
+specification, under <code class="language-plaintext highlighter-rouge">imageRegistries</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeDeployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">nginx-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="s">...</span>
+  <span class="s">imageRegistries</span><span class="err">:</span>
+    <span class="na">secretRef</span><span class="pi">:</span>
+      <span class="na">name</span><span class="pi">:</span> <span class="s">pull-secret</span>
+  <span class="s">...</span>
+</code></pre></div></div>
+
+<p>After you update your <code class="language-plaintext highlighter-rouge">EdgeDeployment</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl patch edgedeployment nginx-deployment <span class="nt">--type</span><span class="o">=</span>merge <span class="nt">-p</span> <span class="s1">'{"spec":{"imageRegistries":{"secretRef":{"name": "pull-secret"}}}}'</span> 
+</code></pre></div></div>
+
+<p>After the next heartbeat received from the device, you will see the phase of the deployment to be <code class="language-plaintext highlighter-rouge">Running</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl describe edgedevice <span class="nt">-l</span> <span class="nv">dc</span><span class="o">=</span>home
+Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
+Namespace:    default
+Labels:       <span class="nv">dc</span><span class="o">=</span>home
+              device.cpu-architecture<span class="o">=</span>x86_64
+...
+Status:
+  Deployments:
+    Last Transition Time:  2022-03-07T08:37:12Z
+    Name:                  nginx-deployment
+    Phase:                 Running
+...
+</code></pre></div></div>
+
+<p>Congratulations! Now you have your private container image running on your edge device!</p>]]></content><author><name>Jakub Dżon</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><summary type="html"><![CDATA[Users can deploy their containerized workloads (applications built as container images) to edge devices using Flotta and very often images they want to use are not public and are available only for users or services having proper credentials.]]></summary></entry><entry><title type="html">Getting started with Flotta Operator Part 1</title><link href="https://project-flotta.github.io/flotta/2022/02/03/getting-started-project-flotta.html" rel="alternate" type="text/html" title="Getting started with Flotta Operator Part 1" /><published>2022-02-03T15:44:17+00:00</published><updated>2022-02-03T15:44:17+00:00</updated><id>https://project-flotta.github.io/flotta/2022/02/03/getting-started-project-flotta</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/02/03/getting-started-project-flotta.html"><![CDATA[<p>In this blog post series we would like to show you how to get started with the <code class="language-plaintext highlighter-rouge">flotta</code> project.
+The <code class="language-plaintext highlighter-rouge">flotta</code> operator is the Kubernetes operator used to manage the workloads of the edge devices via
+Kubernetes API. In order to manage the edgedevices and workloads you need to have Kubernetes or OpenShift up and
+running. Unfortunatelly the <code class="language-plaintext highlighter-rouge">flotta</code> operator is not yet published on the operator hub, so we have to deploy it manually from the github repo.</p>
+
+<p>Following are the prerequisites:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> - Kubernetes or OpenShift cluster running with kubectl configured
+ - Cert manager
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta</code> requires the <a href="https://cert-manager.io/docs/">cert manager</a> for TLS key management for webhooks, so if you don’t have it up and running on your cluster,
+you can execute following command to install it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+<span class="nv">$ </span>kubectl <span class="nb">wait</span> <span class="nt">--for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready pods <span class="nt">--all</span> <span class="nt">-n</span> cert-manager <span class="nt">--timeout</span><span class="o">=</span>60s
+</code></pre></div></div>
+
+<p>To deploy the latest version of the <code class="language-plaintext highlighter-rouge">flotta</code> operator execute following command:</p>
+
+<p>For OpenShift Container Platform (OCP):</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/ocp-flotta-operator.yaml
+</code></pre></div></div>
+<p>For kubernetes:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/k8s-flotta-operator.yaml
+</code></pre></div></div>
+
+<p>The only difference between the two files is in how <a href="https://cloud.redhat.com/blog/kubernetes-ingress-vs-openshift-route">OCP and Kubernetes</a> enable external access to services.</p>
+
+<p>Kubernetes uses the <code class="language-plaintext highlighter-rouge">Ingress</code> object to signal the Kubernetes platform that a certain service needs to be accessible to the outside world and it contains the configuration needed.
+OCP uses the <code class="language-plaintext highlighter-rouge">Route</code>, that is equivalent to <code class="language-plaintext highlighter-rouge">Ingress</code> with additional capabilities.</p>
+
+<p>By default the <code class="language-plaintext highlighter-rouge">flotta</code> operator is deployed in <code class="language-plaintext highlighter-rouge">flotta</code> namespace.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get all <span class="nt">-n</span> flotta
+NAME                                                     READY   STATUS    RESTARTS   AGE
+pod/flotta-operator-controller-manager-b7758f7b8-gww7d   2/2     Running   0          18h
+
+NAME                                                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT<span class="o">(</span>S<span class="o">)</span>             AGE
+service/flotta-operator-controller-manager                   ClusterIP   10.103.155.185   &lt;none&gt;        8888/TCP,8043/TCP   18h
+service/flotta-operator-controller-manager-metrics-service   ClusterIP   10.98.35.222     &lt;none&gt;        8443/TCP,8080/TCP   18h
+service/flotta-operator-webhook-service                      ClusterIP   10.96.199.135    &lt;none&gt;        443/TCP             18h
+
+NAME                                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/flotta-operator-controller-manager   1/1     1            1           18h
+
+NAME                                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1         1       18h
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta</code> operator deploys two <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions">CustomResourceDefinitions (CRDs)</a>:</p>
+<ol>
+  <li><a href="https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml">edgedeployments</a>, used to manage the workloads.</li>
+  <li><a href="https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml">edgedevices</a> used to manage the devices.</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get crd | <span class="nb">grep </span>project-flotta.io
+edgedeployments.management.project-flotta.io   2022-03-01T14:07:17Z
+edgedevices.management.project-flotta.io       2022-03-01T14:07:17Z
+</code></pre></div></div>
+
+<p>That’s it for the operator side, next time we will take a look how to provision a machine with edgedevice, where we will deploy a simple nginx workload.</p>]]></content><author><name>Ondra Machacek</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><summary type="html"><![CDATA[In this blog post series we would like to show you how to get started with the flotta project. The flotta operator is the Kubernetes operator used to manage the workloads of the edge devices via Kubernetes API. In order to manage the edgedevices and workloads you need to have Kubernetes or OpenShift up and running. Unfortunatelly the flotta operator is not yet published on the operator hub, so we have to deploy it manually from the github repo.]]></summary></entry></feed>

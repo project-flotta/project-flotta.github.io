@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>What is flotta</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+    
+  
+  
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/latest/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Intro
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html">What is flotta</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/usecases.html">Use cases</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/intro/vs.html">Flotta vs others</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Getting started
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/minikube.md">Minikube</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/kind.md">Kind</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/ocp.md">OCP</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  Operations
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/requirements.md">System Requirements</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/configuration.html">Configuration</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/observability.html">Observability</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/data_upload.html">Data upload</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/troubleshooting.md">Troubleshooting</a> </li>
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/operations/api.html">API reference</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+            <li class="list-group-item border-0">
+              <h5>
+                
+                  For developers
+                
+              </h5>
+              
+                <ul class="list-group border-0">
+                  
+                    
+                    <li class="list-group-item border-0"> <a href="/documentation/latest/dev/guide.html">Development Guide</a> </li>
+                  
+                </ul>
+              
+            </li>
+          
+        </ul>
+        <p>Documentation version: latest</p>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+            <!-- Some cases we don't want to show the title -->
+            <h1 class="font-tertiary mb-5">What is flotta</h1>
+          
+          
+
+          <h2 id="fleet-management-for-edgedevices">Fleet management for edgedevices</h2>
+
+<p>Flotta adds a way to manage all your fleet of devices from a single point using
+Kubernetes CRD to handle all kinds of device configurations.</p>
+
+<p>Each Edgedevice can register, pull configuration using the Fleet Management API
+and keep syncing the data using a secure MTLS protocol between the device and
+the Fleet Management API.</p>
+
+<p>It is also possible to schedule a container workload to run in the device using
+a Workload CRD. A container workload can be scheduled for an unlimited
+number of devices.</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.0.1/mermaid.min.js"></script>
+<div class="mermaid">
+flowchart TB
+  classDef plain fill:#ddd,stroke:#fff,stroke-width:4px,color:#000;
+  classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
+  classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
+
+  subgraph "Kubernetes"
+    direction TB
+    EdgeDevice(EdgeDevice CRD)
+    EdgeDeviceSet(EdgeDeviceSet CRD)
+    EdgeWorkload(EdgeWorkload CRD)
+    ing(Ingress) --&gt; api(Fleet API)
+    op(Flotta Operator)
+
+    op -.- EdgeDevice
+    op -.- EdgeDeviceSet
+    op -.- EdgeWorkload
+
+    api -.- EdgeDevice
+    api -.- EdgeDeviceSet
+    api -.- EdgeWorkload
+  end
+
+  class ing,op,api,EdgeDevice,EdgeDeviceSet,EdgeWorkload k8s;
+  class kube cluster;
+
+  subgraph Device
+    direction LR;
+    Agent((Agent daemon));
+    Agent --&gt; Podman --&gt; Workloads;
+  end
+
+  Agent ---&gt; Device ---&gt; ing
+</div>
+
+<h3 id="fleet-observability">Fleet observability</h3>
+
+<p>Device agents takes care of running container workloads, but at the same time,
+it also takes care of the following actions in the workload to make
+edge-administration life easier.</p>
+
+<ul>
+  <li>Get metrics from workloads and push to a remote serve when the connectivity is
+up.</li>
+  <li>Get logs from workloads and push to a remote server when the connection is up.</li>
+</ul>
+
+<h3 id="device-configuration">Device configuration</h3>
+
+<p>Device configuration is a hard part on edge, this is why Flotta trusts
+RPM-Ostree technology to run updates on the non containerized workloads.</p>
+
+<p>Each device can be configured as a single EdgeDevice CR - where all
+observability, logs, heartbeats can be set - or can be defined on DeviceSets CR.
+This grouping CRD allows configuring multiple edgedevices from a single unit,
+making easier the edge-administration life.</p>
+
+<p>Because all the process is based on Kubernetes CRD, it is compatible with your
+favourite GitOps tools, so deploy pipelines can be defined across all of your
+fleet.</p>
+
+<h2 id="os-lifecycle">Os Lifecycle</h2>
+
+<p>@TODO TBC</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5 class="text-light">Supported by</h5>
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+
+</body>
+
+</html>
