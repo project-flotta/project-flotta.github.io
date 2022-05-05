@@ -15,7 +15,7 @@ If you are Flotta user who needs to manage large numbers of devices and doesn't 
 of them separately, using Edge Device Sets is the perfect approach. With the use of Edge Device Sets you can change 
 configuration of any number of device by changing only one CR - `EdgeDeviceSet` and this blog post will show you how.
 
-### EdgeDeviceSet configuration
+## EdgeDeviceSet configuration
 
 User may define the same configuration elements using `EdgeDeviceSet` as one would with `EdgeDevice` and configuration 
 defined in the `EdgeDeviceSet` would be applied to all edge devices using it. `EdgeDeviceSet`  **always** takes 
@@ -78,13 +78,13 @@ command to build the relationship between them:
 kubectl label edgedevice device-1 flotta/member-of=set-1
 ```
 
-### Managing multiple devices configuration
+## Managing multiple devices configuration
 Let's have a look how `EdgeDeviceSets` can be used in practice - let's register three different edge devices 
 (`device-1`, `device-2`, `device-3`), create two edge device sets (`set-1` and `set-2`) and then assign devices 
 to chosen sets. To illustrate how the configuration defined in the `EdgeDeviceSet` influences device configuration, 
 two of the devices will have different initial configuration.
 
-#### Preparations
+### Preparations
 Our starting point is three edge devices registered with our cluster:
 ```shell
 $kubectl get edgedevice
@@ -172,7 +172,7 @@ The `device-3` will remain unchanged and use default values:
 }
 ```
 
-#### EdgeDeviceSet creation
+### EdgeDeviceSet creation
 Let's create two edge device sets, that will be later used by the devices above:
 
 ```shell
@@ -209,7 +209,7 @@ spec:
 EOF
 ```
 
-#### EdgeDeviceSet membership
+### EdgeDeviceSet membership
 Creation of the sets doesn't change the configuration of the existing edge devices yet. To make the devices use the 
 set-level configuration, the devices need to be labelled:
 
@@ -366,7 +366,7 @@ the device configuration files on both `device-1` and `device-3` will show the a
 }
 ```
 
-#### EdgeDeviceSet removal
+### EdgeDeviceSet removal
 As mentioned earlier, removal of an `EdgeDeviceSet` will result in devices switching to `EdgeDevice`-level defined settings.
 
 Removal of the `set-2` `EdgeDeviceSet`:

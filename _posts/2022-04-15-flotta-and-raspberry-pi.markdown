@@ -18,49 +18,57 @@ sensors deployment, vehicle deployment or many other cases.
 
 Let's learn how Flotta can be used to manage it by following steps described in this article.
 
-# Fedora IoT on Raspberry Pi 4 installation
+## Fedora IoT on Raspberry Pi 4 installation
 
- 1. Download [Fedora IoT 35 Raw Image](https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz)
- 2. Plug your SD card to your computer;  in my case it will be available as `/dev/sdb` device:
-     ```shell
-     $ lsblk
-     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
-     sda                                             8:0    1     0B  0 disk  
-     sdb                                             8:16   1  14.5G  0 disk  
-     sdc                                             8:32   1     0B  0 disk  
-     sdd                                             8:48   1     0B  0 disk  
-     ```
- 3. Make sure that you have `arm-image-installer` installed in your system. 
-    
-    In Fedora:
-    ```shell
-    sudo dnf install arm-image-installer
-    ```
- 4. Use `arm-image-installer` tool to burn downloaded Fedora image to the SD card:
-    ```shell
-    sudo arm-image-installer --image=Fedora-IoT-35-20220101.0.aarch64.raw.xz --target=rpi4 --media=/dev/sdb --addkey=/home/jdzon/.ssh/id_rsa.pub --norootpass
-    ```
-    Options used:
-    - `--image` specifies which image file needs to be used for card preparation;
-    - `--target` specifies that the card is prepared for Raspberry Pi 4;
-    - `--media` specifies path to SD card device - will vary from system to system;
-    - `--addkey` will install given public key in the target system;
-    - `--norootpass` will allow root to login to the device without password.
+1) Download [Fedora IoT 35 Raw Image](https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz)
 
-    ![Burning SD Card](/assets/images/rpi4_burn.png)
-    ![Burnt SD Card](/assets/images/rpi4_card-ready.png) 
- 5. Plug freshly-prepared card into your Raspberry Pi and boot it.
+2) Plug your SD card to your computer;  in my case it will be available as `/dev/sdb` device:
+ ```shell
+ $ lsblk
+ NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+ sda                                             8:0    1     0B  0 disk  
+ sdb                                             8:16   1  14.5G  0 disk  
+ sdc                                             8:32   1     0B  0 disk  
+ sdd                                             8:48   1     0B  0 disk  
+ ```
 
-# Flotta Agent installation
+3) Make sure that you have `arm-image-installer` installed in your system. 
+In Fedora:
+```shell
+sudo dnf install arm-image-installer
+```
 
-## Prerequisites
- - Raspberry Pi running Fedora 35 IoT;
-  
-   ![Raspberry Pi 4](/assets/images/rpi4.jpg)
-   ![Booted RPI4](/assets/images/rpi4_up.jpg)
- - Flotta Operator installed in a Kuberenetes Cluster - follow [operator installation instructions](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md#operator).
+4) Use `arm-image-installer` tool to burn downloaded Fedora image to the SD card:
+```shell
+sudo arm-image-installer --image=Fedora-IoT-35-20220101.0.aarch64.raw.xz --target=rpi4 --media=/dev/sdb --addkey=/home/jdzon/.ssh/id_rsa.pub --norootpass
+```
 
-## Installation
+Options used:
+  - `--image` specifies which image file needs to be used for card preparation;
+  - `--target` specifies that the card is prepared for Raspberry Pi 4;
+  - `--media` specifies path to SD card device - will vary from system to system;
+  - `--addkey` will install given public key in the target system;
+  - `--norootpass` will allow root to login to the device without password.
+
+![Burning SD Card](/assets/images/rpi4_burn.png)
+![Burnt SD Card](/assets/images/rpi4_card-ready.png)
+
+5) Plug freshly-prepared card into your Raspberry Pi and boot it.
+
+
+## Flotta Agent installation
+
+### Prerequisites
+
+- Raspberry Pi running Fedora 35 IoT:
+
+  ![Raspberry Pi 4](/assets/images/rpi4.jpg)
+  ![Booted RPI4](/assets/images/rpi4_up.jpg)
+
+- Flotta Operator installed in a Kuberenetes Cluster - follow [operator installation instructions](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md#operator).
+
+### Installation
+
 At the begining there are no edge devices registered with our cluster:
 ```shell
 $ watch -t kubectl get edgedevice
@@ -118,7 +126,8 @@ $ systemctl is-active yggdrasild
 active
 ```
 
-# Deploying workloads to Raspberry Pi with Flotta
+## Deploying workloads to Raspberry Pi with Flotta
+
 Let's make some use of our Flotta-configured device - let's deploy an HTTP server there - we will use Nginx for arm64 
 container image in our `EdgeWorkload`. 
 
