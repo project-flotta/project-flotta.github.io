@@ -6,6 +6,8 @@
     Link: "intro/usecases.md"
   - Name: Flotta vs others
     Link: "intro/vs.md"
+  - Name: Concepts
+    Link: "intro/concepts.md"
 
 - Name: Getting started
   Childs:
