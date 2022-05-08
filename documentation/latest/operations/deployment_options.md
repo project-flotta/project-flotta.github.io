@@ -12,7 +12,7 @@ following configmap should be editted.
 kubectl edit cm -n flotta flotta-operator-manager-config
 ```
 
-After any change in that file, flotta-operator and API need to be rebotted. 
+After any change in that file, flotta-operator and API need to be rebooted. 
 
 ### AUTO_APPROVAL_PROCESS
 

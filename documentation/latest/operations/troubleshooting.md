@@ -25,7 +25,7 @@ system enrols into the cluster. To validate that your certificates are correct,
 you need to check the certs used, mainly using the following `openssl` command:
 
 ```shell
-$ openssl x509 -noout -in /tmp/cert.pem --subject
+$ openssl x509 -noout -in /etc/pki/consumer/cert.pem --subject
 ```
 
 where subject CN should be the DEVICE_ID value.
