@@ -9,6 +9,8 @@ Flotta is great for retail industries, where Flotta can be used to manage all
 Point of sale devices from a single Kubernetes instance. At the same time, due
 to the low footprint, it can be used as kiosk mode.
 
+[![](/assets/images/retail_diagram.png){:width="600px"}](/assets/images/retail_diagram.png)
+
 ## IoT
 
 When running multiple IoT devices, the power consumption is a key element,
@@ -19,8 +21,16 @@ power can be provided by a small solar panel.
 At the same time, Flotta is designed for non-reliable networks, so any
 low-bandwidth connection (GPRS, LoraWAN, NB-IoT) will work without issues.
 
-## IA edge
+## AI edge
 
-IA on the edge is a has tons of posibilities, Flotta device agent is available
-on ARM or x86, also has support for any kind of Nvidia Jetson boards, the main
-boards for IA in the edge.
+AI on the edge has tons of posibilities, Flotta device agent is available on ARM
+or x86, also has support for any kind of Nvidia Jetson boards, the main boards
+for AI in the edge.
+
+## Industry
+
+When a factory with thousands of different sensors, robotics arms, and multiple
+computers that needs to run each one a different workload, flotta provides a way
+to manage all these devices from a single user place.
+
+![](/assets/images/manufacture_line.png)
