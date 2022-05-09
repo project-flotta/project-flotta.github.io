@@ -22,6 +22,8 @@
   Childs:
   - Name: System Requirements
     Link: "operations/requirements.md"
+  - Name: Deployment options
+    Link: "operations/deployment_options.md"
   - Name: Configuration
     Link: "operations/configuration.md"
   - Name: Observability
