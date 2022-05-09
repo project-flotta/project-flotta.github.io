@@ -16,7 +16,7 @@ flotta-device worker uses to track power consumption over time and try to keep
 the resource usage as small as possible to be able to run any IoT workload where
 power can be provided by a small solar panel.
 
-At the same time, Flota is designed for non-reliable networks, so any
+At the same time, Flotta is designed for non-reliable networks, so any
 low-bandwidth connection (GPRS, LoraWAN, NB-IoT) will work without issues.
 
 ## IA edge
