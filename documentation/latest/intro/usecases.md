@@ -21,11 +21,11 @@ power can be provided by a small solar panel.
 At the same time, Flota is designed for non-reliable networks, so any
 low-bandwidth connection (GPRS, LoraWAN, NB-IoT) will work without issues.
 
-## IA edge
+## AI edge
 
-IA on the edge is a has tons of posibilities, Flotta device agent is available
-on ARM or x86, also has support for any kind of Nvidia Jetson boards, the main
-boards for IA in the edge.
+AI on the edge has tons of posibilities, Flotta device agent is available on ARM
+or x86, also has support for any kind of Nvidia Jetson boards, the main boards
+for AI in the edge.
 
 ## Industry
 
