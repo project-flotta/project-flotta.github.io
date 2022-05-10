@@ -10,10 +10,10 @@ needed for the device-agent.
 
 ## Operator requirements:
 
-| Requirement   | Min version | Optional  |
-| Kubernetes    | 1.19        | no        |
-| Noobaa        | 5.9         | yes       |
-| Cert-manager  | 1.7.1       | yes       |
+| Requirement   | Min version | Optional  | Comment                                                                      |
+| Kubernetes    | 1.19        | no        |                                                                              |
+| Noobaa        | 5.9         | yes       | Only if [Data Upload](data_upload.md) is in use                              |
+| Cert-manager  | 1.7.1       | yes       | Only if [ENABLE_WEBHOOKS](deployment_options.md#enable_webhooks) are enabled |
 {: .table }
 
 ## Device requirements:
@@ -23,6 +23,7 @@ needed for the device-agent.
 | podman            | 3.4.4       | no        |
 | nftables          | 1           | no        |
 | node_exporter     | 1.3.1       | no        |
+| ansible           | 2.9         | no        |
 {: .table }
 
 
