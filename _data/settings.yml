@@ -122,7 +122,7 @@ education:
 features-title: Features
 features:
 - {
-    name: OS Managmenet,
+    name: OS Management,
     icon: ti-package,
     description: 'Manage Operating system lifecycle using RPM ostree technology and manage the current state of the device.',
     active: # Add true to select section
