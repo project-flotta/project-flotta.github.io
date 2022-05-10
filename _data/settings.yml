@@ -137,7 +137,7 @@ features:
 - {
     name: Identity aware,
     icon:  ti-shield,
-    description: 'All devices have their own identity managed by X509 certificates and all communication with the Flotta Management API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.',
+    description: 'All devices have their own identity managed by X509 certificates and all communication with the Flotta Edge API is secured by  MTLS connection, which also managed the device approval to enrol into the fleet.',
     active: # Add true to select section
   }
 
