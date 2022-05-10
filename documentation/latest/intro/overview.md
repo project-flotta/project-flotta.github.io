@@ -8,9 +8,9 @@ title: What is flotta
 Flotta adds a way to manage all your fleet of devices from a single point using
 Kubernetes CRD to handle all kinds of device configurations.
 
-Each Edgedevice can register, pull configuration using the Fleet Management API
-and keep syncing the data using a secure MTLS protocol between the device and
-the Fleet Management API.
+Each Edgedevice can register, pull configuration using the Flotta Edge API and
+keep syncing the data using a secure MTLS protocol between the device and the
+Flotta Edge API.
 
 It is also possible to schedule a container workload to run in the device using
 a Workload CRD. A container workload can be scheduled for an unlimited
