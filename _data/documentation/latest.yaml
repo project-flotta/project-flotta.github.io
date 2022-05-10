@@ -41,5 +41,7 @@
 
 - Name: For developers
   Childs:
+  - Name: Manual installation & tips
+    Link: "dev/installation.md"
   - Name: Development Guide
     Link: "dev/guide.md"
