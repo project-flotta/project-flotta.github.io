@@ -29,6 +29,13 @@ no need to have human interaction to start running workloads on any device.
 - **Description**: Number of concurrent goroutines to create for handling
   EdgeWorkload reconcile
 
+### ENABLE_WEBHOOKS
+
+- **Default**: true
+- **Values**: _boolean_
+- **Description**: If Webhooks are enabled, an admission webhook is created and
+  checked when any user submits any change to any project-flotta.io CRD.
+
 ### LEADER_ELECT
 - **Default**: false
 - **Values**: _boolean_
