@@ -112,7 +112,7 @@ Now, two scripts are created:
 On the device, with Fedora already installed, we need to execute the following:
 
 ```
-$ hack/install-agent-dnf.sh -i 192.168.2.10
+$ sudo hack/install-agent-dnf.sh -i 192.168.2.10
 ```
 
 Where 192.168.2.10 is your host ip.
