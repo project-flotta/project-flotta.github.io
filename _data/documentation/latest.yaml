@@ -43,3 +43,5 @@
   Childs:
   - Name: Development Guide
     Link: "dev/guide.md"
+  - Name: Profiling
+    Link: "dev/profiling.md"
