@@ -6,7 +6,19 @@ title: Developer guide
 
 # Operator
 
-### Logging
+
+## CI Jobs
+
+- *Kind*: E2E test running on each PR, can be found on
+  `.github/workflows/kind.yaml`
+- *Go/build*: Builds current code and checks that unit-test are working
+- *Go/Lint*: Check that code is correctly linted
+- *Go/YamlLint*: Checks that Yaml files are correctly linted
+- *Go/SecurityScanner*: Checks that the current code is statically checked by
+  [gosec](https://github.com/securego/gosec)
+- *Go/Test Coverage*: Reports the unit test code coverage, fails if went down.
+
+## Logging
 
 Log configuration can be found [here](../operations/configuration.md)
 
@@ -36,9 +48,6 @@ For example: _logr_ V(2) is equivalent to log level -2 in Zap, while _logr_ V(1)
 |  4                   | panic        | N.A.                              |
 |  5                   | fatal        | N.A.                              |
 
-
-# Testing
-
 ## E2E tests
 
 ### Prerequisites
@@ -51,33 +60,33 @@ For example: _logr_ V(2) is equivalent to log level -2 in Zap, while _logr_ V(1)
 
 1.  Create container image of flotta operator.
 
-    ```bash
-    # Build the flotta operator
-    $ make build
+```bash
+# Build the flotta operator
+$ make build
 
-    # Make sure you have configured k8s provider docker
-    # For example for minikube by running: eval $(minikube -p minikube docker-env)
-    # Then run the build of the container
-    $ IMG=flotta-operator:latest make docker-build
+# Make sure you have configured k8s provider docker
+# For example for minikube by running: eval $(minikube -p minikube docker-env)
+# Then run the build of the container
+$ IMG=flotta-operator:latest make docker-build
 
-    # Deploy the operator on k8s
-    $ make deploy IMG=flotta-operator
+# Deploy the operator on k8s
+$ make deploy IMG=flotta-operator
 
-    # Wait until the operator is ready
-    $ kubectl wait --timeout=120s --for=condition=Ready pods --all -n flotta
-    ```
+# Wait until the operator is ready
+$ kubectl wait --timeout=120s --for=condition=Ready pods -l app=flotta-controller-manager -n flotta
+```
 
 2.  Expose the flotta API
 
-    ```bash
-    $ kubectl port-forward deploy/flotta-operator-controller-manager -n flotta --address 0.0.0.0 8043:8043 &
-    ```
+```bash
+$ kubectl port-forward deploy/flotta-operator-controller-manager -n flotta --address 0.0.0.0 8043:8043 &
+```
 
 3.  Run the tests
 
-    ```bash
-    $ make integration-test
-    ```
+```bash
+$ make integration-test
+```
 
 ### Troubleshooting
 
@@ -96,3 +105,11 @@ Debug the edge device container by executing shell inside the container:
 ```shell
 docker exec -it edgedevice1 journalctl -u yggdrasild.service
 ```
+
+# Device Worker
+
+## CI jobs
+- *Go/build*: Builds current code and checks that unittest are working
+- *Go/Lint*: Checks that code is correctly linted
+- *Go/SecurityScanner*: Checks that the current code is statically checked by
+  [gosec](https://github.com/securego/gosec)
