@@ -6,11 +6,11 @@ title: Manual installation
 
 These are the base repos that project-flotta needs to run as expected:
 
-|Dependecy             | Repo                                           | Git Version |
-|----------------------|------------------------------------------------|-------------|
-|flotta-operator       | [project-flotta/flotta-operator][operator]     | main        |
-|flotta-device-worker  | [project-flotta/flotta-device-worker][device]  | main        |
-|Yggdrasil             | [RedHatInsights/yggdrasil][yggdrasil]          | main        |
+|Dependecy             | Repo                                           | Git Version                                         |
+|----------------------|------------------------------------------------|-----------------------------------------------------|
+|flotta-operator       | [project-flotta/flotta-operator][operator]     | main                                                |
+|flotta-device-worker  | [project-flotta/flotta-device-worker][device]  | main                                                |
+|yggdrasil             | [RedHatInsights/yggdrasil][yggdrasil]          | main(since d69d38da3de3c0a473cd0bd6a713e72c2ea842f9)|
 {: .table }
 
 [operator]: https://github.com/project-flotta/flotta-operator
@@ -21,10 +21,10 @@ These are the base repos that project-flotta needs to run as expected:
 
 ### Makefiles
 
-By default project use Makefiles by default, and all the project has a help
+By default project use Makefiles, and all the project has a help
 section where information can be obtained:
 
-This is the example when running make help in the operator.
+This is the example when running make help in the flotta-operator repo.
 
 ```shell
 $ -> make help
@@ -77,7 +77,7 @@ $ ->
 For running operator, you need to install the CRD first, the best way to develop
 is in a small Kubernetes cluster, like Kind or Minikube.
 
-To install Operator you need to think that there are two main part, the CRD
+To install Operator you need to think that there are two main parts, the CRD
 installation and the operator itself.
 
 To install CRD, you need to run the folowing:
@@ -124,8 +124,8 @@ $ -> sudo chown root:root /tmp/*.pem
 On device, we have two different things to install, yggdrasil and device worker.
 There are two ways to run this piece:
 
-> ⚠️ **Golang 1.16**: By default, device needs to compile in Golang 1.16
-> mainly because this software needs to packaged as RPM, so the version for
+> ⚠️ **Golang 1.16**: By default, device needs to compile in Golang 1.16 mainly
+> because this software needs to be packaged as RPM, so the version for
 > RHEL8/Fedora 35 is golang 1.16
 
 ### Single way with Yggdrasil:
@@ -133,7 +133,7 @@ There are two ways to run this piece:
 This way, means that Yggdrasil already knows where the device-worker is located,
 and it's defined on workers.toml.
 
-So for this,on device-worker repo the following command should be run:
+So for this, on device-worker repo the following command should be run:
 
 ```shell
 sudo make install
@@ -176,7 +176,8 @@ Flotta Edge API:
 [yggd] 2022/05/10 15:55:52 /home/eloy/dev/upstream/project-flotta/yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: device config file: /usr/local/etc/yggdrasil/device/device-config.json
 ```
 
-This way is how users will run device-worker at their end.
+Running device-worker managed by yggdrasil is how the end users run in their
+devices, so this is the closest way to replicate user issues.
 
 ### Separate instance for yggdrasil and device-worker
 

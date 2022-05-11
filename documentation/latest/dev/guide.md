@@ -11,12 +11,12 @@ title: Developer guide
 
 - *Kind*: E2E test running on each PR, can be found on
   `.github/workflows/kind.yaml`
-- *Go/build*: Build current code and checks that unittest are working
-- *Go/Lint*: Check that code is correctlt linted
-- *Go/YamlLint*: Check that Yaml files are correctlt linted
-- *Go/SecurityScanner*: Checks that the current code is staticly checked by
+- *Go/build*: Builds current code and checks that unit-test are working
+- *Go/Lint*: Check that code is correctly linted
+- *Go/YamlLint*: Checks that Yaml files are correctly linted
+- *Go/SecurityScanner*: Checks that the current code is statically checked by
   [gosec](https://github.com/securego/gosec)
-- *Go/Test Coverage*: Report the unit test code coverage, fails if went down.
+- *Go/Test Coverage*: Reports the unit test code coverage, fails if went down.
 
 ## Logging
 
@@ -73,7 +73,7 @@ $ IMG=flotta-operator:latest make docker-build
 $ make deploy IMG=flotta-operator
 
 # Wait until the operator is ready
-$ kubectl wait --timeout=120s --for=condition=Ready pods --all -n flotta
+$ kubectl wait --timeout=120s --for=condition=Ready pods -l app=flotta-controller-manager -n flotta
 ```
 
 2.  Expose the flotta API
@@ -109,7 +109,7 @@ docker exec -it edgedevice1 journalctl -u yggdrasild.service
 # Device Worker
 
 ## CI jobs
-- *Go/build*: Build current code and checks that unittest are working
-- *Go/Lint*: Check that code is correctlt linted
-- *Go/SecurityScanner*: Checks that the current code is staticly checked by
+- *Go/build*: Builds current code and checks that unittest are working
+- *Go/Lint*: Checks that code is correctly linted
+- *Go/SecurityScanner*: Checks that the current code is statically checked by
   [gosec](https://github.com/securego/gosec)
