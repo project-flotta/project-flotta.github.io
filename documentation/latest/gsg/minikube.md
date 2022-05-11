@@ -129,7 +129,7 @@ $ kubectl port-forward service/flotta-operator-controller-manager -n flotta 8043
 On the device, with Fedora already installed, we need to execute the following:
 
 ```
-$ hack/install-agent-dnf.sh -i 192.168.2.10
+$ sudo hack/install-agent-dnf.sh -i 192.168.2.10
 ```
 
 Where 192.168.2.10 is your host ip.
