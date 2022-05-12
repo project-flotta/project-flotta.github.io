@@ -34,11 +34,11 @@ To deploy the latest version of the `flotta` operator execute following command:
 
 For OpenShift Container Platform (OCP):
 ```bash
-$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/ocp-flotta-operator.yaml
+$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.1.0/ocp-flotta-operator.yaml
 ```
 For kubernetes:
 ```bash
-$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.0.1/k8s-flotta-operator.yaml
+$ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.1.0/k8s-flotta-operator.yaml
 ```
 
 The only difference between the two files is in how [OCP and Kubernetes](https://cloud.redhat.com/blog/kubernetes-ingress-vs-openshift-route) enable external access to services.
