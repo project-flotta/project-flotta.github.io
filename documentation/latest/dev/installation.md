@@ -21,7 +21,7 @@ These are the base repos that project-flotta needs to run as expected:
 
 ### Makefiles
 
-By default project use Makefiles, and all the project has a help
+By default, project use Makefiles, and all the project has a help
 section where information can be obtained:
 
 This is the example when running make help in the flotta-operator repo.
@@ -80,7 +80,7 @@ is in a small Kubernetes cluster, like Kind or Minikube.
 To install Operator you need to think that there are two main parts, the CRD
 installation and the operator itself.
 
-To install CRD, you need to run the folowing:
+To install CRD, you need to run the following:
 
 ```
 $ -> make install
@@ -108,7 +108,7 @@ make run
 ```
 
 For registering devices, it's important to download certs and set correct
-persmission:
+permission:
 
 ```shell
 $ -> sudo rm /tmp/*.pem
@@ -150,8 +150,14 @@ $ -> ls /usr/local/libexec/yggdrasil/device-worker
 /usr/local/libexec/yggdrasil/device-worker
 ```
 
-And yggdrasil can run with the following command:
+yggdrasil needs to be built with the expected device-worker destination
+with the following command:
+```shell
+export PREFIX=/usr/local
+make bin
+```
 
+And can be run with the following command:
 ```shell
 sudo ./yggd \
   --log-level trace \
