@@ -227,7 +227,7 @@ which will install the Grafana and Grafana Dashboard.
 
 ```shell
 export KUBECONFIG=your-kubeconfig-file
-tools/deploy_grafana.sh -d docs/metrics/flotta-dashboard.json
+tools/deploy_grafana.sh -d contrib/metrics/flotta-dashboard.json
 ```
 
 To import any additional Grafana dashboard to existing Grafana in flotta
@@ -241,7 +241,7 @@ Specifically, it can be used to install edge device health monitoring
 dashboard (flotta-operator/docs/metrics/flotta-devices-health.json):
 
 ```shell
-tools/import_grafana_dashboards.sh -d docs/metrics/flotta-devices-health.json
+tools/import_grafana_dashboards.sh -d contrib/metrics/flotta-devices-health.json
 ```
 
 All these scripts are part of flotta-operator github repo.
