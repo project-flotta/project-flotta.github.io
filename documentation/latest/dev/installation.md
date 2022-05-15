@@ -44,7 +44,6 @@ Development
   imports          fix and format go imports
   lint             Check if the go code is properly written, rules are in .golangci.yml
   test             Run tests.
-  test             Run tests.
 
 Build
   build            Build manager binary.
@@ -113,9 +112,9 @@ permission:
 ```shell
 $ -> sudo rm /tmp/*.pem
 $ -> make get-certs
-kubectl get secret -n flotta flotta-ca  -o json | jq '.data."ca.crt"| @base64d' -r >/tmp/ca.pem
-kubectl -n flotta get secret reg-client-ca-jnpmz68qfr -o json | jq -r '.data."client.crt"| @base64d' > /tmp/cert.pem
-kubectl -n flotta get secret reg-client-ca-jnpmz68qfr -o json | jq -r '.data."client.key"| @base64d' > /tmp/key.pem
+kubectl get secret -n flotta flotta-ca -o go-template='{{ index .data "ca.crt" | base64decode}}' >/tmp/ca.pem
+kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='{{ index .data "client.crt" | base64decode}}' > /tmp/cert.pem
+kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='{{ index .data "client.key" | base64decode}}' > /tmp/key.pem
 $ -> sudo chown root:root /tmp/*.pem
 ```
 
@@ -206,8 +205,8 @@ And in other tab, just start device-worker manually, and making sure that
 ```
 sudo YGG_LOG_LEVEL=debug \
     YGG_CONFIG_DIR="/tmp/device" \
-    YGG_SOCKET_ADDR="unix:@yggd"
-    YGG_CLIENT_ID="$(cat /etc/machine-id)"\
+    YGG_SOCKET_ADDR="unix:@yggd" \
+    YGG_CLIENT_ID="$(cat /etc/machine-id)" \
     go run cmd/device-worker/main.go
 ```
 
