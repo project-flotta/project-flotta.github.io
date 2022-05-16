@@ -75,7 +75,7 @@ expected.
 ## Device operations troubleshooting
 
 All those guides expect that you have access to the edgedevice terminal, so all
-the checks are at thedevice level.
+the checks are at the device level.
 
 ### The device is failing on TLS handshakes
 
