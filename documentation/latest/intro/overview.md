@@ -3,12 +3,12 @@ layout: documentation
 title: What is flotta
 ---
 
-## Fleet management for edgedevices
+## Edge Devices Management For k8s Workloads
 
-Flotta adds a way to manage all your fleet of devices from a single point using
+Flotta adds a way to manage all your edge devices from a single point using
 Kubernetes CRD to handle all kinds of device configurations.
 
-Each Edgedevice can register, pull configuration using the Flotta Edge API and
+Each edge device can register, pull configuration using the Flotta Edge API and
 keep syncing the data using a secure MTLS protocol between the device and the
 Flotta Edge API.
 
@@ -27,7 +27,7 @@ flowchart TB
     EdgeDevice(EdgeDevice CRD)
     EdgeDeviceSet(EdgeDeviceSet CRD)
     EdgeWorkload(EdgeWorkload CRD)
-    ing(Ingress) --> api(Fleet API)
+    ing(Ingress) --> api(Flotta Edge API)
     op(Flotta Operator)
 
     op -.- EdgeDevice
@@ -51,7 +51,7 @@ flowchart TB
   Agent ---> Device ---> ing
 {% endmermaid%}
 
-### Fleet observability
+### Edge Devices Observability
 
 Device agents takes care of running container workloads, but at the same time,
 it also takes care of the following actions in the workload to make
@@ -61,10 +61,10 @@ edge-administration life easier.
     up.
   - Get logs from workloads and push to a remote server when the connection is up.
 
-### Device configuration
+### Device Configuration
 
 Device configuration is a hard part on edge, this is why Flotta trusts
-RPM-Ostree technology to run updates on the non containerized workloads.
+RPM-OSTree technology to run updates on the non containerized workloads.
 
 Each device can be configured as a single EdgeDevice CR - where all
 observability, logs, heartbeats can be set - or can be defined on DeviceSets CR.
@@ -73,8 +73,8 @@ making easier the edge-administration life.
 
 Because all the process is based on Kubernetes CRD, it is compatible with your
 favourite GitOps tools, so deploy pipelines can be defined across all of your
-fleet.
+edge devices.
 
-## Os Lifecycle
+## OS Lifecycle
 
 @TODO TBC

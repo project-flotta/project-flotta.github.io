@@ -33,9 +33,9 @@ connection, where we have two kinds of certificates.
 
 - **Register certificate**: Is the certificate that the Edge Admin or factory
   admin injects for the first time in the edge device. This device can only make
-  a registration Request to the Fleet management API.
+  a registration Request to the Flotta Edge API.
 - **User certificate**: Is the certificate that it's only valid for the specific
-  device. This certificate uses a key that shoudln't left the device, so the
+  device. This certificate uses a key that shouldn't leave the device, so the
   API signs the certificate with the User Pub Key. At the same time, the short
   lived cert, and Flotta operator managed to handle cert expiration.
 
@@ -46,7 +46,7 @@ sequenceDiagram
 autonumber
 participant Agent as Device Agent
 participant YGGD as Yggdrasil
-participant API as Fleet Managment API
+participant API as Flotta Edge API
 
 rect rgb(226, 232, 238)
   Agent ->> YGGD: Register (GRPC+Unixsocket)
