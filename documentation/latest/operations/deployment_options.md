@@ -64,7 +64,7 @@ no need to have human interaction to start running workloads on any device.
 
 ### OBC_AUTO_CREATE
 
-- **Default**: true
+- **Default**: false
 - **Values**: __boolean__
 - **Description**: Enable OBC auto creation when EdgeDevice is registered
 

@@ -45,14 +45,13 @@ $ kubectl wait --for=condition=Ready pods --all -n openshift-ingress --timeout=6
 
 [Noobaa](https://noobaa.github.io/) is data service that provides S3 object-store interface. Flotta's Edge API enables
 edge devices to send application data to S3 endpoint, into a bucket claim created automatically for each device at
-registration time.
+registration time. By default, [_Object Bucket Claim_](https://github.com/kube-object-storage/lib-bucket-provisioner/blob/master/doc/design/object-bucket-lib.md#design) (OBC) auto-creation is disabled. To enable it, follow the instructions [below](#enable-object-bucket-claim-auto-creation).
+To use _Noobaa_ to create a bucket claim for each device on registration you must enable OBC auto-creation.
 
 For Installing [Noobaa](https://noobaa.github.io/) on the cluster, follow _Noobaa_'s [installation guide](https://github.com/noobaa/noobaa-operator#usage).
 Note that _Noobaa_ requires additional resources, therefore additional memory and CPU are needed (+2 cpu, +5Gi memory).
 _Noobaa_ also requires a local storage class and a default storage class to be present on the cluster.
 
-In order to skip the _Noobaa_ installation, follow the steps [below](#disable-object-bucket-claim-auto-creation) to disable Object Bucket claim auto-creation.
- 
 ### Install Flotta Operator
 To deploy the latest version of the _Flotta_ operator execute following command:
 
@@ -97,10 +96,10 @@ edgedevices.management.project-flotta.io       2022-03-01T14:07:17Z
 By default, both operator manifests (for _OCP_ and _k8s_) assume [ObjectBucketClaim CRD](https://github.com/kube-object-storage/lib-bucket-provisioner/blob/master/pkg/apis/objectbucket.io/v1alpha1/objectbucketclaim_types.go) is installed on the cluster.
 If it is not installed, there are two options, based on the needs:
 
-#### Disable Object Bucket Claim Auto Creation
-To disable _ObjectBucketClaim_ auto-creation, Flotta's operator config map needs to be patched and Flotta's operator needs to be restarted:
+#### Enable Object Bucket Claim Auto Creation
+To enable _ObjectBucketClaim_ auto-creation, Flotta's operator config map needs to be patched and Flotta's operator needs to be restarted:
 ```bash
-kubectl patch cm -n flotta flotta-operator-manager-config --type merge --patch '{ "data": { "OBC_AUTO_CREATE": "false"} }'
+kubectl patch cm -n flotta flotta-operator-manager-config --type merge --patch '{ "data": { "OBC_AUTO_CREATE": "true"} }'
 kubectl rollout restart deploy/flotta-operator-controller-manager -n flotta
 ```
 
