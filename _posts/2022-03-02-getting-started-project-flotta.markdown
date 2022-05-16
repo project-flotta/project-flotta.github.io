@@ -8,12 +8,12 @@ tags:
   - guide
   - flotta
   
-summary-1: Getting started guide with flotta
+summary-1: Getting started guide with Flotta
 ---
-In this blog post series we would like to show you how to get started with the `Flotta` project.
-The `Flotta` operator is the Kubernetes operator used to manage the workloads of the edge devices via
+In this blog post series we would like to show you how to get started with the _Flotta_ project.
+The _Flotta_ operator is the Kubernetes operator used to manage the workloads of the edge devices via
 Kubernetes API. In order to manage the edgedevices and workloads you need to have Kubernetes or OpenShift up and
-running. Unfortunately the `Flotta` operator is not yet published on the operator hub, so we have to deploy it manually from the github repo.
+running. Unfortunately the _Flotta_ operator is not yet published on the operator hub, so we have to deploy it manually from the github repo.
 
 ### Install Prerequisites for Flotta Operator
 Following are the prerequisites:
@@ -25,7 +25,7 @@ Following are the prerequisites:
  - Noobaa (optional)
 ```
 
-`Flotta` requires the [cert manager](https://cert-manager.io/docs/) for TLS key management for webhooks, so if you don't have it up and running on your cluster,
+_Flotta_ requires the [cert manager](https://cert-manager.io/docs/) for TLS key management for webhooks, so if you don't have it up and running on your cluster,
 you can execute following command to install it:
 
 ```bash
@@ -51,7 +51,7 @@ For Installing [Noobaa](https://noobaa.github.io/) on the cluster, follow _Nooba
 Note that _Noobaa_ requires additional resources, therefore additional memory and CPU are needed (+2 cpu, +5Gi memory).
 _Noobaa_ also requires a local storage class and a default storage class to be present on the cluster.
 
-In order to skip the _Noobaa_ installation, follow the steps [below](2022-03-02-getting-started-project-flotta.markdown#disable-object-bucket-claim-auto-creation) to disable Object Bucket claim auto-creation.
+In order to skip the _Noobaa_ installation, follow the steps [below](#disable-object-bucket-claim-auto-creation) to disable Object Bucket claim auto-creation.
  
 ### Install Flotta Operator
 To deploy the latest version of the _Flotta_ operator execute following command:
@@ -65,7 +65,7 @@ For kubernetes:
 $ kubectl apply -f https://github.com/project-flotta/flotta-operator/releases/download/v0.1.0/k8s-flotta-operator.yaml
 ```
 
-By default, the _flotta_ operator is deployed in `flotta` namespace.
+By default, the _Flotta_ operator is deployed in `flotta` namespace.
 
 ```bash
 $ kubectl get all -n flotta
@@ -84,7 +84,7 @@ NAME                                                           DESIRED   CURRENT
 replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1         1       18h
 ```
 
-`Flotta` operator deploys two [CustomResourceDefinitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions):
+_Flotta_ operator deploys two [CustomResourceDefinitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions):
 1. [edgedeployments](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml), used to manage the workloads.
 2. [edgedevices](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml) used to manage the devices.
 
