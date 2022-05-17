@@ -109,14 +109,14 @@ make run
 For registering devices, it's important to download certs and set correct
 permission:
 
-```shell
+~~~
 $ -> sudo rm /tmp/*.pem
 $ -> make get-certs
 kubectl get secret -n flotta flotta-ca -o go-template='{{ index .data "ca.crt" | base64decode}}' >/tmp/ca.pem
 kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='{{ index .data "client.crt" | base64decode}}' > /tmp/cert.pem
 kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='{{ index .data "client.key" | base64decode}}' > /tmp/key.pem
 $ -> sudo chown root:root /tmp/*.pem
-```
+~~~
 
 ## Device installation
 
