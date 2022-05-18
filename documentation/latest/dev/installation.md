@@ -225,11 +225,11 @@ Here the PREFIX used by yggdrasil is `/usr/local/` so you need to check that the
 ```
 install -D -m 755 ./bin/device-worker /usr/local/libexec/yggdrasil/device-worker
 ```
-If the base path does not match, re-install yggdrasil: ensure the envrionment variables PREFIX and MAKE_FLAGS are not set then, from yggdrasil folder, run `make clean install` and retry to run the device-worker.
-- If there is no enrol/registration requests in the logs (both sent by device-worker or received by the operator), check if you have a file located in `${PREFIX}/etc/yggdrasil/device/device-config.json`. If so, delete it and retry to run yggdrasil. By default PREFIX equals `/usr/local`.
+If the base path does not match, re-install yggdrasil: ensure the environment variables PREFIX and MAKE_FLAGS are not set then, from yggdrasil folder, run `make clean install` and retry to run the device-worker.
+- If there is no enrol/registration requests in the logs (both sent by device-worker or received by the operator), check if you have a file located in `${PREFIX}/etc/yggdrasil/device/device-config.json`. If so, delete it and retry to run yggdrasil. By default, PREFIX equals `/usr/local`.
 - If you have 404 http status when the device tries to register, it means the edgedevice has not yet been created by the operator. 
-  - Check is there is an edgedevicesigningrequest (edsr) resource matching your device id. 
-  If there is none, it either means the device worker is not up-to-date and you should update it or there was an error in the operator while processing the enrol request. In that case, check yggdrasil and operator logs
+  - Check if there is an edgedevicesignedrequest (edsr) resource matching your device id. 
+  If there is none, it either means the device worker is not up-to-date, and you should update it or there was an error in the operator while processing the enrol request. In that case, check yggdrasil and operator logs
   - If the edsr exists, check if it is already approved, otherwise, edit the resource to approve it. Else, check the operator's logs to see why it is not created the associated edgedevice.
     - To approve an edsr, run the following: `kubectl edit edsr <id of the device>`. Then, search for `approved` and set the value to `true`
 - If you have this error
@@ -242,3 +242,12 @@ Run the following command
 sudo rm ${PREFIX}/var/run/yggdrasil/workers/device-worker.pid
 ```
 By default PREFIX equals `/usr/local`.
+
+- If deletion of edgedevice CR from the operator is pending, and the device is no longer present, then the de-registration process cannot be completed.
+In order to forcibly remove the edgedevice CR, you need to remove the finalizers from that CR. To do so, run the following command:
+```
+DEVICE=<device id>
+kubectl patch edgedevice/$DEVICE --type=merge -p '{"metadata": {"finalizers":null}}'
+kubectl delete edgedevice/$DEVICE
+```
+ 
