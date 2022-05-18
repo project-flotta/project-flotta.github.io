@@ -212,3 +212,31 @@ sudo YGG_LOG_LEVEL=debug \
 
 And now, device-worker will register to the API, and start to do all
 enrolment/registration phase.
+
+### Troubleshooting
+
+If you encounter issue while installation the device, check the following:
+- Ensure that the location where the device is installed match the one yggdrasil is looking into:
+```
+[yggd] 2022/05/18 09:19:17 yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: Data directory: /usr/local/etc/yggdrasil/device
+[yggd] 2022/05/18 09:19:17 yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: device config file: /usr/local/etc/yggdrasil/device/device-config.json
+```
+Here the PREFIX used by yggdrasil is `/usr/local/`  so you need to check that the same base path is used in the device-worker, see the `make install` output:
+```
+install -D -m 755 ./bin/device-worker /usr/local/libexec/yggdrasil/device-worker
+```
+If the base path does not match, re-install yggdrasil: ensure the envrionement variables PREFIX and MAKE_FLAGS are not set then, from yggdrasil folder, run `make clean install` and retry to run the device-worker.
+- If the enrol/registration steps are not occuring, check if you have a file located in `/usr/local/etc/yggdrasil/device/device-config.json`. If so, delete it and retry to run yggdrasil
+- If you have 404 http status when the device tries to register, it means the edgedevice has not yet been created by the operator. 
+  - Check is there is an edgedevicesigningrequest (edsr) resource matching your device id. 
+  If there is none, it either means the device worker is not up-to-date and you should update it or there was an error in the operator while processing the enrol request. In that case, check yggdrasil and operator logs
+  - If the edsr exists, check if it is already approve, otherwise, edit the resource to approve it. Else, check the operator's logs to see why it is not created the associated edgedevice.
+- If you have this error
+```
+[yggd] 2022/02/21 16:55:00 ./cmd/yggd/main.go:189: starting yggd version 0.2.98
+cannot stop workers: cannot stop worker: cannot stop worker: cannot stop process: os: process already finished
+```
+Run the following command
+```
+sudo rm /usr/local/var/run/yggdrasil/workers/device-worker.pid
+```
