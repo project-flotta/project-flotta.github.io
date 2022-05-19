@@ -14,7 +14,7 @@ summary-1: Deploying workloads with images from private repositories
 Users can deploy their containerized workloads (applications built as [container images](https://developers.redhat.com/blog/2018/02/22/container-terminology-practical-introduction#h.dqlu6589ootw)) to edge devices using Flotta and very often images they want to use are 
 not public and are available only for users or services having proper credentials. 
 
-Flotta supports that use case and allows users to use private images in their `EdgeDeployments`; this post shows how to 
+Flotta supports that use case and allows users to use private images in their `EdgeWorkloads`; this post shows how to 
 make use of that support by walking you through all the required steps.
 
 ### Prerequisites
@@ -59,7 +59,7 @@ podman push quay.io/<your quay.io username>/nginx:1.14.2
 ### Deployment
 
 #### Sanity check
-Before we start using private repository feature of Flotta, let's see what happens when you try to deploy private image in a simple `EdgeDeployment`:
+Before we start using private repository feature of Flotta, let's see what happens when you try to deploy private image in a simple `EdgeWorkload`:
 1. Confirm that you have an `EdgeDevice` labelled with `dc=home`
 ```bash
 $ kubectl get edgedevice -l dc=home
@@ -71,11 +71,11 @@ If it's not, use following command to add the label:
 kubectl label edgedevice <your device CR name> dc=home
 ```
 
-1. Create the `EdgeDeployment` that will be deployed to each `EdgeDevice` with `dc=home` label
+1. Create the `EdgeWorkload` that will be deployed to each `EdgeDevice` with `dc=home` label
 ```bash
 kubectl apply -f -<<EOF
 apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeployment
+kind: EdgeWorkload
 metadata:
   name: nginx-deployment
 spec:
@@ -112,7 +112,7 @@ Status:
 Events:
   Type     Reason  Age                  From                       Message
   ----     ------  ----                 ----                       -------
-  Warning  Failed  4m10s (x2 over 16m)  edgedeployment-controller  error playing YAML file: initializing source docker://quay.io/<your quay.io username>/nginx:1.14.2: reading manifest 1.14.2 in quay.io/<your quay.io username>/nginx: unauthorized: access to the requested resource is not authorized
+  Warning  Failed  4m10s (x2 over 16m)  edgeworkload-controller  error playing YAML file: initializing source docker://quay.io/<your quay.io username>/nginx:1.14.2: reading manifest 1.14.2 in quay.io/<your quay.io username>/nginx: unauthorized: access to the requested resource is not authorized
 ```
 
 #### Creating auth file secret
@@ -144,12 +144,12 @@ type: kubernetes.io/dockerconfigjson
 #### Deploying the workload
 
 To deploy workloads with a private image stored in the repository, you need to instruct Flotta operator to use the 
-secret with valid credentials for the repository hosting that image. You do that by referencing it in the EdgeDeployment 
+secret with valid credentials for the repository hosting that image. You do that by referencing it in the EdgeWorkload 
 specification, under `imageRegistries`:
 
 ```yaml
 apiVersion: management.project-flotta.io/v1alpha1
-kind: EdgeDeployment
+kind: EdgeWorkload
 metadata:
   name: nginx-deployment
 spec:
@@ -160,12 +160,12 @@ spec:
   ...
 ```
 
-After you update your `EdgeDeployment`:
+After you update your `EdgeWorkload`:
 ```bash
-kubectl patch edgedeployment nginx-deployment --type=merge -p '{"spec":{"imageRegistries":{"secretRef":{"name": "pull-secret"}}}}' 
+kubectl patch edgeworkload nginx-deployment --type=merge -p '{"spec":{"imageRegistries":{"secretRef":{"name": "pull-secret"}}}}' 
 ```
 
-After the next heartbeat received from the device, you will see the phase of the deployment to be `Running`:
+After the next heartbeat received from the device, you will see the phase of the workload to be `Running`:
 ```bash
 $ kubectl describe edgedevice -l dc=home
 Name:         fedora-54b9dd17-9971-11ec-bcee-7085c256610d
@@ -174,7 +174,7 @@ Labels:       dc=home
               device.cpu-architecture=x86_64
 ...
 Status:
-  Deployments:
+  Workloads:
     Last Transition Time:  2022-03-07T08:37:12Z
     Name:                  nginx-deployment
     Phase:                 Running
