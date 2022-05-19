@@ -78,7 +78,7 @@ minutes for more metrics to be collected.
 ### Configuration
 
 The feature is disabled by default. It is configured via
-EdgeDevice/EdgeDeviceGroup CRs. Example with inline documentation and defaults:
+EdgeDevice/EdgeDeviceSet CRs. Example with inline documentation and defaults:
 
 ```yaml
 spec:
