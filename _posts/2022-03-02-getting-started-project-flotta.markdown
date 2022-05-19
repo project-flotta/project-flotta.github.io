@@ -84,13 +84,17 @@ replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1      
 ```
 
 _Flotta_ operator deploys two [CustomResourceDefinitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions):
-1. [edgedeployments](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedeployments.yaml), used to manage the workloads.
-2. [edgedevices](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml) used to manage the devices.
+1. [EdgeWorkloads](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgeworkloads.yaml), used to manage the workloads.
+2. [EdgeDevices](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevices.yaml) used to manage the devices.
+3. [EdgeDeviceSet](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevicesets.yaml) used to manage set of devices.
+4. [EdgeDeviceSignedRequest](https://github.com/project-flotta/flotta-operator/blob/main/config/crd/bases/management.project-flotta.io_edgedevicesignedrequest.yaml) used to manage approval of devices.
 
 ```bash
 $ kubectl get crd | grep project-flotta.io
-edgedeployments.management.project-flotta.io   2022-03-01T14:07:17Z
-edgedevices.management.project-flotta.io       2022-03-01T14:07:17Z
+edgedevices.management.project-flotta.io               2022-05-15T13:25:11Z
+edgedevicesets.management.project-flotta.io            2022-05-15T13:25:11Z
+edgedevicesignedrequest.management.project-flotta.io   2022-05-15T13:25:11Z
+edgeworkloads.management.project-flotta.io             2022-05-15T13:25:11Z
 ```
 
 By default, both operator manifests (for _OCP_ and _k8s_) assume [ObjectBucketClaim CRD](https://github.com/kube-object-storage/lib-bucket-provisioner/blob/master/pkg/apis/objectbucket.io/v1alpha1/objectbucketclaim_types.go) is installed on the cluster.
