@@ -35,7 +35,7 @@ You can now use your cluster with:
 kubectl cluster-info --context kind-kind
 ```
 
-Check minikube status:
+Check Kind cluster status:
 
 ```shell
 $ -> kubectl cluster-info --context kind-kind
