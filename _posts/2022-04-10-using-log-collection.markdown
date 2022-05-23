@@ -112,9 +112,9 @@ spec:
 So, dc1-syslog will only store 10Mb of logs in the buffer, meanwhile dc1-syslog
 can submit much bigger logs and make sure that logs are not dropped.
 
-## Edge Deployment setup
+## Edge Workload setup
 
-At the edgedeployment, the following information should be added:
+At the EdgeWorkload, the following information should be added:
 
 ```
 apiVersion: management.project-flotta.io/v1alpha1
