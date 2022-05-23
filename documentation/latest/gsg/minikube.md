@@ -100,11 +100,12 @@ playbookexecutions                             management.project-flotta.io/v1al
 --->
 ```
 
-At the same time, in the flotta namespace an operator should be running:
+At the same time, in the flotta namespace the operator and the edge-api pods should be running:
 ```
 ---> kubectl -n flotta get pods
-NAME                                                  READY   STATUS    RESTARTS   AGE
-flotta-operator-controller-manager-5ffc74fd8c-wv9cm   2/2     Running   0          2m1s
+NAME                                             READY   STATUS    RESTARTS        AGE
+pod/flotta-controller-manager-7fd45874c6-wxxfv   2/2     Running   0               3d17h
+pod/flotta-edge-api-8649fbb9dc-bt4r9             2/2     Running   0               3d17h
 --->
 ```
 
@@ -125,7 +126,7 @@ your edgedevice, for sharing the flotta API port to the edgedevice the best way
 is to use kubectl port-forward:
 
 ```
-$ kubectl port-forward service/flotta-operator-controller-manager -n flotta 8043 --address 0.0.0.0
+$ kubectl port-forward service/flotta-edge-api -n flotta 8043 --address 0.0.0.0
 ```
 
 On the device, with Fedora already installed, we need to execute the following:
