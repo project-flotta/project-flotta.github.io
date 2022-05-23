@@ -1,0 +1,49 @@
+- Name: Intro
+  Childs:
+  - Name: What is flotta
+    Link: "intro/overview.md"
+  - Name: Use cases
+    Link: "intro/usecases.md"
+  - Name: Flotta vs others
+    Link: "intro/vs.md"
+  - Name: Concepts
+    Link: "intro/concepts.md"
+
+- Name: Getting started
+  Childs:
+  - Name: Minikube
+    Link: "gsg/minikube.md"
+  - Name: Kind
+    Link: "gsg/kind.md"
+  - Name: OCP
+    Link: "gsg/ocp.md"
+  - Name: Running workloads
+    Link: "gsg/running_workloads.md"
+
+- Name: Operations
+  Childs:
+  - Name: System Requirements
+    Link: "operations/requirements.md"
+  - Name: Deployment options
+    Link: "operations/deployment_options.md"
+  - Name: Configuration
+    Link: "operations/configuration.md"
+  - Name: Observability
+    Link: "operations/observability.md"
+  - Name: Data upload
+    Link: "operations/data_upload.md"
+  - Name: Troubleshooting
+    Link: "operations/troubleshooting.md"
+  - Name: API reference
+    Link: "operations/api.html"
+  - Name: CRD reference
+    Link: "operations/crd.md"
+
+- Name: For developers
+  Childs:
+  - Name: Manual installation & tips
+    Link: "dev/installation.md"
+  - Name: Development Guide
+    Link: "dev/guide.md"
+  - Name: Profiling
+    Link: "dev/profiling.md"
