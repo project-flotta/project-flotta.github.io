@@ -76,6 +76,8 @@ kubectl apply -f https://raw.githubusercontent.com/openshift/router/master/deplo
 customresourcedefinition.apiextensions.k8s.io/routes.route.openshift.io created
 kubectl apply -f https://raw.githubusercontent.com/openshift/router/master/deploy/router.yaml
 deployment.apps/ingress-router created
+kubectl wait --for=condition=Ready pods --all -n openshift-ingress --timeout=60s
+pod/ingress-router-5b9b477c98-gx5pl condition met
 ```
 
 Now let's install Flotta on the cluster:
