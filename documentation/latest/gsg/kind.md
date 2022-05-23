@@ -92,11 +92,12 @@ edgeworkloads                                  management.project-flotta.io/v1al
 playbookexecutions                             management.project-flotta.io/v1alpha1   true         PlaybookExecution
 ```
 
-At the same time, in the flotta namespace an operator should be running:
+At the same time, in the flotta namespace the operator and the edge-api pods should be running:
 ```
 $ -> kubectl -n flotta get pods
-NAME                                                  READY   STATUS    RESTARTS   AGE
-flotta-operator-controller-manager-5ffc74fd8c-m7qbp   2/2     Running   0          55s
+NAME                                             READY   STATUS    RESTARTS        AGE
+pod/flotta-controller-manager-7fd45874c6-wxxfv   2/2     Running   0               3d17h
+pod/flotta-edge-api-8649fbb9dc-bt4r9             2/2     Running   0               3d17h
 ```
 
 Flotta is now running and ready to register edgedevices. To register a

@@ -189,7 +189,7 @@ Refer to [zapcore docs](https://github.com/uber-go/zap/blob/v1.15.0/zapcore/leve
 For example:
 
 ```bash
-kubectl patch cm -n flotta flotta-operator-manager-config \
+kubectl patch cm -n flotta flotta-manager-config \
   --type merge \
   --patch '{"data":{"LOG_LEVEL": "debug"}}'
 ```

@@ -42,7 +42,7 @@ checking that both service and Ingress route is correct is the way to go.
 The best way to check the route is with the following command:
 
 ```shell
-$ kubectl get route -n flotta flotta-operator-controller-manager -o json | jq ".status"
+$ kubectl get route -n flotta flotta-edge-api -o json | jq ".status"
 {
   "ingress": [
     {
@@ -64,12 +64,12 @@ $ kubectl get route -n flotta flotta-operator-controller-manager -o json | jq ".
 And for the service, check that the pod is running as expected:
 
 ```shell
-$ -> kubectl get pod -n flotta -l app=flotta-controller-manager
+$ -> kubectl get pod -n flotta -l app=flotta-edge-api
 NAME                                                  READY   STATUS             RESTARTS   AGE
-flotta-operator-controller-manager-7bf65f68d8-q55jm   1/2     ImagePullBackOff   0          27m
+flotta-edge-api-8649fbb9dc-bt4r9                      1/2     ImagePullBackOff   0          27m
 ```
 
-As in this example, flotta pod is not ready, and communication is not working as
+As in this example, flotta edge api pod is not ready, and communication is not working as
 expected.
 
 ## Device operations troubleshooting

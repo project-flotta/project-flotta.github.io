@@ -2,6 +2,7 @@
 
 frame Kubernetes {
     component "Flotta Operator" as operator
+    component "Flotta Edge API" as edgeAPI
     database "Object Bucket Claim" as buckets
     interface S3
 }
@@ -12,8 +13,8 @@ frame "Edge Device" {
 
 buckets -down- S3: API
 deviceAgent --> S3: Upload files
-deviceAgent -up---> operator : Get configuration
+deviceAgent -up---> edgeAPI : Get configuration
 
-operator -left-> buckets: Provision
+operator --> buckets: Provision
 
 @enduml

@@ -9,7 +9,7 @@ on/off based on a configMap value. To edit one of these parameters, the
 following configmap should be editted. 
 
 ```shell
-kubectl edit cm -n flotta flotta-operator-manager-config
+kubectl edit cm -n flotta flotta-manager-config
 ```
 
 After any change in that file, flotta-operator and API need to be rebooted. 

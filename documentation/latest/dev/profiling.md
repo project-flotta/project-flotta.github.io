@@ -40,7 +40,7 @@ $ -> kubectl get route pyroscope kubectl get routes pyroscope --no-headers -o=cu
 
 There is need to patch flotta's resources to expose targets and mark pods for profiling:
 ```bash
-$ -> kubectl patch deployment flotta-operator-controller-manager -n flotta -p '
+$ -> kubectl patch deployment flotta-controller-manager -n flotta -p '
   { "spec": {
       "template": {
         "spec":
@@ -59,7 +59,7 @@ $ -> kubectl patch deployment flotta-operator-controller-manager -n flotta -p '
       }
   }'
 
-$ -> kubectl patch service flotta-operator-controller-manager -n flotta -p '
+$ -> kubectl patch service flotta-controller-manager -n flotta -p '
   { "spec": {
       "ports": [
           {
@@ -72,7 +72,7 @@ $ -> kubectl patch service flotta-operator-controller-manager -n flotta -p '
   }
   }'
 
-$ -> kubectl patch deployment -n flotta flotta-operator-controller-manager -p '
+$ -> kubectl patch deployment -n flotta flotta-controller-manager -p '
    {
      "spec": {
        "template":{

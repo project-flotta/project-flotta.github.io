@@ -68,19 +68,26 @@ By default, the _Flotta_ operator is deployed in `flotta` namespace.
 
 ```bash
 $ kubectl get all -n flotta
-NAME                                                     READY   STATUS    RESTARTS   AGE
-pod/flotta-operator-controller-manager-b7758f7b8-gww7d   2/2     Running   0          18h
+NAME                                             READY   STATUS    RESTARTS        AGE
+pod/flotta-controller-manager-7fd45874c6-wxxfv   2/2     Running   0               3d17h
+pod/flotta-edge-api-8649fbb9dc-bt4r9             2/2     Running   0               3d17h
 
-NAME                                                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
-service/flotta-operator-controller-manager                   ClusterIP   10.103.155.185   <none>        8888/TCP,8043/TCP   18h
-service/flotta-operator-controller-manager-metrics-service   ClusterIP   10.98.35.222     <none>        8443/TCP,8080/TCP   18h
-service/flotta-operator-webhook-service                      ClusterIP   10.96.199.135    <none>        443/TCP             18h
+NAME                                                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+service/flotta-controller-manager-metrics-service   ClusterIP   10.128.238.94    <none>        8443/TCP,8080/TCP            3d17h
+service/flotta-edge-api                             ClusterIP   10.129.85.18     <none>        8043/TCP,8080/TCP,8443/TCP   3d17h
+service/flotta-webhook-service                      ClusterIP   10.128.120.232   <none>        443/TCP                      3d17h
 
-NAME                                                 READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/flotta-operator-controller-manager   1/1     1            1           18h
+NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/flotta-controller-manager   1/1     1            1           3d17h
+deployment.apps/flotta-edge-api             1/1     1            1           3d17h
 
-NAME                                                           DESIRED   CURRENT   READY   AGE
-replicaset.apps/flotta-operator-controller-manager-b7758f7b8   1         1         1       18h
+NAME                                                   DESIRED   CURRENT   READY   AGE
+replicaset.apps/flotta-controller-manager-7fd45874c6   1         1         1       3d17h
+replicaset.apps/flotta-edge-api-8649fbb9dc             1         1         1       3d17h
+
+NAME                                       HOST/PORT           PATH   SERVICES          PORT    TERMINATION   WILDCARD
+route.route.openshift.io/flotta-edge-api   project-flotta.io          flotta-edge-api   yggds   passthrough   None
+
 ```
 
 _Flotta_ operator deploys two [CustomResourceDefinitions (CRDs)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#customresourcedefinitions):
@@ -103,8 +110,8 @@ If it is not installed, there are two options, based on the needs:
 #### Enable Object Bucket Claim Auto Creation
 To enable _ObjectBucketClaim_ auto-creation, Flotta's operator config map needs to be patched and Flotta's operator needs to be restarted:
 ```bash
-kubectl patch cm -n flotta flotta-operator-manager-config --type merge --patch '{ "data": { "OBC_AUTO_CREATE": "true"} }'
-kubectl rollout restart deploy/flotta-operator-controller-manager -n flotta
+kubectl patch cm -n flotta flotta-manager-config --type merge --patch '{ "data": { "OBC_AUTO_CREATE": "true"} }'
+kubectl rollout restart deploy/flotta-controller-manager -n flotta
 ```
 
 That's it for the operator side, next time we will take a look how to provision a machine with edge device, where we will deploy a simple nginx workload.

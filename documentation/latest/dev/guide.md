@@ -79,7 +79,7 @@ $ kubectl wait --timeout=120s --for=condition=Ready pods -l app=flotta-controlle
 2.  Expose the flotta API
 
 ```bash
-$ kubectl port-forward deploy/flotta-operator-controller-manager -n flotta --address 0.0.0.0 8043:8043 &
+$ kubectl port-forward deploy/flotta-edge-api -n flotta --address 0.0.0.0 8043:8043 &
 ```
 
 3.  Run the tests
@@ -95,7 +95,7 @@ $ make integration-test
 If timeout, debug the deployment logs by running:
 
 ```shell 
-kubectl logs deploy/flotta-operator-controller-manager -n flotta
+kubectl logs deploy/flotta-controller-manager -n flotta
 ```
 
 **Waiting for edge device timeouts in integration tests**:
