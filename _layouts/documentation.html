@@ -29,7 +29,19 @@ layout: default
             </li>
           {% endfor %}
         </ul>
-        <p>Documentation version: {{ version }}</p>
+        <p>Documentation for version: <b>{{ version | replace: "_", "." }}</b></p>
+        <b>Other versions</b>
+        <ul class="list-group list-group-collapse border-0">
+        {% for item in site.data.documentation %}
+          {% assign target =  item[1] | first %}
+          {% assign targetChild =  target.Childs | first %}
+            <li class="list-group-item border-0">
+
+              {% capture BaseLink %}documentation/{{item[0]}}/{{targetChild.Link}}{% endcapture%}
+              <a href="{% link {{ BaseLink }} %}"> {{ item[0] | replace: "_", "."}}</a>
+            </li>
+        {% endfor %}
+        </ul>
       </div>
 
       <div class="col-lg-8">
