@@ -109,14 +109,14 @@ in each `EdgeWorkload`:
 ```yaml
 spec:
   data:
-    paths:
+    egress:
       - source: source/path/1
         target: target/path/1
       - source: source/path/2
         target: target/path/2
 ```
 
-Each `path` specifies which on-device directory (`source`) should be
+Each `egress` item specifies which on-device directory (`source`) should be
 synchronized to which directory (`target`). `source` directory is always a
 subdirectory of a "well-known" `/export` directory in every container running on
 the device.
@@ -142,7 +142,7 @@ spec:
     matchLabels:
       dc: home
   data:
-    paths:
+    egress:
       - source: stats
         target: statistics
   type: pod
