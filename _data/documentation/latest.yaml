@@ -32,8 +32,8 @@
     Link: "operations/remote_data_store.md"
   - Name: Observability
     Link: "operations/observability.md"
-  - Name: Data upload
-    Link: "operations/data_upload.md"
+  - Name: Data Synchronization
+    Link: "operations/data_synchronization.md"
   - Name: Troubleshooting
     Link: "operations/troubleshooting.md"
   - Name: API reference

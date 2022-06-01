@@ -1,13 +1,13 @@
 ---
-title: Data Upload
+title: Data Synchronization
 layout: documentation
 ---
 
 
 ## Design
 
-Flotta agent and Operator provide functionality of uploading contents of
-on-device directories to control-plane object storage. User can choose between
+Flotta agent and Operator provide functionality of bidirectional synchronization of contents between 
+on-device directories and control-plane object storage. User can choose between
 in-cluster OCS storage or external storage. OCS takes precedence over external
 storage. The architecture of that solution is depicted by the diagrams below.
 
@@ -51,7 +51,7 @@ client that supports that protocol (i.e. AWS S3 CLI and libraries).
 Information needed to access the Bucket using S3 API is stored in following
 resources in the same namespace as the OBC (and `EdgeDevice`):
 
-* **ConfigMa** with the same name as the OBC contains the Bucket name and in-cluster service endpoint address;
+* **ConfigMap** with the same name as the OBC contains the Bucket name and in-cluster service endpoint address;
 * **Secret** with the same name as the OBC contains `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 
 ### External S3 storage
@@ -122,26 +122,39 @@ The region of the bucket will probably be `us-east-1`.
 Go to `Settings` for viewing and editing the region.
 
 
-## Get configuration
+## Bi-directional configuration
 
 The Flotta agent periodically downloads configuration from the Flotta operator
-and part of that configuration is data paths mapping for data upload - specified
-in each `EdgeWorkload`:
+and part of that configuration is data paths mapping for data synchronization 
+from the edge device to the S3 storage - specified in each `EdgeWorkload`:
 
 ```yaml
 spec:
   data:
     egress:
-      - source: source/path/1
-        target: target/path/1
-      - source: source/path/2
-        target: target/path/2
+      - source: local/upload/log
+        target: remote/log
+      - source: local/upload/telemetry
+        target: remote/telemetry
+    ingress:
+      - source: remote/data
+        target: local/download/data
+      
 ```
 
 Each `egress` item specifies which on-device directory (`source`) should be
 synchronized to which directory (`target`). `source` directory is always a
 subdirectory of a "well-known" `/export` directory in every container running on
 the device.
+
+At the same time, the `ingress` pair specifies the data paths for the downstream data synchronization
+between the remote storage and the device. The `source` field defines the directory in the S3 storage
+that will be used as synchronization source point, whereas the `target` directory determines the end point
+inside the device where the content will be synchronized to. Note that currently there are no controls in place
+to control how much storage is being consumed by the ingress synchronization, which can lead to the device storage
+being filled due to the ingress synchronization process.
+
+`Ingress` and `egress` data synchronizations are independent from each other and are not require to be defined together in the workload manifest. You can have workloads that only import (`ingress`) or export (`egress`), or both like in this example. 
 
 The `/export` directory is shared among containers of one workload (pod), but
 different workloads (pods) have them separate; each workload has `/export`
@@ -205,4 +218,4 @@ In this case on-device `/export/stats` directory will be synced to a
 The Flotta agent synchronizes paths specified in the configuration every 15
 seconds. Only new or changed files are transferred.
 
-Files removed on the device are not removed from the storage.
+Files removed on the device are not removed from the storage. Deleting the workload will remove the used storage.
