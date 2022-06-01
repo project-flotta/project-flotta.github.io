@@ -12,7 +12,7 @@ needed for the device-agent.
 
 | Requirement   | Min version | Optional  | Comment                                                                      |
 | Kubernetes    | 1.19        | no        |                                                                              |
-| Noobaa        | 5.9         | yes       | Only if [Data Upload](data_upload.md) is in use                              |
+| Noobaa        | 5.9         | yes       | Only if [Data Synchronization](data_synchronization.md) is in use                              |
 | Cert-manager  | 1.7.1       | yes       | Only if [ENABLE_WEBHOOKS](deployment_options.md#enable_webhooks) are enabled |
 {: .table }
 
