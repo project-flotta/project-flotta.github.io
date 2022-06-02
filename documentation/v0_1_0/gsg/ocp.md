@@ -32,7 +32,7 @@ cd flotta-operator
 Now let's install Flotta on the cluster:
 
 ```shell
-make deploy IMG=quay.io/project-flotta/flotta-operator:latest TARGET=ocp
+make deploy IMG=quay.io/project-flotta/flotta-operator:v0.1.0 TARGET=ocp
 ```
 
 A bunch of CRDs are now created, where the definitions can be found

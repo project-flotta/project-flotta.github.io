@@ -76,7 +76,7 @@ pod/ingress-router-5b9b477c98-gx5pl condition met
 Now let's install Flotta on the cluster:
 
 ```shell
-$ -> make deploy IMG=quay.io/project-flotta/flotta-operator:latest TARGET=k8s
+$ -> make deploy IMG=quay.io/project-flotta/flotta-operator:v0.1.0 TARGET=k8s
 ```
 
 A bunch of CRDs are now created, where the definitions can be found
