@@ -203,10 +203,11 @@ And in other tab, just start device-worker manually, and making sure that
 `/usr/local/etc/yggdrasil/workers/device-worker.toml` is not present at all.
 
 ```
-sudo YGG_LOG_LEVEL=debug \
+sudo -E YGG_LOG_LEVEL=debug \
     YGG_CONFIG_DIR="/tmp/device" \
     YGG_SOCKET_ADDR="unix:@yggd" \
     YGG_CLIENT_ID="$(cat /etc/machine-id)" \
+    FLOTTA_XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
     go run cmd/device-worker/main.go
 ```
 
@@ -250,4 +251,56 @@ DEVICE=<device id>
 kubectl patch edgedevice/$DEVICE --type=merge -p '{"metadata": {"finalizers":null}}'
 kubectl delete edgedevice/$DEVICE
 ```
- 
+
+
+#### device-worker cannot connect to Podman socket
+
+
+Because Flotta device works uses rootless podman, can be a way that podman pod
+is listening correctly but the podman user socket is not yet started. For podman
+be able to run, it's important to check the status:
+
+Error message:
+
+```
+cannot start Workload Manager. DeviceID: eloy-test; err: workload cannot initialize podman manager: unable to connect to Podman socket: Get "http://d/v3.4.2/libpod/_ping": dial unix ///run/user/1000/podman/podman.sock: connect: no such file or directory
+```
+
+Podman status:
+```
+$ -> sudo systemctl status podman
+○ podman.service - Podman API Service
+     Loaded: loaded (/usr/lib/systemd/system/podman.service; disabled; vendor preset: disabled)
+     Active: inactive (dead) since Thu 2022-06-02 10:04:50 CEST; 5h 2min ago
+TriggeredBy: ● podman.socket
+       Docs: man:podman-system-service(1)
+    Process: 34417 ExecStart=/usr/bin/podman $LOGGING system service (code=exited, status=0/SUCCESS)
+   Main PID: 34417 (code=exited, status=0/SUCCESS)
+
+Jun 02 10:04:45 localhost.localdomain systemd[1]: Started Podman API Service.
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="/usr/bin/podman filtering at log level info"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Not using native diff for overlay, this may cause degraded perform>
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Found CNI network podman (type=bridge) at /etc/cni/net.d/87-podman>
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Found CNI network kind (type=bridge) at /etc/cni/net.d/kind.confli>
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Setting parallel job count to 25"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="using systemd socket activation to determine API endpoint"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="using API endpoint: ''"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="API service listening on \"/run/podman/podman.sock\""
+Jun 02 10:04:50 localhost.localdomain systemd[1]: podman.service: Deactivated successfully.
+```
+
+Podman user socket status:
+```
+$ -> systemctl status --user podman.socket
+● podman.socket - Podman API Socket
+     Loaded: loaded (/usr/lib/systemd/user/podman.socket; disabled; vendor preset: disabled)
+     Active: active (running) since Thu 2022-06-02 10:17:50 CEST; 4h 50min ago
+   Triggers: ● podman.service
+       Docs: man:podman-system-service(1)
+     Listen: /run/user/1000/podman/podman.sock (Stream)
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/podman.socket
+
+Jun 02 10:17:50 localhost.localdomain systemd[13455]: Listening on Podman API Socket.
+$ ->
+```
+
