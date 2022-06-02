@@ -154,7 +154,7 @@ inside the device where the content will be synchronized to. Note that currently
 to control how much storage is being consumed by the ingress synchronization, which can lead to the device storage
 being filled due to the ingress synchronization process.
 
-`Ingress` and `egress` data synchronizations are independent from each other and are not require to be defined together in the workload manifest. You can have workloads that only import (`ingress`) or export (`egress`), or both like in this example. 
+`Ingress` and `egress` data synchronizations are independent from each other and are not required to be defined together in the workload manifest. You can have workloads that only import (`ingress`) or export (`egress`), or both like in this example. 
 
 The `/export` directory is shared among containers of one workload (pod), but
 different workloads (pods) have them separate; each workload has `/export`
@@ -218,4 +218,4 @@ In this case on-device `/export/stats` directory will be synced to a
 The Flotta agent synchronizes paths specified in the configuration every 15
 seconds. Only new or changed files are transferred.
 
-Files removed on the device are not removed from the storage. Deleting the workload will remove the used storage.
+Files removed on the device are not removed from the storage. Unregistering the device will remove the used storage.

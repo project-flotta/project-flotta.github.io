@@ -12,7 +12,7 @@ frame "Edge Device" {
 }
 
 buckets <--> S3: API
-deviceAgent <--> S3: Upload files
+deviceAgent <--> S3: Upload/Download files
 deviceAgent -up---> edgeAPI : Get configuration
 
 operator --> buckets: Provision
