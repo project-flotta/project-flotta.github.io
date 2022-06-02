@@ -36,6 +36,6 @@ check-links: ## Check that all links are working
 check-links: build
 	$(DOCKER) run --rm -v $(PWD)/_site:/src klakegg/html-proofer:3.19.2 --allow-hash-href --empty-alt-ignore --disable-external
 
-run: build ## run the site on localhost:3000
-	$(DOCKER) run --rm --name $(CONTAINER_NAME) --volume="$(PWD):/srv/jekyll" -p 3000:4000 -it $(IMG) jekyll serve --watch --drafts 
+run: build ## run the site on localhost:4000
+	$(DOCKER) run --rm --name $(CONTAINER_NAME) --volume="$(PWD):/srv/jekyll" -p 4000:4000 -it $(IMG) jekyll serve --watch --drafts 
 
