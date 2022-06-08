@@ -140,7 +140,7 @@ and it's defined on workers.toml.
 So for this, on device-worker repo the following command should be run:
 
 ```shell
-sudo make install
+sudo --preserve-env=XDG_RUNTIME_DIR,HOME,USER make install
 ```
 
 This will create two files:
