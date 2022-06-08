@@ -1138,6 +1138,13 @@ EdgeDeviceStatus defines the observed state of EdgeDevice
           </td>
           <td>false</td>
         </tr><tr scope="row">
+          <td><b><a href="#edgedevicestatushardwarehostdevicesindex">hostDevices</a></b></td>
+          <td>[]object</td>
+          <td>
+            list of devices present on the edgedevice<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b>hostname</b></td>
           <td>string</td>
           <td>
@@ -1579,6 +1586,77 @@ cpu
           <td>string</td>
           <td>
             model name<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.status.hardware.hostDevices[index] {#edgedevicestatushardwarehostdevicesindex}
+<sup><sup>[↩ Parent](#edgedevicestatushardware)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>deviceType</b></td>
+          <td>string</td>
+          <td>
+            Device type block or character<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>group</b></td>
+          <td>integer</td>
+          <td>
+            group id<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>major</b></td>
+          <td>integer</td>
+          <td>
+            Major ID identifying the class of the device<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>minor</b></td>
+          <td>integer</td>
+          <td>
+            Minor ID identifying the instance of the device in the class<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>owner</b></td>
+          <td>integer</td>
+          <td>
+            owner id<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>path</b></td>
+          <td>string</td>
+          <td>
+            path of the device (i.e. /dev/loop)<br/>
           </td>
           <td>false</td>
         </tr></tbody>
@@ -2542,6 +2620,13 @@ Hardware defines the hardware that devices has
           </td>
           <td>false</td>
         </tr><tr scope="row">
+          <td><b><a href="#edgedevicesignedrequestspecfeatureshardwarehostdevicesindex">hostDevices</a></b></td>
+          <td>[]object</td>
+          <td>
+            list of devices present on the edgedevice<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b>hostname</b></td>
           <td>string</td>
           <td>
@@ -2990,6 +3075,77 @@ cpu
 </div>
 
 
+##### EdgeDeviceSignedRequest.spec.features.hardware.hostDevices[index] {#edgedevicesignedrequestspecfeatureshardwarehostdevicesindex}
+<sup><sup>[↩ Parent](#edgedevicesignedrequestspecfeatureshardware)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>deviceType</b></td>
+          <td>string</td>
+          <td>
+            Device type block or character<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>group</b></td>
+          <td>integer</td>
+          <td>
+            group id<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>major</b></td>
+          <td>integer</td>
+          <td>
+            Major ID identifying the class of the device<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>minor</b></td>
+          <td>integer</td>
+          <td>
+            Minor ID identifying the instance of the device in the class<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>owner</b></td>
+          <td>integer</td>
+          <td>
+            owner id<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>path</b></td>
+          <td>string</td>
+          <td>
+            path of the device (i.e. /dev/loop)<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
 ##### EdgeDeviceSignedRequest.spec.features.hardware.memory {#edgedevicesignedrequestspecfeatureshardwarememory}
 <sup><sup>[↩ Parent](#edgedevicesignedrequestspecfeatureshardware)</sup></sup>
 
@@ -3308,7 +3464,14 @@ EdgeWorkloadSpec defines the desired state of EdgeWorkload
           </tr>
       </thead>
       <tbody><tr scope="row">
-          <td><b><a href="#edgeworkloadspecdatapathsindex">paths</a></b></td>
+          <td><b><a href="#edgeworkloadspecdataegressindex">egress</a></b></td>
+          <td>[]object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b><a href="#edgeworkloadspecdataingressindex">ingress</a></b></td>
           <td>[]object</td>
           <td>
             <br/>
@@ -3319,7 +3482,42 @@ EdgeWorkloadSpec defines the desired state of EdgeWorkload
 </div>
 
 
-##### EdgeWorkload.spec.data.paths[index] {#edgeworkloadspecdatapathsindex}
+##### EdgeWorkload.spec.data.egress[index] {#edgeworkloadspecdataegressindex}
+<sup><sup>[↩ Parent](#edgeworkloadspecdata)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>source</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
+        </tr><tr scope="row">
+          <td><b>target</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeWorkload.spec.data.ingress[index] {#edgeworkloadspecdataingressindex}
 <sup><sup>[↩ Parent](#edgeworkloadspecdata)</sup></sup>
 
 
