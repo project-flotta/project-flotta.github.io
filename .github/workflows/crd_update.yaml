@@ -1,0 +1,36 @@
+name: Trigger CRD documentation update
+
+on:
+  schedule:
+    - cron: '* 3 * * *'
+  push:
+    branches:
+      - ActionsCommit
+jobs:
+  build:
+    name: Trigger Site Rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Generate new docs
+        run: ./scripts/get_docs.sh
+
+      - name: Check if new files are in place
+        run: git status --porcelain | grep docu
+
+      - name: Checkout to a new branch
+        run: |
+            git config user.name 'Project flotta bot'
+            git config user.email 'project-flotta@redhat.com'
+            export KEY=$(date +%y%m%d)
+            git add documentation
+            git commit -m "CRD documentation update for $KEY"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
