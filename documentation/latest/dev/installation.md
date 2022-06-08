@@ -105,6 +105,11 @@ To run operator locally, you can use the following code:
 ```shell
 make run
 ```
+To run the _Edge API_ locally, execute:
+
+```shell
+make http-api-run
+```
 
 For registering devices, it's important to download certs and set correct
 permission:
