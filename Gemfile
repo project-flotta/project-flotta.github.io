@@ -14,3 +14,4 @@ gem "webrick"
 
 gem 'rake'
 gem 'html-proofer'
+gem 'jekyll-plantuml', '~> 1.1'

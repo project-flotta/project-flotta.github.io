@@ -11,7 +11,29 @@ on-device directories to control-plane object storage. User can choose between
 in-cluster OCS storage or external storage. OCS takes precedence over external
 storage. The architecture of that solution is depicted by the diagrams below.
 
-![](../diagrams/data-upload.png)
+{% plantuml %}
+@startuml
+
+frame Kubernetes {
+    component "Flotta Operator" as operator
+    component "Flotta Edge API" as edgeAPI
+    database "Object Bucket Claim" as buckets
+    interface S3
+}
+
+frame "Edge Device" {
+    node "Flotta Agent" as deviceAgent
+}
+
+buckets -down- S3: API
+deviceAgent --> S3: Upload files
+deviceAgent -up---> edgeAPI : Get configuration
+
+operator --> buckets: Provision
+
+@enduml
+
+{% endplantuml %}
 
 ## OCS storage
 
