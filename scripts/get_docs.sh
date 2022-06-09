@@ -47,7 +47,7 @@ main() {
   VERSIONS=$(ls -1 $DOC_PATH)
 
   for version in $VERSIONS; do
-    GIT_VERSION=$version
+    GIT_VERSION="${version//_/.}"
     if [ "$version" == "latest" ]; then
       GIT_VERSION="main"
     fi
