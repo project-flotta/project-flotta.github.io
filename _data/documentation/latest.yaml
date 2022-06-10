@@ -28,6 +28,8 @@
     Link: "operations/deployment_options.md"
   - Name: Configuration
     Link: "operations/configuration.md"
+  - Name: Remote Edge Configuration API
+    Link: "operations/remote_data_store.md"
   - Name: Observability
     Link: "operations/observability.md"
   - Name: Data upload

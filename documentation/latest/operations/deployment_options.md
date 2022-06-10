@@ -6,13 +6,13 @@ layout: documentation
 
 Operator has different deployment modes, where some parameters can be turned
 on/off based on a configMap value. To edit one of these parameters, the
-following configmap should be editted. 
+following configmap should be edited. 
 
 ```shell
 kubectl edit cm -n flotta flotta-manager-config
 ```
 
-After any change in that file, flotta-operator and API need to be rebooted. 
+After any change in that config map, flotta-operator needs to be rebooted. 
 
 ### AUTO_APPROVAL_PROCESS
 
@@ -60,7 +60,7 @@ no need to have human interaction to start running workloads on any device.
 
 - **Default**: :8080
 - **Values**: __port range__
-- **Description**: Where operator/API will expose prometheus metrics.
+- **Description**: Where operator will expose prometheus metrics.
 
 ### OBC_AUTO_CREATE
 
@@ -79,3 +79,81 @@ no need to have human interaction to start running workloads on any device.
 - **Default**: :9443
 - **Values**: __port range__
 - **Description**: WebhookPort is the port that the webhook server serves at.
+
+# Edge API Deployment options
+
+Edge API has different deployment modes, where some parameters can be turned
+on/off based on a configMap value. To edit one of these parameters, the
+following configmap should be edited.
+
+```shell
+kubectl edit cm -n flotta flotta-edge-api-config
+```
+
+After any change in that config map, Flotta Edge API needs to be rebooted.
+
+### BACKEND
+
+- **Default**: crd
+- **Values**: [crd, remote]
+- **Description**:  Specifies which storage backend should the Edge API use. For `remote` see [REMOTE_BACKEND_URL](#remote_backend_url) and [REMOTE_BACKEND_TIMEOUT](#remote_backend_timeout)
+
+### CLIENT_CERT_EXPIRATION_DAYS
+
+- **Default**: 30
+- **Values**: __positive integer__
+- **Description**: Client certificate expiration time in days.
+
+### DOMAIN
+
+- **Default**: project-flotta.io
+- **Values**: domain
+- **Description**: Domain for which TLS certificate is issued.
+
+### HTTPS_PORT
+
+- **Default**: :8043
+- **Values**: __port range__
+- **Description**: Edge HTTPS API port.
+
+### KUBECONFIG
+
+- **Default**: __blank__
+- **Values**: __path__
+- **Description**: Path to a kubeconfig file to be used when Edge API runs outside of a cluster.
+
+### LOG_LEVEL
+
+- **Default**: info
+- **Values**: [debug, info, warn, error, dpanic, panic, fatal]
+- **Description**:  Log level for the edge API, by default is info.
+
+### METRICS_ADDR
+
+- **Default**: :8080
+- **Values**: __port range__
+- **Description**: Where API will expose prometheus metrics.
+
+### PROBE_ADDR
+
+- **Default**: :8081
+- **Values**: __port range__
+- **Description**: The address the probe endpoint binds to.
+
+### REMOTE_BACKEND_URL
+
+- **Default**: __blank__
+- **Values**: __url__
+- **Description**: URL of a remote Edge Configuration API.
+
+### REMOTE_BACKEND_TIMEOUT
+
+- **Default**: __5s__
+- **Values**: __duration__
+- **Description**: Timeout that should be used while making calls to a remote Edge Configuration API.
+
+### TLS_LOCALHOST_ENABLED
+
+- **Default**: true
+- **Values**: __boolean__
+- **Description**: Enables TLS certificate to work with localhost.
