@@ -34,3 +34,5 @@ On documentation version change, the following changes need to be done:
 - [] edit /documentation/$VERSION/gsg/*.md and change the following:
   - git clone commands to the right version.
   - make deploy with the right container version
+- [] edit /documentation/$VERSION/operations/api.html and change the swagger URL
+
