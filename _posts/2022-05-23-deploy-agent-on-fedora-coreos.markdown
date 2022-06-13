@@ -306,9 +306,3 @@ virt-install --connect="qemu:///system" --name="${VM_NAME}" --vcpus="${VCPUS}" -
 If you don't want to see the console, you can add `--noautoconsole` to virt-install command.
 
 Everything that we did here, you can find it on [Github](https://github.com/tupyy/flotta-agent-coreos).
-
-Let's see how it works:
-
-<script id="asciicast-zxpCpfqaMSKjSvhiGKJ7bn9ti" src="https://asciinema.org/a/zxpCpfqaMSKjSvhiGKJ7bn9ti.js" async></script>
-
-
