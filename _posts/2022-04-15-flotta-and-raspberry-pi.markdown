@@ -18,6 +18,10 @@ sensors deployment, vehicle deployment or many other cases.
 
 Let's learn how Flotta can be used to manage it by following steps described in this article.
 
+## Prerequisite
+
+- Installed Flotta-Operator with a version higher than v0.1.0.
+
 ## Fedora IoT on Raspberry Pi 4 installation
 
 1) Download [Fedora IoT 35 Raw Image](https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz)
@@ -64,8 +68,6 @@ Options used:
 
   ![Raspberry Pi 4](/assets/images/rpi4.jpg)
   ![Booted RPI4](/assets/images/rpi4_up.jpg)
-
-- Flotta Operator installed in a Kuberenetes Cluster - follow [operator installation instructions](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/running.md#operator).
 
 ### Installation
 
