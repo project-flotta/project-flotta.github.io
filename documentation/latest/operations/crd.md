@@ -525,6 +525,13 @@ EdgeDeviceSpec defines the desired state of EdgeDevice
           </td>
           <td>false</td>
         </tr><tr scope="row">
+          <td><b><a href="#edgedevicespecmountsindex">mounts</a></b></td>
+          <td>[]object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b><a href="#edgedevicespecosinformation">osInformation</a></b></td>
           <td>object</td>
           <td>
@@ -911,6 +918,55 @@ AllowList defines name of a ConfigMap containing list of system metrics that sho
 </div>
 
 
+##### EdgeDevice.spec.mounts[index] {#edgedevicespecmountsindex}
+<sup><sup>[↩ Parent](#edgedevicespec)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>device</b></td>
+          <td>string</td>
+          <td>
+            Device path to be mounted<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>folder</b></td>
+          <td>string</td>
+          <td>
+            Destination directory path<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>options</b></td>
+          <td>string</td>
+          <td>
+            Mount options (i.e. rw, suid, dev)<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>type</b></td>
+          <td>string</td>
+          <td>
+            Mount type: (i.e ext4)<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
 ##### EdgeDevice.spec.osInformation {#edgedevicespecosinformation}
 <sup><sup>[↩ Parent](#edgedevicespec)</sup></sup>
 
@@ -1156,6 +1212,13 @@ EdgeDeviceStatus defines the observed state of EdgeDevice
           <td>object</td>
           <td>
             memory<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b><a href="#edgedevicestatushardwaremountsindex">mounts</a></b></td>
+          <td>[]object</td>
+          <td>
+            list of all mounts found on edgedevice<br/>
           </td>
           <td>false</td>
         </tr><tr scope="row">
@@ -1703,6 +1766,55 @@ memory
 </div>
 
 
+##### EdgeDevice.status.hardware.mounts[index] {#edgedevicestatushardwaremountsindex}
+<sup><sup>[↩ Parent](#edgedevicestatushardware)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>device</b></td>
+          <td>string</td>
+          <td>
+            Device path to be mounted<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>folder</b></td>
+          <td>string</td>
+          <td>
+            Destination directory path<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>options</b></td>
+          <td>string</td>
+          <td>
+            Mount options (i.e. rw, suid, dev)<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>type</b></td>
+          <td>string</td>
+          <td>
+            Mount type: (i.e ext4)<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
 ##### EdgeDevice.status.hardware.systemVendor {#edgedevicestatushardwaresystemvendor}
 <sup><sup>[↩ Parent](#edgedevicestatushardware)</sup></sup>
 
@@ -1936,6 +2048,13 @@ EdgeDeviceSetSpec defines the desired state of EdgeDeviceSet
           <td>object</td>
           <td>
             Metrics contain metric collection and upload configuration<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b><a href="#edgedevicesetspecmountsindex">mounts</a></b></td>
+          <td>[]object</td>
+          <td>
+            Mounts contains mount configuration<br/>
           </td>
           <td>false</td>
         </tr><tr scope="row">
@@ -2316,6 +2435,55 @@ AllowList defines name of a ConfigMap containing list of system metrics that sho
 </div>
 
 
+##### EdgeDeviceSet.spec.mounts[index] {#edgedevicesetspecmountsindex}
+<sup><sup>[↩ Parent](#edgedevicesetspec)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>device</b></td>
+          <td>string</td>
+          <td>
+            Device path to be mounted<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>folder</b></td>
+          <td>string</td>
+          <td>
+            Destination directory path<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>options</b></td>
+          <td>string</td>
+          <td>
+            Mount options (i.e. rw, suid, dev)<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>type</b></td>
+          <td>string</td>
+          <td>
+            Mount type: (i.e ext4)<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
 ##### EdgeDeviceSet.spec.osInformation {#edgedevicesetspecosinformation}
 <sup><sup>[↩ Parent](#edgedevicesetspec)</sup></sup>
 
@@ -2638,6 +2806,13 @@ Hardware defines the hardware that devices has
           <td>object</td>
           <td>
             memory<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b><a href="#edgedevicesignedrequestspecfeatureshardwaremountsindex">mounts</a></b></td>
+          <td>[]object</td>
+          <td>
+            list of all mounts found on edgedevice<br/>
           </td>
           <td>false</td>
         </tr><tr scope="row">
@@ -3178,6 +3353,55 @@ memory
             usable bytes<br/>
             <br/>
               <i>Format</i>: int64<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDeviceSignedRequest.spec.features.hardware.mounts[index] {#edgedevicesignedrequestspecfeatureshardwaremountsindex}
+<sup><sup>[↩ Parent](#edgedevicesignedrequestspecfeatureshardware)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>device</b></td>
+          <td>string</td>
+          <td>
+            Device path to be mounted<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>folder</b></td>
+          <td>string</td>
+          <td>
+            Destination directory path<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>options</b></td>
+          <td>string</td>
+          <td>
+            Mount options (i.e. rw, suid, dev)<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>type</b></td>
+          <td>string</td>
+          <td>
+            Mount type: (i.e ext4)<br/>
           </td>
           <td>false</td>
         </tr></tbody>
