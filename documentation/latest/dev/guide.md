@@ -67,10 +67,10 @@ $ make build
 # Make sure you have configured k8s provider docker
 # For example for minikube by running: eval $(minikube -p minikube docker-env)
 # Then run the build of the container
-$ IMG=flotta-operator:latest make docker-build
+$ IMG=flotta-operator:latest HTTP_IMG=flotta-edge-api:latest make docker-build
 
 # Deploy the operator on k8s
-$ make deploy IMG=flotta-operator
+$ IMG=flotta-operator:latest HTTP_IMG=flotta-edge-api:latest make deploy
 
 # Wait until the operator is ready
 $ kubectl wait --timeout=120s --for=condition=Ready pods -l app=flotta-controller-manager -n flotta
@@ -104,6 +104,41 @@ Debug the edge device container by executing shell inside the container:
 
 ```shell
 docker exec -it edgedevice1 journalctl -u yggdrasild.service
+```
+
+**Error: "No such image: quay.io/project-flotta/edgedevice:latest"**
+
+This error happens when KinD does not have the image stored in the control plane. To solve it, use
+
+```shell
+docker pull quay.io/project-flotta/edgedevice:latest
+kind load docker-image quay.io/project-flotta/edgedevice:latest
+```
+
+command to upload the missing image.
+
+**How can I see the running containers in the device?**
+
+To list the podman managed pods running in a device, run this command in the target device:
+
+```shell
+docker exec -it edgedevice1 machinectl shell -q flotta@.host /usr/bin/podman pod ps
+```
+
+or
+
+```shell
+machinectl shell -q flotta@.host /usr/bin/podman pod ps
+```
+
+if you're running it inside the container.
+
+**How can I see the logs produced by the flotta user in the device?**
+
+When running podman in rootless mode, the logs from the agent and podman are captured for the flotta user running in the device. Run the following command to see the journalctl logs:
+
+```shell
+machinectl shell -q flotta@.host /usr/bin/journalctl --user
 ```
 
 # Device Worker
