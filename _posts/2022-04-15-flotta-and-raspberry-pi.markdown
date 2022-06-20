@@ -20,7 +20,7 @@ Let's learn how Flotta can be used to manage it by following steps described in 
 
 ## Prerequisite
 
-- Installed Flotta-Operator with a version higher than v0.1.0.
+- Installed Flotta-Operator
 
 ## Fedora IoT on Raspberry Pi 4 installation
 
@@ -99,8 +99,16 @@ $
 ```
 
 On the computer with $KUBECONFIG pointing to our cluster, let's forward required port to make HTTPS API public:
+
+For Flotta Operator version > v0.1.0: 
 ```shell
 $ kubectl port-forward service/flotta-edge-api -n flotta 8043 --address 0.0.0.0
+Forwarding from 0.0.0.0:8043 -> 8043
+```
+
+For Flotta Operator version v0.1.0:
+```shell
+$ kubectl port-forward service/flotta-operator-controller-manager -n flotta 8043 --address 0.0.0.0
 Forwarding from 0.0.0.0:8043 -> 8043
 ```
 
