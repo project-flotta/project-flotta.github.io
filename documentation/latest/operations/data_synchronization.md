@@ -25,8 +25,8 @@ frame "Edge Device" {
     node "Flotta Agent" as deviceAgent
 }
 
-buckets -down- S3: API
-deviceAgent --> S3: Upload files
+buckets <--> S3: API
+deviceAgent <--> S3: Upload/Download files
 deviceAgent -up---> edgeAPI : Get configuration
 
 operator --> buckets: Provision
