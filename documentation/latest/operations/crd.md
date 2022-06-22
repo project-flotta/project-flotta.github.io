@@ -725,6 +725,13 @@ SyslogConfig is the pointer to the configMap to be used to load the config
           </tr>
       </thead>
       <tbody><tr scope="row">
+          <td><b><a href="#edgedevicespecmetricsdatatransfer">dataTransfer</a></b></td>
+          <td>object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b><a href="#edgedevicespecmetricsreceiverconfiguration">receiverConfiguration</a></b></td>
           <td>object</td>
           <td>
@@ -745,6 +752,80 @@ SyslogConfig is the pointer to the configMap to be used to load the config
             <br/>
           </td>
           <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.spec.metrics.dataTransfer {#edgedevicespecmetricsdatatransfer}
+<sup><sup>[↩ Parent](#edgedevicespecmetrics)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b><a href="#edgedevicespecmetricsdatatransferallowlist">allowList</a></b></td>
+          <td>object</td>
+          <td>
+            AllowList defines name of a ConfigMap containing list of system metrics that should be scraped<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>disabled</b></td>
+          <td>boolean</td>
+          <td>
+            Disabled when set to true instructs the device to turn off system metrics collection<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>interval</b></td>
+          <td>integer</td>
+          <td>
+            Interval(in seconds) to scrape system metrics.<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+              <i>Default</i>: 60<br/>
+              <i>Minimum</i>: 0<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.spec.metrics.dataTransfer.allowList {#edgedevicespecmetricsdatatransferallowlist}
+<sup><sup>[↩ Parent](#edgedevicespecmetricsdatatransfer)</sup></sup>
+
+
+
+AllowList defines name of a ConfigMap containing list of system metrics that should be scraped
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>name</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
         </tr></tbody>
   </table>
 </div>
@@ -2242,6 +2323,13 @@ Metrics contain metric collection and upload configuration
           </tr>
       </thead>
       <tbody><tr scope="row">
+          <td><b><a href="#edgedevicesetspecmetricsdatatransfer">dataTransfer</a></b></td>
+          <td>object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b><a href="#edgedevicesetspecmetricsreceiverconfiguration">receiverConfiguration</a></b></td>
           <td>object</td>
           <td>
@@ -2262,6 +2350,80 @@ Metrics contain metric collection and upload configuration
             <br/>
           </td>
           <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDeviceSet.spec.metrics.dataTransfer {#edgedevicesetspecmetricsdatatransfer}
+<sup><sup>[↩ Parent](#edgedevicesetspecmetrics)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b><a href="#edgedevicesetspecmetricsdatatransferallowlist">allowList</a></b></td>
+          <td>object</td>
+          <td>
+            AllowList defines name of a ConfigMap containing list of system metrics that should be scraped<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>disabled</b></td>
+          <td>boolean</td>
+          <td>
+            Disabled when set to true instructs the device to turn off system metrics collection<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>interval</b></td>
+          <td>integer</td>
+          <td>
+            Interval(in seconds) to scrape system metrics.<br/>
+            <br/>
+              <i>Format</i>: int32<br/>
+              <i>Default</i>: 60<br/>
+              <i>Minimum</i>: 0<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDeviceSet.spec.metrics.dataTransfer.allowList {#edgedevicesetspecmetricsdatatransferallowlist}
+<sup><sup>[↩ Parent](#edgedevicesetspecmetricsdatatransfer)</sup></sup>
+
+
+
+AllowList defines name of a ConfigMap containing list of system metrics that should be scraped
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>name</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
         </tr></tbody>
   </table>
 </div>
