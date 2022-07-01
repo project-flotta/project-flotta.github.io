@@ -20,7 +20,7 @@ needed for the device-agent.
 
 | Requirement       | Min version | Optional  |
 | yggdrasil         | master      | no        |
-| podman            | 3.4.4       | no        |
+| podman            | >=4         | no        |
 | nftables          | 1           | no        |
 | node_exporter     | 1.3.1       | no        |
 | ansible           | 2.9         | no        |
