@@ -22,7 +22,7 @@ jobs:
         run: ./scripts/get_docs.sh
 
       - name: Check if new files are in place
-        run: git status --porcelain | grep docu
+        run: if [ -n "$(git status --porcelain | grep docu )" ]; then echo "There are uncommitted changes:"; git status --short | grep docu; exit 1; fi
 
       - name: Checkout to a new branch
         run: |
