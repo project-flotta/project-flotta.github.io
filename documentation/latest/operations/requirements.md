@@ -20,7 +20,7 @@ needed for the device-agent.
 
 | Requirement       | Min version | Optional  |
 | yggdrasil         | master      | no        |
-| podman            | >=4         | no        |
+| podman            | >=4.2       | no        |
 | nftables          | 1           | no        |
 | node_exporter     | 1.3.1       | no        |
 | ansible           | 2.9         | no        |
@@ -28,13 +28,13 @@ needed for the device-agent.
 
 
 For all the device requirements, project-flotta maintains a fedora Copr repo
-that a user can use to initalize a device.
+that a user can use to initialize a device.
 
 [https://copr.fedorainfracloud.org/coprs/project-flotta/flotta/](https://copr.fedorainfracloud.org/coprs/project-flotta/flotta/)
 
 The version that are supported are:
 
-- Fedora 35 and 36 (Both ARM and X86 architecture)
+- Fedora 36 (Both ARM and X86 architecture)
 - Centos 8 and 9 (Both ARM and X86 architecture)
 
 Debian based packages are not yet provided.

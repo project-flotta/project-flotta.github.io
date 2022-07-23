@@ -130,7 +130,7 @@ There are two ways to run this piece:
 
 > ⚠️ **Golang 1.16**: By default, device needs to compile in Golang 1.16 mainly
 > because this software needs to be packaged as RPM, so the version for
-> RHEL8/Fedora 35 is golang 1.16
+> RHEL8 is golang 1.16
 
 ### Single way with Yggdrasil:
 
