@@ -197,6 +197,3 @@ kubectl patch cm -n flotta flotta-manager-config \
 In case of:
 -  _Inside the cluster_ run, the pod will be automatically restarted.
 -  _Outside the cluster_ run, the user must set the `LOG_LEVEL` field and manually restart the operator.
-
-
-# Device 

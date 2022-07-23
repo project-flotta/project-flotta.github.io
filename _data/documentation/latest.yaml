@@ -40,6 +40,8 @@
     Link: "operations/api.html"
   - Name: CRD reference
     Link: "operations/crd.md"
+  - Name: Accessing host devices
+    Link: "operations/host_devices.md"
 
 - Name: For developers
   Childs:
