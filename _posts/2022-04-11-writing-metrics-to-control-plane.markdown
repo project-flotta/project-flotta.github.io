@@ -15,7 +15,7 @@ Flotta edge devices collect metrics from device's system and workloads. These me
 
 ## Device metrics - quick overview
 
-Configuring a device to collect metrics is covered by the [device-metrics user guide](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/device-metrics.md). Flotta agent in the device scrapes system and workloads metrics and writes to a local TSDB folder. For system metrics we use `node_exporter`. Thanks to that you can see metrics such as `node_memory_MemAvailable_bytes`. The local TSDB enforces a retention policy.
+Configuring a device to collect metrics is covered by the [device-metrics user guide](https://project-flotta.github.io/documentation/latest/operations/observability.html). Flotta agent in the device scrapes system and workloads metrics and writes to a local TSDB folder. For system metrics we use `node_exporter`. Thanks to that you can see metrics such as `node_memory_MemAvailable_bytes`. The local TSDB enforces a retention policy.
 
 ##  Prometheus Remote Write API
 
@@ -24,7 +24,7 @@ Configuring a device to collect metrics is covered by the [device-metrics user g
 ## Flotta project's solution
 
 Flotta's solution is to use the Prometheus Remote Write API for writing to a server in the control plane. Flotta agent, periodically reads from the local TSDB (5 minutes) and writes to a receiver in the control plane. The client in the agent is a reuse of [Prometheus Write Client](https://github.com/prometheus/prometheus/tree/main/storage/remote).
-Configuring the agent is explained [here](https://github.com/project-flotta/flotta-operator/blob/main/docs/user-guide/device-metrics.md). The most important part is the URL for accessing the receiver from the device. It can be either HTTP or HTTPS.
+Configuring the agent is explained [here](https://project-flotta.github.io/documentation/latest/operations/observability.html). The most important part is the URL for accessing the receiver from the device. It can be either HTTP or HTTPS.
 The configuration allows you to adjust the request size sent to the server and the timeout of the connection to the server.
 
 What happens if device can not connect to receiver for a few days? The agent saves the timestamp of the last written metric. It will start writing from that point in time until all the metrics in the TSDB are written. Metrics that were deleted by TSDB retention before having a chance to send them are lost.
