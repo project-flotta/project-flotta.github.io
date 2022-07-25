@@ -16,40 +16,49 @@ It is also possible to schedule a container workload to run in the device using
 a Workload CRD. A container workload can be scheduled for an unlimited
 number of devices.
 
-{% mermaid %}
-flowchart TB
-  classDef plain fill:#ddd,stroke:#fff,stroke-width:4px,color:#000;
-  classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
-  classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
+{% plantuml %}
+@startuml
+!theme bluegray
 
-  subgraph "Kubernetes"
-    direction TB
-    EdgeDevice(EdgeDevice CRD)
-    EdgeDeviceSet(EdgeDeviceSet CRD)
-    EdgeWorkload(EdgeWorkload CRD)
-    ing(Ingress) --> api(Flotta Edge API)
-    op(Flotta Operator)
+node "Edge Cluster" {
+    frame Kubernetes {
+        database etcd [
+            ETCD
+            ====
+            EdgeDevice
+            EdgeDeviceSet
+            EdgeWorkload
+            ----
+        ]
+        component "API Server" as apiserver
+        component "Flotta Edge API" as edgeAPI
+        component "Flotta Operator" as operator
+    }
+}
 
-    op -.- EdgeDevice
-    op -.- EdgeDeviceSet
-    op -.- EdgeWorkload
+node "Edge Device" {
+    frame "Flotta Agent" as deviceAgent {
+        left to right direction
+        component "Device Worker" as device_worker
+        component "Podman" as podman
+        component "Systemd" as systemd
+        component "Workloads" as workloads
+    }
+}
 
-    api -.- EdgeDevice
-    api -.- EdgeDeviceSet
-    api -.- EdgeWorkload
-  end
+device_worker -r--> edgeAPI : Get updates\nSend status\n[https]
 
-  class ing,op,api,EdgeDevice,EdgeDeviceSet,EdgeWorkload k8s;
-  class kube cluster;
+operator <--> apiserver: reconcile
+edgeAPI <--> apiserver: register/update device
+apiserver <--> etcd: "Flotta CRDs"
 
-  subgraph Device
-    direction LR;
-    Agent((Agent daemon));
-    Agent --> Podman --> Workloads;
-  end
+device_worker --l--> podman : interacts with
+podman --> systemd : Generates
+device_worker --> systemd : Configures
+systemd --> workloads : Runs
 
-  Agent ---> Device ---> ing
-{% endmermaid%}
+@enduml
+{% endplantuml %}
 
 ### Edge Devices Observability
 
