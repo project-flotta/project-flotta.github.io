@@ -19,6 +19,12 @@ number of devices.
 {% plantuml %}
 @startuml
 !theme bluegray
+skinparam dpi 65
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam defaultFontName DejaVu Serif
+skinparam defaultFontSize 16
+left to right direction
 
 node "Edge Cluster" {
     frame Kubernetes {
@@ -38,7 +44,6 @@ node "Edge Cluster" {
 
 node "Edge Device" {
     frame "Flotta Agent" as deviceAgent {
-        left to right direction
         component "Device Worker" as device_worker
         component "Podman" as podman
         component "Systemd" as systemd
@@ -46,10 +51,10 @@ node "Edge Device" {
     }
 }
 
-device_worker -r--> edgeAPI : Get updates\nSend status\n[https]
+device_worker -r-> edgeAPI : Gets\nupdates/\nSends\nstatus\n[https]
 
 operator <--> apiserver: reconcile
-edgeAPI <--> apiserver: register/update device
+edgeAPI <--> apiserver: register/\nupdate device
 apiserver <--> etcd: "Flotta CRDs"
 
 device_worker --l--> podman : interacts with
