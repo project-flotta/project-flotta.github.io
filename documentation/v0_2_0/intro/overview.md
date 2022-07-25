@@ -91,4 +91,10 @@ edge devices.
 
 ## OS Lifecycle
 
-@TODO TBC
+For OSTree based devices, the OS lifecycle is managed by the [RPM-OSTree system](https://coreos.github.io/rpm-ostree/).
+One of the major concepts of RPM-OSTree is the transactional upgrade and OS rollback.
+Flotta uses the RPM-OSTree system to upgrade the OS to the desired image commit-ID.
+The administrator may define the desired commit-ID either on [device-level](https://project-flotta.io/documentation/v0_2_0/operations/crd.html#edgedevicespecosinformation)
+or on [device-set level](https://project-flotta.io/documentation/v0_2_0/operations/crd.html#edgedevicesetspecosinformation).
+After the upgrade is performed, the flotta-agent will verify using [greenboot](https://github.com/fedora-iot/greenboot)
+scripts the successful upgrade. In case of a failure, the flotta-agent will rollback the OS to its previous state.
