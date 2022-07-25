@@ -40,7 +40,7 @@ help        (Help about any command)
 
 Now, you can easily add a new edge device by running:
 ```shell
-$ flotta add device device1
+$ flotta add device --name device1
 device 'device1' was added 
 ```
 
@@ -53,7 +53,7 @@ device1		running		46 seconds ago
 
 Once you have a registered edge device, you can deploy workloads on it:
 ```shell
-$ flotta add workload -d device1
+$ flotta add workload --device device1
 workload 'nginx1-21-6-ygneqhis' was added to device 'device1'
 ```
 
@@ -67,7 +67,7 @@ nginx1-21-6-kkejlmol	Running		5 minutes ago
 
 You can also stop and start a registered device:
 ```shell
-$ flotta stop device device1
+$ flotta stop device --name device1
 edgedevice 'device1' was stopped 
 
 # view stopped device status
@@ -76,7 +76,7 @@ NAME		STATUS		CREATED
 device1		exited		2 minutes ago
 
 # start device
-$ flotta start device device1
+$ flotta start device --name device1
 device 'device1' was started 
 
 # view started device status
@@ -88,10 +88,10 @@ device1		running		3 minutes ago
 Finally, if you wish to delete a device or workload, you can run:
 ```shell
 # delete workload
-$ flotta delete workload nginx1-21-6-kkejlmol
+$ flotta delete workload --name nginx1-21-6-kkejlmol
 workload 'nginx1-21-6-kkejlmol' was deleted 
 
 # delete device
-$ flotta delete device device1
+$ flotta delete device --name device1
 device 'device1' was deleted 
 ```
