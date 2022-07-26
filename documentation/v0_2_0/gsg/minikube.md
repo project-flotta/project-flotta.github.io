@@ -58,7 +58,7 @@ Flotta operator has a few tools that helps to install flotta, for that, let's
 clone it:
 
 ```shell
-git clone https://github.com/project-flotta/flotta-operator -b main --depth 1
+git clone https://github.com/project-flotta/flotta-operator -b v0.2.0 --depth 1
 cd flotta-operator
 ```
 
@@ -83,7 +83,7 @@ pod/ingress-router-5b9b477c98-gx5pl condition met
 Now let's install Flotta on the cluster:
 
 ```shell
-make deploy IMG=quay.io/project-flotta/flotta-operator:latest HTTP_IMG=quay.io/project-flotta/flotta-edge-api:latest TARGET=k8s
+make deploy IMG=quay.io/project-flotta/flotta-operator:v0.2.0 HTTP_IMG=quay.io/project-flotta/flotta-edge-api:v0.2.0 TARGET=k8s
 
 ```
 
