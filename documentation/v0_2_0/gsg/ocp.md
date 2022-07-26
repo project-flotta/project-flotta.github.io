@@ -25,7 +25,7 @@ Flotta operator has a few tools that helps to install flotta, for that, let's
 clone it:
 
 ```shell
-git clone https://github.com/project-flotta/flotta-operator -b main --depth 1
+git clone https://github.com/project-flotta/flotta-operator -b v0.2.0 --depth 1
 cd flotta-operator
 ```
 
