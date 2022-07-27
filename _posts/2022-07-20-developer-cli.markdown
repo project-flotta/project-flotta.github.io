@@ -43,6 +43,8 @@ Now, you can easily add a new edge device by running:
 $ flotta add device --name device1
 device 'device1' was added 
 ```
+Note that the first execution of this command will take some since the edge-device image is being pulled to the local
+image registry. The image will be available for the next executions.
 
 You can view edge device `device1` under the list of the registered devices:
 ```shell
@@ -95,3 +97,106 @@ workload 'nginx1-21-6-kkejlmol' was deleted
 $ flotta delete device --name device1
 device 'device1' was deleted 
 ```
+
+## Troubleshooting
+As things might not always be clear, here are some tips to help you:
+* _flotta-dev-cli_ runs the edge device as a container, therefore you need to have docker installed and permissions to
+  pull and image and to create a container.
+* Workloads are deployed as containers(by _podman_) in the edge device (a nested container).
+* Workloads are run under the _flotta_ user. Workloads debugging needs to be done also as _flotta_ user on the device.
+
+### Debug the device
+To connect to a device, use docker command to list the running containers:
+```shell
+→ docker ps --filter label=flotta
+CONTAINER ID   IMAGE                                      COMMAND                  CREATED          STATUS          PORTS                                                                                                                                  NAMES
+1ca4bf233b2f   quay.io/project-flotta/edgedevice:latest   "/sbin/init"             25 minutes ago   Up 25 minutes                                                                                                                                          edge1
+```
+With the container ID, you can connect to the device by running:
+```shell
+→ docker exec -it 1ca4bf233b2f /bin/bash
+[root@1ca4bf233b2f project]#
+```
+Once connected to device, the _yggdrasil_ daemon can be checked for errors:
+```shell
+[root@1ca4bf233b2f project]# systemctl status yggdrasild
+● yggdrasild.service - yggdrasil daemon
+     Loaded: loaded (/usr/lib/systemd/system/yggdrasild.service; disabled; vendor preset: disabled)
+     Active: active (running) since Tue 2022-07-26 12:58:04 UTC; 38min ago
+       Docs: https://github.com/redhatinsights/yggdrasil
+   Main PID: 128 (yggdrasild)
+      Tasks: 30 (limit: 5671)
+     Memory: 134.1M
+        CPU: 12.229s
+     CGroup: /system.slice/yggdrasild.service
+             ├─ 128 /usr/sbin/yggdrasild
+             └─ 147 /usr/libexec/yggdrasil/device-worker
+```
+And so _yggdrasil_ logs can be viewed as well. The log contains also the output of the device-worker which is flotta's
+component that runs the workloads. The log can be viewed by running:
+```shell
+[root@1ca4bf233b2f project]# journalctl -u yggdrasild
+```
+View logs is useful when you are debugging a device, failure to register or failure to deploy workloads.
+
+### Debug the workload
+In case of failure to run the workload, the output of listing the workloads may show an undesired status:
+```shell
+→ flotta list workload
+NAME                    STATUS  CREATED
+nginx1-21-6-xmkdetkh    Exited  40 minutes ago
+```
+
+In order to debug a failure to run a workload, there is a need to connect as _flotta_ user.
+_flotta_ user was created with _nologin_ shell, therefore you need to specify one to become _flotta_ user:
+```shell
+→ docker exec -it 1ca4bf233b2f /bin/bash
+[root@1ca4bf233b2f project]# id
+uid=0(root) gid=0(root) groups=0(root)
+
+# expected to fail
+[root@1ca4bf233b2f project]# su - flotta
+This account is currently not available.
+
+# expected to succeed
+[root@1ca4bf233b2f project]# su - flotta -s /bin/sh
+-sh-5.1$ id
+uid=1001(flotta) gid=1001(flotta) groups=1001(flotta)
+-sh-5.1$
+```
+
+As _flotta_ user, you can view the workload system files:
+```shell
+[flotta@1ca4bf233b2f ~]$ ls -l /var/home/flotta/.config/systemd/user/
+total 16
+-rw-r--r--. 1 root   root    936 Jul 26 13:00 container-nginx1-21-6-xmkdetkh-nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 13:00 default.target.wants
+-rw-r--r--. 1 root   root    858 Jul 26 13:00 nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 12:58 sockets.target.wants
+```
+and test their status:
+```shell
+[flotta@1ca4bf233b2f ~]$ systemctl status nginx1-21-6-xmkdetkh.service
+```
+
+Examine podman service status:
+```shell
+[flotta@1ca4bf233b2f ~]$ systemctl --user status podman
+● podman.service - Podman API Service
+     Loaded: loaded (/usr/lib/systemd/user/podman.service; disabled; vendor preset: disabled)
+     Active: active (running) since Wed 2022-07-27 12:05:58 UTC; 47min ago
+TriggeredBy: ● podman.socket
+       Docs: man:podman-system-service(1)
+   Main PID: 203 (podman)
+      Tasks: 13 (limit: 5671)
+     Memory: 18.6M
+        CPU: 10.142s
+     CGroup: /user.slice/user-1001.slice/user@1001.service/app.slice/podman.service
+             └─ 203 /usr/bin/podman --log-level=info system service
+```
+And view podman logs to find for issues to run the workload:
+```shell
+[flotta@366d67a90f10 ~]$ journalctl --user -u podman
+```
+
+If you find an issue with _flotta-dev-cli_, please report it to the [Github issue tracker](https://github.com/project-flotta/flotta-dev-cli/issues).
