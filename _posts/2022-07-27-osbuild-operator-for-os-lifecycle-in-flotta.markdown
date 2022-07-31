@@ -125,6 +125,7 @@ oc create secret generic external-builder-ssh-pair --from-file=config/creating_e
 Deploy the VM
 ```shell
 oc apply -n osbuild -f config/creating_env/external-worker-vm.yaml
+oc wait -n osbuild --for='condition=Ready' vm/external-builder
 ```
 
 Get VM Address
@@ -153,7 +154,7 @@ After applying osbuildConfig CR you should see a new osbuild CR that was trigger
 oc describe osbuild osbuildconfig-sample-1 -n osbuild 
 ```
 
-As part of that osbuild CR you can found the osbuild-composer job status, the job composer ID, and after finish running you also can found the containerUrl in the S3 bucket
+As part of that osbuild CR you can find the osbuild-composer job status, the job composer ID, and once the job finishes, you can also find the containerUrl in the S3 bucket
 ```shell
   status:
     conditions:
@@ -178,7 +179,7 @@ curl -k <containerUrl> -o /tmp/local.tar
 Upload the image to your Container Registry using skopeo, pay attention that a Path Prefix might be required (e.g. your account name)
 ```shell
 export IMAGE_NAME=<Container-Registry-URL>/osbuild:v1
-skopeo login --username admin -p <PASSWORD> <Container-Registry-URL>
+skopeo login --username <USER> -p <PASSWORD> <Container-Registry-URL>
 skopeo copy oci-archive:/tmp/local.tar docker://${IMAGE_NAME}
 ```
 
