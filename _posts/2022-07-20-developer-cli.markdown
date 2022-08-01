@@ -106,15 +106,15 @@ As things might not always be clear, here are some tips to help you:
 * Workloads are run under the _flotta_ user. Workloads debugging needs to be done also as _flotta_ user on the device.
 
 ### Debug the device
-To connect to a device, use docker command to list the running containers:
+To connect to a device, use docker command to list the running edge device containers and their status:
 ```shell
 → docker ps --filter label=flotta
-CONTAINER ID   IMAGE                                      COMMAND                  CREATED          STATUS          PORTS                                                                                                                                  NAMES
-1ca4bf233b2f   quay.io/project-flotta/edgedevice:latest   "/sbin/init"             25 minutes ago   Up 25 minutes                                                                                                                                          edge1
+CONTAINER ID   IMAGE                                      COMMAND         CREATED          STATUS         PORTS   NAMES
+1ca4bf233b2f   quay.io/project-flotta/edgedevice:latest   "/sbin/init"    25 minutes ago   Up 25 minutes          edge1
 ```
-With the container ID, you can connect to the device by running:
+With the device name or container ID, you can connect to the device by running:
 ```shell
-→ docker exec -it 1ca4bf233b2f /bin/bash
+→ docker exec -it edge1 bash
 [root@1ca4bf233b2f project]#
 ```
 Once connected to device, the _yggdrasil_ daemon can be checked for errors:
