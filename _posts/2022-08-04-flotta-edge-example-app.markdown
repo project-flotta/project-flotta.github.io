@@ -27,13 +27,101 @@ as a workload app, this app benefits from Flotta Edge devices architecture, coll
 
 
 ## How to use this app
+Use the following manifests to deploy the app to your device:
 
-After registering your device, use the following manifest to deploy the app:
-
-// TODO add the manifests here
+#### First apply your secrets and configmaps:
 ```yaml
-
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3secret
+  namespace: default
+type: Opaque
+data:
+  AWS_ACCESS_KEY_ID: <your-aws-access-key-id>
+  AWS_SECRET_ACCESS_KEY: <your-aws-secret-key>
 ```
 
-### Github Repository
-- link to github repo
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dc1-syslog
+  namespace: default
+data:
+  Address: dc1.syslog.project-flotta.io:601
+  Protocol: tcp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secure-syslog
+  namespace: default
+data:
+  Address: secure.dc1.syslog.project-flotta.io:601
+  Protocol: tcp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: s3config
+  namespace: default
+data:
+  BUCKET_HOST: play.min.io
+  BUCKET_NAME: flotta-data-bucket
+  BUCKET_PORT: "443"
+  BUCKET_REGION: us-east-1
+```
+
+#### Second apply the device by this manifest (or update it if it already exists):
+
+```yaml
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: <your-device-name>
+  namespace: default
+  labels:
+    app: <some-label-here>
+spec:
+  requestTime: "2022-07-14T04:55:44Z"
+  logCollection:
+    dc1-syslog:
+      bufferSize: 10 # 10 megabytes of size
+      kind: syslog
+      syslogConfig:
+        name: dc1-syslog
+    secure-syslog:
+      bufferSize: 100 # 100 megabytes of size
+      kind: syslog
+      syslogConfig:
+        name: secure-syslog
+  storage:
+    s3:
+      configMapName: "s3config"
+      secretName: "s3secret"
+```
+
+> Note: these files explained in the [Docs](https://project-flotta.io/documentation/v0_2_0/operations/data_synchronization.html#configuring-edgedevice)
+
+#### Finally, apply the app to the device:
+```yaml
+apiVersion: management.project-flotta.io/v1alpha1
+kind: EdgeWorkload
+metadata:
+  name: <workload-name>
+spec:
+  logCollection: dc1-syslog
+  deviceSelector:
+    matchLabels:
+      app: <device-label> # same as the device label
+  type: pod
+  pod:
+    spec:
+      containers:
+        - name: edge-example-workload
+          image: docker.io/ahmadateya/flotta-edge-example-workload:latest
+```
+
+### GitHub Repository
+- [https://github.com/ahmadateya/flotta-edge-example](https://github.com/ahmadateya/flotta-edge-example)
