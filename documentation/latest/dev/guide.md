@@ -148,3 +148,27 @@ machinectl shell -q flotta@.host /usr/bin/journalctl --user
 - *Go/Lint*: Checks that code is correctly linted
 - *Go/SecurityScanner*: Checks that the current code is statically checked by
   [gosec](https://github.com/securego/gosec)
+
+# Developer CLI
+
+### Prerequisites
+- Install the flotta operator as mentioned [here](https://project-flotta.io/documentation/latest/dev/installation.html).
+- Clone the flotta-dev-cli repository and build the project:
+
+```shell
+$ git clone https://github.com/project-flotta/flotta-dev-cli.git
+$ cd flotta-dev-cli
+$ make build
+```
+
+### Running the CLI
+- Use the developer CLI to easily create edge devices and deploy predefine workloads on them:
+
+```shell
+$ ./bin/flotta add device -n device1
+device 'device1' was added
+$ ./bin/flotta add workload -d device1
+workload 'nginx1-21-6-rrxkqkiz' was added to device 'device1'
+```
+
+- For more information, please refer to the flotta-dev-cli [guide](https://project-flotta.io/flotta/2022/07/20/developer-cli.html).
