@@ -24,7 +24,7 @@ Let's learn how Flotta can be used to manage it by following steps described in 
 
 ## Fedora IoT on Raspberry Pi 4 installation
 
-1) Download [Fedora IoT 35 Raw Image](https://download.fedoraproject.org/pub/alt/iot/35/IoT/aarch64/images/Fedora-IoT-35-20220101.0.aarch64.raw.xz)
+1) Download [Fedora IoT 36 Raw Image](https://download.fedoraproject.org/pub/alt/iot/36/IoT/aarch64/images/Fedora-IoT-36-20220618.0.aarch64.raw.xz)
 
 2) Plug your SD card to your computer;  in my case it will be available as `/dev/sdb` device:
  ```shell
