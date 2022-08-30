@@ -28,7 +28,10 @@ You may enable auto-completion for the CLI by running the following command:
 ```shell
 flotta completion bash > /usr/share/bash-completion/completions/flotta
 ```
-( If the above command didn't work use `| sudo tee` instead of  `> ` )
+Or (if the above command failed with permission denied error):
+```shell
+flotta completion bash | sudo tee /usr/share/bash-completion/completions/flotta
+```
 
 And by pressing the `TAB` key, you can use the auto-completion:
 ```shell
