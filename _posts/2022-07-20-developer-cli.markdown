@@ -28,6 +28,8 @@ You may enable auto-completion for the CLI by running the following command:
 ```shell
 flotta completion bash > /usr/share/bash-completion/completions/flotta
 ```
+( If the above command didn't work use `| sudo tee` instead of  `> ` )
+
 And by pressing the `TAB` key, you can use the auto-completion:
 ```shell
 flotta <tab><tab><tab>
