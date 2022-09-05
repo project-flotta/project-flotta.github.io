@@ -3,7 +3,7 @@ layout: post
 title: "Flotta Developer CLI"
 date: 2022-07-20 12:00:00 +1000
 categories: flotta
-author: Ariel Ireni, Moti Asayag
+author: Ariel Ireni, Moti Asayag, Gloria Ciavarrini
 tags:
 - guide
 - flotta
@@ -215,3 +215,21 @@ And view podman logs to find for issues to run the workload:
 ```
 
 If you find an issue with _flotta-dev-cli_, please report it to the [Github issue tracker](https://github.com/project-flotta/flotta-dev-cli/issues).
+
+### Use your own flotta-worker-device image
+If you need to use a different `flotta-worker-device` image than the official one (e.g. to test changes you made to the device-worker before sending a PR) then you must:
+
+1. Create your custom `flotta-worker-device` image\
+In the `flotta-device-worker` project folder execute:
+```shell
+IMG=quay.io/<YOUR_USERNAME>/flotta-device-worker:latest make deploy-container-image
+```
+This command creates the image and push it on your repository.
+Make sure this repository is public.
+
+1. Set the environment variable `DEVICE_IMAGE`\
+   When running the `flotta` command set the environment variable `DEVICE_IMAGE` to use your previously created image:
+   
+   ```shell
+   DEVICE_IMAGE=quay.io/<YOUR_USERNAME>/flotta-device-worker:latest flotta add device --name edge1
+   ```
