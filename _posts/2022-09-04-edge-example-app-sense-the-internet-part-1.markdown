@@ -1,15 +1,15 @@
 ---
 layout: post
-title:  "Flotta Edge Example App: Sense the Internet Part 1"
-date:   2022-08-04 03:27:05 +0100
+title:  "Edge Example App: Sense the Internet Part 1"
+date:   2022-09-04 03:27:05 +0100
 categories: flotta
 author: Ahmad Ateya <ahmad.m.ateya@gmail.com>
 tags:
-  - flotta
-  - devices
-  - workloads
+- flotta
+- devices
+- workloads
 
-summary-1: 
+summary-1:
 ---
 Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has 2 main features:
 - Sensing the Internet (which helps to construct devices network topology). <= this article
@@ -67,7 +67,7 @@ metadata:
   name: s3config
   namespace: default
 data:
-  BUCKET_HOST: play.min.io
+  BUCKET_HOST: s3://flotta-data-bucket
   BUCKET_NAME: flotta-data-bucket
   BUCKET_PORT: "443"
   BUCKET_REGION: us-east-1
@@ -115,13 +115,21 @@ spec:
   deviceSelector:
     matchLabels:
       app: <device-label> # same as the device label
+  data:
+    egress:
+      - source: export
+        target: example-edge-device
   type: pod
   pod:
     spec:
       containers:
         - name: edge-example-workload
           image: docker.io/ahmadateya/flotta-edge-example-workload:latest
+          securityContext:
+            capabilities:
+              add: ["ALL"]
 ```
 
+in [part 2](/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html), we will see how the Web App presents the network topology and the devices that are connected to the devices network.
 ### GitHub Repository
 - [https://github.com/ahmadateya/flotta-edge-example](https://github.com/ahmadateya/flotta-edge-example)
