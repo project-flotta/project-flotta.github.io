@@ -29,7 +29,7 @@ The Flotta Image Classification tool overcomes the aforementioned limitations, b
 
 ## Getting Started
 
-**Project repository can be found [here](https://github.com/dpshekhawat/image-classification).**
+**Project repository can be found [here](https://github.com/project-flotta/image-classification).**
 
 ### Preparations
 As part of the flotta installation, prioritizing security of containers we create the user flotta and utilise that user to execute the tasks.
@@ -167,4 +167,4 @@ Next the images can be browsed using flotta web app running in a cluster.
 
 Some example images detected using Flotta Image Classification Tool [here](http://www.youtube.com/watch?v=RHNfVsw2V7E).
 
-Please file any issues or propose new ideas at [GitHub Issues](https://github.com/dpshekhawat/image-classification/issues)
+Please feel free to share any issues or propose new ideas at [GitHub Issues](https://github.com/project-flotta/image-classification/issues)
