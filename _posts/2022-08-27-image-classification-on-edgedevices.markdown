@@ -33,7 +33,7 @@ The Flotta Image Classification tool overcomes the aforementioned limitations, b
 
 ### Preparations
 As part of the flotta installation, prioritizing security of containers we create the user flotta and utilise that user to execute the tasks.
-By default, the flotta user does not have access to any mounted devices, thus we must first make changes to provide flotta user access to the device in /dev before configuring the runtime to permit the access.
+By default, the flotta user does not have access to any mounted devices, thus we must first make changes to provide flotta user access to the device in `/dev` before configuring the runtime to permit the access.
 
 ```shell
 #video group access to flotta user 
@@ -44,7 +44,7 @@ By default, the flotta user does not have access to any mounted devices, thus we
 uid=1001(flotta) gid=1001(flotta) groups=1001(flotta),39(video)
 ```
 
-Following device registration, to run our workload on specific device, we need to label the device -
+Following device [registration](https://project-flotta.io/flotta/2022/04/15/flotta-and-raspberry-pi.html#installation), to run our workload on specific device, we need to label the device -
 
 Use following command to add the label:
 ```shell
@@ -159,7 +159,7 @@ data:
 
 Once the edge device is configured, it begins real-time object recognition on the camera feed at the specified time interval and if an object is detected it captures and stores the images with the localization of those objects. 
 
-The functionality of the Flotta agent and Operator of bidirectional data sync between the device and storage is then used to sync these images from the device with object storage. (learn more on Data Synchronization [here](https://project-flotta.io/documentation/v0_2_0/operations/data_synchronization.html))
+The functionality of the Flotta agent and Operator of bidirectional data sync between the device and storage is then used to sync these images from the device with object storage. (Learn more on Data Synchronization [here](https://project-flotta.io/documentation/v0_2_0/operations/data_synchronization.html))
 
 Next the images can be browsed using flotta web app running in a cluster.
 
