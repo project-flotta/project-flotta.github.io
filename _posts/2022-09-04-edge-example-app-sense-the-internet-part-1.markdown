@@ -8,22 +8,23 @@ tags:
 - flotta
 - devices
 - workloads
+- gsoc
 
 summary-1:
 ---
-Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has 2 main features:
+Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
 - Sensing the Internet (which helps to construct devices network topology). <= this article
 - Read CPU temperature (which indicate how much load the device is handling).
 
 As Project Flotta goal is to manage workloads deployed on small-footprint devices and dealing with network connectivity issues, this app provides a way of collecting network information that will be exported to the edge cluster.
-this App Along with the Web UI Interface, provides a good view of the network topology and the devices that are connected to the devices network.
+This App Along with the Web UI Interface, provides a good view of the network topology and the devices that are connected to the Internet.
 
 ## How this app works
-taking the simple way of getting network information, this app collects its information about the network by sending a packet on the IP network to the Edge Cluster, calculating the time taken for each hop the packet makes during its route to the destination, this much like traceroute in the network but done on the device.
+Taking the simple way of getting network information, this app collects its information about the network by sending a packet on the IP network to the Edge Cluster, calculating the time taken for each hop the packet makes during its route to the destination, this much like traceroute in the network but done on the device.
 
 ![](/assets/images/traceroute.png)
 
-as a workload app, this app benefits from Flotta Edge devices architecture, collecting its information and saving it to a file on the device and let the device worker send it to the edge cluster, this way
+As a workload app, this app benefits from Flotta Edge devices architecture, collecting its information and saving it to a file on the device and let the device worker send it to the edge cluster, this way
 
 
 ## How to use this app
@@ -130,6 +131,6 @@ spec:
               add: ["ALL"]
 ```
 
-in [part 2](/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html), we will see how the Web App presents the network topology and the devices that are connected to the devices network.
+in [part 2](/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html), we will see how the Web App presents the network topology and the devices that are connected to the Internet.
 ### GitHub Repository
 - [https://github.com/ahmadateya/flotta-edge-example](https://github.com/ahmadateya/flotta-edge-example)
