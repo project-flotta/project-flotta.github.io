@@ -147,12 +147,7 @@ data:
   THRES: "0.25"
   TIMEINT: "5"
 ```
-| Parameter | Description| Data type and Constraints | Default/Suggested value |
-|---|---|---|---|
-| CAPTURE | boolean flag to enable/disable capture | bool | True |
-| THRES | Boxes with a confidence score less than confidence threshold are discarded  | float | >=0.25 |
-| TIMEINT | time interval for detection | int | 5 |
-
+![Table](/assets/images/flotta_image_classification-table.png)
 
 ## Workflow 
 ![Workflow](/assets/images/flotta_image_classification-workflow.png)
