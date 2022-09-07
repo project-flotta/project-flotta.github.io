@@ -107,8 +107,8 @@ metadata:
   namespace: edgedevice-namespace
 type: Opaque
 data:
-  AWS_ACCESS_KEY_ID: eWRheWFnaTEzNjk=
-  AWS_SECRET_ACCESS_KEY: eWRheWFnaTEzNjk=
+  AWS_ACCESS_KEY_ID: eWRheWFnaTEzNjk= # should be base64 encoded
+  AWS_SECRET_ACCESS_KEY: eWRheWFnaTEzNjk= # should be base64 encoded
   tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZDVEND... # optional
 ```
 
