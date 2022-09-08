@@ -36,7 +36,7 @@ Here are screenshots of the app:
 <img src="/assets/images/network-topology-page.png" alt="List devices" width="800"/>
 
 ## How to use this app
-This app is entirely depends on the [backend app](https://github.com/project-flotta/flotta-webapp-backend), so you need to deploy the backend app first see [here](https://github.com/project-flotta/flotta-webapp-backend#getting-started), then you can deploy this app from [here](https://github.com/project-flotta/flotta-webapp-frontend#getting-started).
+The [backend app](https://github.com/project-flotta/flotta-webapp-backend) is the only requirement, so deploy the backend app, check [here](https://github.com/project-flotta/flotta-webapp-frontend#getting-started), and then you're ready to deploy this app
 
 All you need have to use this app is to have S3 bucket to store the data, and to configure the backend app to use this bucket.
 
