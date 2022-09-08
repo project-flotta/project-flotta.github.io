@@ -45,6 +45,6 @@ All you need have to use this app is to have S3 bucket to store the data, and to
 - Add more information to the devices list (e.g. device type, device location etc.).
 
 ## GitHub Repositories
-- [https://github.com/ahmadateya/flotta-edge-example](https://github.com/ahmadateya/flotta-edge-example) <= Device App
-- [https://github.com/ahmadateya/flotta-webapp-frontend](https://github.com/ahmadateya/flotta-webapp-frontend) <= Web App frontend
-- [https://github.com/ahmadateya/flotta-webapp-backend](https://github.com/ahmadateya/flotta-webapp-backend) <= Web App backend
+- [https://github.com/project-flotta/flotta-edge-example](https://github.com/project-flotta/flotta-edge-example) <= Device App
+- [https://github.com/project-flotta/flotta-webapp-frontend](https://github.com/project-flotta/flotta-webapp-frontend) <= Web App frontend
+- [https://github.com/project-flotta/flotta-webapp-backend](https://github.com/project-flotta/flotta-webapp-backend) <= Web App backend
