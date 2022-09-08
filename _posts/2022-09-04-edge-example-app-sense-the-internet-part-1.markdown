@@ -133,4 +133,4 @@ spec:
 
 in [part 2](/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html), we will see how the Web App presents the network topology and the devices that are connected to the Internet.
 ### GitHub Repository
-- [https://github.com/ahmadateya/flotta-edge-example](https://github.com/ahmadateya/flotta-edge-example)
+- [https://github.com/project-flotta/flotta-edge-example](https://github.com/project-flotta/flotta-edge-example)
