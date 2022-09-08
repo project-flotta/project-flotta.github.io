@@ -15,14 +15,14 @@ The ability to detect objects is essential in a number of fields, including comp
 
 The Flotta Image Classification tool overcomes the aforementioned limitations, by delivering amazingly precise object detection while enabling faster object detection on edge devices (like Raspberry Pi, etc.)
 
->Workload Dependencies -
->  - Python >=3.7
->  - OpenCV 4.6
+Workload Dependencies -
+  - Python >=3.7
+  - OpenCV 4.6
 
->Device configuration (at least) -
-> - CPU 1GHz
-> - Memory 1024MB
-> - Disk Space 2GB
+Device configuration (at least) -
+ - CPU 1GHz
+ - Memory 1024MB
+ - Disk Space 2GB
 
 ## Prerequisite
 - Flotta-configured device. (see [documentation](https://project-flotta.io/documentation/v0_2_0/intro/overview.html))
@@ -78,13 +78,15 @@ volumes:
 
 ### Storage
 Specified in `edgedevice.yaml`.
+
+**Keep in mind** the S3 api credentials should be `base64` encoded in `secrets.yaml`, else the data sync will not initiate.
 ```yaml
 storage:
     s3:
       secretName: s3secret # secret containing S3 API access credentials
       configMapName: s3config # configmap containing S3 API access configuration options
 ```
->The default directory `"../export/images/"` is used for saving images.
+The default directory `"../export/images/"` is used for saving images.
 
 Note: Any path that you specify in data sync configuration should be placed under /export in the container.
 ```yaml
@@ -93,7 +95,7 @@ data:
       - source: images # container folder under /export
         target: images # object storage bucket folder
 ```
-> Note: Data is synced every 15 seconds.
+ Note: Data is synced every 15 seconds.
 
 ### Deploy
 First deploying the `configmaps.yaml` and `secrets.yaml` manifests following `edgedevice.yaml` then finally `edgeworkload.yaml`.
@@ -147,12 +149,7 @@ data:
   THRES: "0.25"
   TIMEINT: "5"
 ```
-| Parameter | Description| Data type and Constraints | Default/Suggested value |
-|---|---|---|---|
-| CAPTURE | boolean flag to enable/disable capture | bool | True |
-| THRES | Boxes with a confidence score less than confidence threshold are discarded  | float | >=0.25 |
-| TIMEINT | time interval for detection | int | 5 |
-
+![Table](/assets/images/flotta_image_classification-table.png)
 
 ## Workflow 
 ![Workflow](/assets/images/flotta_image_classification-workflow.png)
