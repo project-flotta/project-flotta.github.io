@@ -80,3 +80,6 @@ status:
   }
 ]
 ```
+
+## Example workload
+we have an example workload that can be used to test the system. check it [here](https://project-flotta.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1.html). 
