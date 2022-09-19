@@ -111,16 +111,6 @@ As things might not always be clear, here are some tips to help you:
 * Workloads are run under the _flotta_ user. Workloads debugging needs to be done also as _flotta_ user on the device.
 
 ### Debug the device
-In order to register the device, the Flotta Edge API certificates need to be used to establish communication. To download the certificates run the following from flotta-operator project:
-```shell
-# remove old certs, if exists
-$ sudo rm /tmp/*.pem
-# download new certs, from the flotta operator project
-$ make get-certs
-# set permissions
-$ sudo chown root:root /tmp/*.pem
-```
-
 To connect to a device, use docker command to list the running edge device containers and their status:
 ```shell
 → docker ps --filter label=flotta
