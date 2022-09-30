@@ -94,6 +94,14 @@ In this way it is possible to monitor the execution of the playbook on each edge
 
 The possible statuse are: `Deploying`, `Running`, `SuccessfullyCompleted`, `CompletedWithError`.
 
+The `EdgeConfig` CR provides the possibility to specify the *Execution Type* of each *Ansible* playbook.
+The possible strategies provided are:
+ * `StopOnFailure`: stop playbook execution as soon as failure occurs and do not re-execute it
+ * `RetryOnFailure`: retry to execute the playbook if a failure occurs during the playbook execution
+ * `ExecuteOnce`: execute the playbook only once
+
+At the moment, only `ExecuteOnce` is supported.
+
 # Future works
 
 At the time of writing of this blog post some important features are still missing.
