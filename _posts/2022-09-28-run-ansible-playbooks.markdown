@@ -11,10 +11,10 @@ tags:
 
 summary-1:
 ---
-There may be cases n which you would like to be able to execute a scripts or commands in a device or on a group of devices.
+There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices.
 _Project Flotta_ makes your life easier by supporting _Ansible_ playbook execution.
 How can we create an _Ansible_ playbook for the edge devices? How does the execution work in _Project Flotta_?
-his is what we will cover in this blog post.
+This is what we will cover in this blog post.
 
 # Preliminary steps
 ## 1- Define the Ansible Playbook
