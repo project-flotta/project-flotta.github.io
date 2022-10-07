@@ -1177,6 +1177,13 @@ EdgeDeviceStatus defines the observed state of EdgeDevice
           </tr>
       </thead>
       <tbody><tr scope="row">
+          <td><b><a href="#edgedevicestatusplaybookexecindex">PlaybookExec</a></b></td>
+          <td>[]object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
           <td><b>dataObc</b></td>
           <td>string</td>
           <td>
@@ -1214,6 +1221,127 @@ EdgeDeviceStatus defines the observed state of EdgeDevice
         </tr><tr scope="row">
           <td><b><a href="#edgedevicestatusworkloadsindex">workloads</a></b></td>
           <td>[]object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.status.PlaybookExec[index] {#edgedevicestatusplaybookexecindex}
+<sup><sup>[↩ Parent](#edgedevicestatus)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>name</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
+        </tr><tr scope="row">
+          <td><b><a href="#edgedevicestatusplaybookexecindexplaybookexecutionstatus">PlaybookExecutionStatus</a></b></td>
+          <td>object</td>
+          <td>
+            PlaybookExecutionStatus defines the observed state of PlaybookExecution<br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.status.PlaybookExec[index].PlaybookExecutionStatus {#edgedevicestatusplaybookexecindexplaybookexecutionstatus}
+<sup><sup>[↩ Parent](#edgedevicestatusplaybookexecindex)</sup></sup>
+
+
+
+PlaybookExecutionStatus defines the observed state of PlaybookExecution
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b><a href="#edgedevicestatusplaybookexecindexplaybookexecutionstatusconditionsindex">conditions</a></b></td>
+          <td>[]object</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr></tbody>
+  </table>
+</div>
+
+
+##### EdgeDevice.status.PlaybookExec[index].PlaybookExecutionStatus.conditions[index] {#edgedevicestatusplaybookexecindexplaybookexecutionstatusconditionsindex}
+<sup><sup>[↩ Parent](#edgedevicestatusplaybookexecindexplaybookexecutionstatus)</sup></sup>
+
+
+
+
+<div class="table-responsive" >
+  <table class="table table-sm">
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Required</th>
+          </tr>
+      </thead>
+      <tbody><tr scope="row">
+          <td><b>status</b></td>
+          <td>string</td>
+          <td>
+            Indicates whether that condition is applicable, with possible values &#34;True&#34;, &#34;False&#34;, or &#34;Unknown&#34; The absence of a condition should be interpreted the same as Unknown<br/>
+          </td>
+          <td>true</td>
+        </tr><tr scope="row">
+          <td><b>type</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>true</td>
+        </tr><tr scope="row">
+          <td><b>lastTransitionTime</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+            <br/>
+              <i>Format</i>: date-time<br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>message</b></td>
+          <td>string</td>
+          <td>
+            <br/>
+          </td>
+          <td>false</td>
+        </tr><tr scope="row">
+          <td><b>reason</b></td>
+          <td>string</td>
           <td>
             <br/>
           </td>
