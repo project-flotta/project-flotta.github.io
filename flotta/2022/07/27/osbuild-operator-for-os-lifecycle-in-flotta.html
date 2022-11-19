@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>OSBuild operator for OS lifecycle management</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">OSBuild operator for OS lifecycle management</h1>
+        <p class="font-secondary">Published on Jul 27, 2022 by <span class="text-primary">Danielle Barda <dbarda@redhat.com></span
+            class="text-primary"> on <span>osbuild </span><span>oslifecycle </span></p>
+        <div class="content">
+          
+
+          <p>The OSBuild operator provides a kubernetes API by the means of new Custom Resource Definitions for building OSTree images as part of OS lifecycle management,
+in flotta project.</p>
+
+<p>The first release of the operator allows the user to build edge-container for RHEL images (RHEL &gt;= 8.6) and make them accessible in S3 bucket.</p>
+
+<p>Please see below the step-by-step guide for producing a new edge-container image.
+A complete demo can be found <a href="https://www.youtube.com/watch?v=SnNcHToCcDQ">here</a></p>
+
+<h2 id="prerequisites-installation">Prerequisites installation</h2>
+<h3 id="clone-the-osbuild-operator-repository">Clone the osbuild-operator repository</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/project-flotta/osbuild-operator.git
+<span class="nb">cd </span>osbuild-operator
+</code></pre></div></div>
+
+<h3 id="store-a-rhel-image-in-an-accessible-endpoint-for-creating-osbuild-workers">Store a RHEL image in an accessible endpoint for creating osbuild-workers</h3>
+<p>Here we will use Nexus for storing a RHEL image and make it accessible for installing OSBuild-Worker VMs.   <br />
+Deploy Nexus operator by following the instruction <a href="https://github.com/RedHatGov/nexus-operator#installation">here</a> 
+and after deploying Nexus operator finished, create a new Nexus instance by running</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/deploy_nexus.yaml
+</code></pre></div></div>
+
+<p>Install the Nexus CLI</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>nexus3-cli
+</code></pre></div></div>
+
+<p>Login to Nexus</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+oc get secret <span class="nt">-n</span> osbuild nexus-osbuild-admin-credentials <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.data.password<span class="o">}</span> | <span class="nb">base64</span> <span class="nt">-d</span> | xargs nexus3 login <span class="nt">--url</span> https://nexus-osbuild-osbuild.apps.<span class="k">${</span><span class="nv">CLUSTER_DOMAIN</span><span class="k">}</span> <span class="nt">--no-x509_verify</span> <span class="nt">--username</span> admin <span class="nt">--password</span>
+</code></pre></div></div>
+
+<p>Create a Hosted Raw repository named disk-images</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nexus3 repository create hosted raw disk-images
+</code></pre></div></div>
+
+<p>Upload the rhel qcow2 image (it was tested with <a href="https://access.cdn.redhat.com/content/origin/files/sha256/c9/c9b32bef88d605d754b932aad0140e1955ab9446818c70c4c36ca75d6f442fe9/rhel-8.6-x86_64-kvm.qcow2?user=07786f290529f76887dfea2fc9631d69&amp;_auth_=1659009182_73d2e99e48a4486633a014b63d7e3312">RHEL 8.6</a>)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nexus3 upload rhel-8.6-x86_64-kvm.qcow2 disk-images
+</code></pre></div></div>
+
+<h3 id="create-an-s3-service">Create an S3 service</h3>
+<p>Deploy MinIO</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/deploy_minio.yaml
+
+</code></pre></div></div>
+
+<p>Create a bucket name osbuild-images. You can use the aws cli (please follow the <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">installation instructions</a>)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+<span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>minioadmin <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>minioadmin aws <span class="nt">--endpoint-url</span> https://minio-s3-osbuild.apps.<span class="k">${</span><span class="nv">CLUSTER_DOMAIN</span><span class="k">}</span> <span class="nt">--no-verify-ssl</span> s3 mb s3://osbuild-images
+</code></pre></div></div>
+
+<p>Create a secret for the S3 credentials</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic osbuild-s3-credentials <span class="nt">-n</span> osbuild <span class="nt">--from-literal</span><span class="o">=</span>access-key-id<span class="o">=</span>minioadmin <span class="nt">--from-literal</span><span class="o">=</span>secret-access-key<span class="o">=</span>minioadmin
+
+</code></pre></div></div>
+<p>Create a secret for the CA Bundle using the OCP route</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get secrets <span class="nt">-n</span> openshift-ingress-operator router-ca <span class="nt">-o</span> <span class="s2">"jsonpath={.data.tls</span><span class="se">\.</span><span class="s2">crt}"</span> | <span class="nb">base64</span> <span class="nt">-d</span> <span class="o">&gt;</span> /tmp/ca-bundle
+oc create secret generic osbuild-s3-ca-bundle <span class="nt">-n</span> osbuild <span class="nt">--from-file</span><span class="o">=</span>/tmp/ca-bundle
+
+</code></pre></div></div>
+
+<h3 id="create-a-secret-for-your-red-hat-credentials">Create a Secret for your Red Hat Credentials</h3>
+
+<p>Find your Red Hat credentials and create a secret:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic redhat-portal-credentials <span class="nt">-n</span> osbuild <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">username</span><span class="o">=</span>&lt;USERNAME&gt; <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">password</span><span class="o">=</span>&lt;PASSWORD&gt;
+</code></pre></div></div>
+
+<h3 id="create-a-postgresql-server">Create a PostgreSQL Server</h3>
+<p>Currently, the controller does not support creating the PostgreSQL server on its own, making this step mandatory</p>
+
+<p>Edit the file <code class="language-plaintext highlighter-rouge">config/creating_env/psql.env</code> and set a real password</p>
+
+<p>Create the PostgreSQL server by running</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-app <span class="nt">--env-file</span> config/creating_env/psql.env postgresql:13-el8 <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>Edit the file <code class="language-plaintext highlighter-rouge">config/creating_env/postgress_secret.yaml</code> with the same password</p>
+
+<p>Create new secret (please enter a real encoded password)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create <span class="nt">-f</span> config/creating_env/postgress_secret.yaml
+</code></pre></div></div>
+
+<h3 id="provision-an-external-worker-vm-using-cnv">Provision an External Worker VM using CNV</h3>
+<p>Create an SSH key-pair</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> rsa <span class="nt">-b</span> 4096 <span class="nt">-C</span> cloud-user@external-builder <span class="nt">-f</span> ~/.ssh/external-builder
+</code></pre></div></div>
+
+<p>Create symlinks to the files to facilitate the next step</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-s</span> ~/.ssh/external-builder.pub config/creating_env/ssh-publickey
+<span class="nb">ln</span> <span class="nt">-s</span> ~/.ssh/external-builder config/creating_env/ssh-privatekey
+</code></pre></div></div>
+
+<p>Generate the secret</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic external-builder-ssh-pair <span class="nt">--from-file</span><span class="o">=</span>config/creating_env/ssh-privatekey <span class="nt">--from-file</span><span class="o">=</span>config/creating_env/ssh-publickey <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>Deploy the VM</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/external-worker-vm.yaml
+oc <span class="nb">wait</span> <span class="nt">-n</span> osbuild <span class="nt">--for</span><span class="o">=</span><span class="s1">'condition=Ready'</span> vm/external-builder
+</code></pre></div></div>
+
+<p>Get VM Address</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get vmi external-builder <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.status.interfaces[0].ipAddress<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="create-osbuildenvconfig-singleton-cr">Create OSBuildEnvConfig singleton CR</h2>
+<p>Apply OSBuildEnvConfig</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+<span class="nb">export </span><span class="nv">EXTERNAL_WORKER_IP</span><span class="o">=</span><span class="sb">`</span>oc get vmi external-builder <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.status.interfaces[0].ipAddress<span class="o">}</span><span class="sb">`</span>
+<span class="nb">cat </span>config/samples/osbuilder_v1alpha1_osbuildenvconfig.yaml | envsubst | oc apply <span class="nt">-f</span> -
+</code></pre></div></div>
+
+<h2 id="create-an-edge-container-image">Create an edge-container image</h2>
+<p>Apply osbuildConfig that contains all the relevant configuration for running osbuild-composer job.
+You can use that sample:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create <span class="nt">-f</span> config/samples/osbuilder_v1alpha1_osbuildconfig.yaml <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>After applying osbuildConfig CR you should see a new osbuild CR that was triggered automatically</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc describe osbuild osbuildconfig-sample-1 <span class="nt">-n</span> osbuild 
+</code></pre></div></div>
+
+<p>As part of that osbuild CR you can find the osbuild-composer job status, the job composer ID, and once the job finishes, you can also find the containerUrl in the S3 bucket</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  status:
+    conditions:
+    - message: Edge-container job is still running
+      status: <span class="s2">""</span>
+      <span class="nb">type</span>: startedContainerBuild
+    - message: Edge-container job was finished successfully
+      status: <span class="s2">""</span>
+      <span class="nb">type</span>: containerBuildDone
+    containerComposeId: 80125a8c-6e4a-42fe-8c06-8f90398fe5b1
+    containerUrl: https://minio-s3-osbuild.apps.my-cluster.example.com/osbuild-images/composer-api-2ca271b8-1a9e-4bae-bcec-ab151c2bdc5b-container.tar?X-Amz-Algorithm<span class="o">=</span>AWS4-HMAC-SHA256&amp;X-Amz-Credential<span class="o">=</span>minioadmin%2F20220720%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date<span class="o">=</span>20220720T095954Z&amp;X-Amz-Expires<span class="o">=</span>604800&amp;X-Amz-SignedHeaders<span class="o">=</span>host&amp;X-Amz-Signature<span class="o">=</span>ac57b8499450dd4b62b80936277db89e7e850d5c3efab9e39bb9a493c064921f
+</code></pre></div></div>
+
+<h2 id="run-a-vm-using-the-newly-created-edge-container">Run a VM using the newly created edge-container</h2>
+
+<h3 id="upload-the-tar-file-to-container-image-registry">Upload the tar file to container image registry</h3>
+<p>Download the tar file to your local environment</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-k</span> &lt;containerUrl&gt; <span class="nt">-o</span> /tmp/local.tar
+</code></pre></div></div>
+
+<p>Upload the image to your Container Registry using skopeo, pay attention that a Path Prefix might be required (e.g. your account name)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">IMAGE_NAME</span><span class="o">=</span>&lt;Container-Registry-URL&gt;/osbuild:v1
+skopeo login <span class="nt">--username</span> &lt;USER&gt; <span class="nt">-p</span> &lt;PASSWORD&gt; &lt;Container-Registry-URL&gt;
+skopeo copy oci-archive:/tmp/local.tar docker://<span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+</code></pre></div></div>
+
+<h3 id="run-the-container-using-podman">Run the container using podman</h3>
+<p>Run the container</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman pull <span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+podman run <span class="nt">--detach</span> <span class="nt">--name</span> osbuild-test <span class="nt">-p</span> 8080:8080  <span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+</code></pre></div></div>
+
+<p>Install a VM using a kickstart file that config the ostree to point to the running container</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>virt-install <span class="nt">--name</span> device <span class="nt">--memory</span> 4096 <span class="nt">--vcpu</span> 4 <span class="nt">--disk</span> <span class="nv">size</span><span class="o">=</span>8 <span class="nt">--location</span> &lt;rhel-8.6-iso-location&gt; <span class="nt">--initrd-inject</span><span class="o">=</span>/home/deploy/edgedevice.ks <span class="nt">--extra-args</span><span class="o">=</span><span class="s2">"ks=file:/edgedevice.ks console=tty0 console=ttyS0,115200n8"</span>
+</code></pre></div></div>
+
+<p>The kickstart file should contain</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ostreesetup <span class="nt">--nogpg</span> <span class="nt">--url</span><span class="o">=</span>http://&lt;Host-Container-Machine-URL&gt;/repo/ <span class="nt">--osname</span><span class="o">=</span>rhel <span class="nt">--remote</span><span class="o">=</span>edge <span class="nt">--ref</span><span class="o">=</span>rhel/8/x86_64/edge
+</code></pre></div></div>
+
+<p>Validate the rpm-ostre status is identical to the running container commit ID (from inside the VM)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-k</span> http://&lt;Host-Container-Machine-URL&gt;/repo/refs/head/rhel/8/x86_64/edge
+rpm-ostre status
+</code></pre></div></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Sending logs and metrics of Flotta devices to AWS</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">Sending logs and metrics of Flotta devices to AWS</h1>
+        <p class="font-secondary">Published on May 13, 2022 by <span class="text-primary">Jordi Gil <jgil@redhat.com></span
+            class="text-primary"> on <span>logs </span><span>metrics </span><span>aws </span></p>
+        <div class="content">
+          
+
+          <p>Flotta exposes the workload logs in syslog format, the data is then captured by the device worker and sent to the appropiate log collector defined in the device. Metrics generated in the device are prometheus compatible format. These metrics are pushed in bulk to a configured endpoint in the device, usually being Thanos hosted in a cluster.</p>
+
+<p><img src="/assets/images/flotta-logs-metrics-aws.jpg" alt="Flotta integration with AWS services" /></p>
+
+<p>In this post we will see how to configure Flotta devices and workloads to send the logs and metrics generated to AWS, in particular to the Open Search service (or elasticsearch) and to the TimeStream service for storing metrics.</p>
+
+<h2 id="setting-up-logstash">Setting up logstash</h2>
+
+<p>Flotta currently supports the syslog protocol as the default log format. In our case, we will use logtash as an intermediate entity to consolidate the logs from the workload and forward them to AWS’s elasticsearch service.</p>
+
+<p>We’ll then proceed to deploy a logstash instance in our kubernetes cluster and expose the service’s endpoint outside the cluster. This last part is required to allow the flotta device worker to reach the service outside the cluster.</p>
+
+<p>But first, we store the AWS service’s credentials for Open Search in a secret.
+In order to authenticate against AWS’s service, we’ll need to create new credentials in the Open Search service. We’ll use <code class="language-plaintext highlighter-rouge">logstash-secret</code> as the given name with <code class="language-plaintext highlighter-rouge">LOGSTASH_USERNAME</code> and <code class="language-plaintext highlighter-rouge">LOGSTASH_PASSWORD</code> as the keys. These values are used by the logstash deployment later on.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+<span class="na">type</span><span class="pi">:</span> <span class="s">Opaque</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">LOGSTASH_PASSWORD</span><span class="pi">:</span> <span class="s">S0FEN3sv....</span>
+  <span class="na">LOGSTASH_USERNAME</span><span class="pi">:</span> <span class="s">am9343s...</span>
+</code></pre></div></div>
+
+<p>With that, we are ready to deploy our logstash instance. Note the input configuration for syslog and the output to connect to AWS.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash</span>
+        <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">LOGSTASH_PASSWORD</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">LOGSTASH_PASSWORD</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">LOGSTASH_USERNAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">LOGSTASH_USERNAME</span>
+
+        <span class="na">image</span><span class="pi">:</span> <span class="s">docker.elastic.co/logstash/logstash-oss:7.7.1</span>
+        <span class="na">ports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">514</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">config-volume</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/usr/share/logstash/config</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-pipeline-volume</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/usr/share/logstash/pipeline</span>
+        <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">4Gi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2500m"</span>
+            <span class="na">requests</span><span class="pi">:</span> 
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">4Gi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">800m"</span>
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">config-volume</span>
+        <span class="na">configMap</span><span class="pi">:</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">logstash.yml</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">logstash.yml</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-pipeline-volume</span>
+        <span class="na">configMap</span><span class="pi">:</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">logstash.conf</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">logstash.conf</span>
+<span class="nn">---</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-service</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">5140</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">5140</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">syslog</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">logstash.yml</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">http.host: "0.0.0.0"</span>
+    <span class="s">path.config: /usr/share/logstash/pipeline    </span>
+  <span class="na">logstash.conf</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">input {</span>
+      <span class="s">syslog {</span>
+        <span class="s">port =&gt; 5140</span>
+      <span class="s">}</span>
+    <span class="s">}</span>
+    <span class="s">output {</span>
+      <span class="s">elasticsearch {</span>
+        <span class="s">ilm_enabled =&gt; false</span>
+        <span class="s">hosts =&gt; ["https://search-project-flotta-lpfibcnqkcpgavdbprrueysk6a.us-east-1.es.amazonaws.com:443"]</span>
+        <span class="s">user =&gt; "\${LOGSTASH_USERNAME}"</span>
+        <span class="s">password =&gt; "\${LOGSTASH_PASSWORD}"</span>
+        <span class="s">index =&gt; "logstash-%{+YYYY.MM.dd}"</span>
+      <span class="s">}</span>
+    <span class="s">} </span>
+</code></pre></div></div>
+
+<p>And we validate that the pod has successfully deployed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span>kubectl get pod 
+NAME                                                        READY   STATUS    RESTARTS   AGE
+logstash-deployment-7fc4567f6d-594xh                        1/1     Running   0          60s 0          1h
+</code></pre></div></div>
+
+<p>Finally, we manually expose the service via the port-forward command in <code class="language-plaintext highlighter-rouge">kubectl</code>. In a production environment, this should point to a public FQDN or IP accessible outside the cluster.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span> kubectl port-forward svc/logstash-service 5140 <span class="nt">--address</span> 0.0.0.0
+</code></pre></div></div>
+
+<h3 id="configuring-the-edgedevice-to-expose-logstash">Configuring the edgedevice to expose logstash</h3>
+
+<p>Now that logstash is deployed and connected to AWS, we need to configure the edge device to expose the logstash collector. Following the details described in <a href="https://project-flotta.github.io/flotta/2022/04/10/using-log-collection.html">this  blog post</a>, we create the configmap and define the specification in the edge device:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">Address</span><span class="pi">:</span> <span class="s">192.168.1.134:5140</span>
+  <span class="na">Protocol</span><span class="pi">:</span> <span class="s">tcp</span>
+</code></pre></div></div>
+
+<p>Here we use the cluster host’s IP where logstash is running. The service will be reachable thanks to the <code class="language-plaintext highlighter-rouge">port-forward</code> command previously executed on the cluster’s host.</p>
+
+<p>Next is to update the EdgeDevice specification to expose the log collector. Here we define the log collector <code class="language-plaintext highlighter-rouge">logstash-syslog</code> with a maximum buffer size of 10mb.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">logCollection</span><span class="pi">:</span>
+    <span class="na">logstash-syslog</span><span class="pi">:</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">10</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+</code></pre></div></div>
+
+<p>To instruct the workload to use the given log collector, we just have to define it as part of the manifest:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">random-workload</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">logCollection</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">foo</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">random-server</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">docker.io/eloycoto/logexample</span>
+</code></pre></div></div>
+
+<p>And with that, the logs will be sent to our backend in AWS. To confirm that it’s working fine, we query the service to list the contents of the index we defined in the configmap:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>index =&gt; "logstash-%{+YYYY.MM.dd}"
+</code></pre></div></div>
+
+<p>Which, in this case it translates to <code class="language-plaintext highlighter-rouge">logstash-2022.05.12</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">username</span><span class="o">=</span><span class="si">$(</span>oc get secret logstash-secret <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LOGSTASH_USERNAME}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span>
+<span class="nv">password</span><span class="o">=</span><span class="si">$(</span>oc get secret logstash-secret <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LOGSTASH_PASSWORD}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span>
+curl <span class="nt">-u</span> <span class="nv">$username</span>:<span class="nv">$password</span> <span class="nt">-X</span> GET <span class="s2">"https://search-project-flotta-lpfibcnqkcpgavdbprrueysk6a.us-east-1.es.amazonaws.com:443/logstash-2022.05.12/_search?pretty=true"</span> <span class="nt">-H</span> <span class="s1">'Content-Type: application/json'</span> <span class="nt">-d</span><span class="s1">'
+{
+    "query": {
+        "match_all": {}
+    }
+}
+'</span>
+</code></pre></div></div>
+
+<p>And we get a few results already, displaying the first one to reduce cluttery.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">  </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1162</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"relation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"max_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"_index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"logstash-2022.05.12"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"_doc"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"z07vuYAB7aBvPfPHfBaK"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_source"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"@version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"severity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"facility"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"severity_label"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Emergency"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"@timestamp"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-05-12T20:22:01.494Z"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"host"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"127.0.0.1"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"tags"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"_grokparsefailure_sysloginput"</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"facility_label"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"kernel"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"priority"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;6&gt;2022-05-12T16:22:01-04:00  random-workload[3966]: dcc80a53ab7e5871f38e6b5184d785d58f5c698505fe74dd04597dcaac372c1b: New message at: Thu May 12 20:22:01 UTC 2022</span><span class="se">\n</span><span class="s2">"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="setting-up-prometheus-adapter-for-aws-timestream">Setting up prometheus adapter for AWS Timestream</h2>
+
+<p>Flotta collects metrics using the prometheus format. The information is pushed from the device back to a remote write entity configured in the device, usually a Thanos instance hosted in a cluster collecting all the metrics from all devices.
+AWS provides a time series database service named Timestream. This service is not compatible with the prometheus format, so in order to push the metrics we need an adapter that can transform the data in AWS format. That’s where the <a href="https://github.com/dpattmann/prometheus-timestream-adapter">prometheus timestream adapter</a> comes to save the day: This small application transforms the data in prometheus format to the DB format in the Timestream service, making it possible to push the device’s metrics to AWS and later on display them using Grafana.</p>
+
+<p>But first, we need to configure the device with the service endpoint, metrics to push and the interval by adding these fields under the <code class="language-plaintext highlighter-rouge">spec</code> section:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">metrics</span><span class="pi">:</span>
+    <span class="na">receiverConfiguration</span><span class="pi">:</span>
+      <span class="na">url</span><span class="pi">:</span> <span class="s">http://project-flotta.io:9201/write</span>
+    <span class="na">system</span><span class="pi">:</span>
+      <span class="na">allowList</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">system-allow-list</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="m">5</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">system-allow-list</code> is a configmap that contains the metrics names to be pushed. For this demonstration, we’ll leverage on tree metrics from node exporter. Further information about metrics configuration can be found in the <a href="https://project-flotta.github.io/documentation/latest/operations/observability.html">observability document</a>. Let’s create a saple confimap containing 3 node exporter metrics:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">system-allow-list</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">metrics_list.yaml</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">names: </span>
+      <span class="s">- node_disk_io_now</span>
+      <span class="s">- node_memory_Mapped_bytes</span>
+      <span class="s">- node_network_speed_bytes</span>
+</code></pre></div></div>
+
+<p>The prometheus timestream adapter leverages on the aws credential and config files to authenticate against the Timestream service. For this example, we’ll create a secret named <code class="language-plaintext highlighter-rouge">aws-credentials</code>  Note that the deployment expects to find the AWS credentials and configuration files under <code class="language-plaintext highlighter-rouge">~/.aws/</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic aws-credentials <span class="nt">--from-file</span><span class="o">=</span><span class="nv">config</span><span class="o">=</span><span class="nv">$HOME</span>/.aws/config <span class="nt">--from-file</span><span class="o">=</span><span class="nv">credentials</span><span class="o">=</span><span class="nv">$HOME</span>/.aws/credentials
+</code></pre></div></div>
+
+<p>We will use the following manifests to deploy the service in the cluster:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">adapter</span>
+        <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_CONFIG_FILE</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="s">/var/mount/aws/config</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_SHARED_CREDENTIALS_FILE</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="s">/var/mount/aws/credentials</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_REGION</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">awsRegion</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">DATABASE_NAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">databaseName</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">TABLE_NAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">tableName</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/prometheus-timestream-adapter:latest</span>
+        <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">IfNotPresent</span>
+        <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">/usr/local/bin/prometheus-timestream-adapter"</span><span class="pi">]</span>
+        <span class="na">args</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">--awsRegion"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(AWS_REGION)"</span><span class="pi">,</span><span class="s2">"</span><span class="s">--databaseName"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(DATABASE_NAME)"</span><span class="pi">,</span><span class="s2">"</span><span class="s">--tableName"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(TABLE_NAME)"</span><span class="pi">]</span>
+        <span class="na">ports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">9201</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/var/mount/aws</span>
+            <span class="na">readOnly</span><span class="pi">:</span> <span class="no">true</span>
+        <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">512Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+            <span class="na">requests</span><span class="pi">:</span> 
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">512M"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+        <span class="na">secret</span><span class="pi">:</span>
+          <span class="na">secretName</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">credentials</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">credentials</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">config</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">config</span>
+<span class="nn">---</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter-service</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">9201</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">9201</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">adapter</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">awsRegion</span><span class="pi">:</span> <span class="s">us-east-1</span>
+  <span class="na">databaseName</span><span class="pi">:</span> <span class="s">flotta</span>
+  <span class="na">tableName</span><span class="pi">:</span> <span class="s">metrics</span>
+</code></pre></div></div>
+
+<p>Note it contains a <code class="language-plaintext highlighter-rouge">Deployment</code>, <code class="language-plaintext highlighter-rouge">Service</code> and <code class="language-plaintext highlighter-rouge">ConfigMap</code>. The deployment mounts the aws credentials in <code class="language-plaintext highlighter-rouge">/var/mount/aws</code> and also exposes the ConfigMap values as part of the environment. We’ve parametrized the aws region, database name and table name values in the configmap to make it easier to customize the deployment.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span> kubectl get pod
+NAME                                                       READY   STATUS    RESTARTS   AGE
+logstash-deployment-7fc4567f6d-594xh                       1/1     Running   0          1h
+prometheus-timestream-adapter-deployment-859f96565-s5zgp   1/1     Running   0          1h
+</code></pre></div></div>
+
+<p>Since the device is outside the cluster, again we’ll need to expose the new service by forwarding the port using the kubectl command. This would not be needed if the service was accessible directly by the device:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl port-forward svc/prometheus-timestream-adapter-service 9201 <span class="nt">--address</span> 0.0.0.0
+</code></pre></div></div>
+
+<p>To validate that the metrics are being forwarded correctly, we can check the journaltcl logs from the device:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>May 12 19:24:11 localhost-live yggdrasild[5344]: <span class="o">[</span>yggdrasild] 2022/05/12 19:24:11 /usr/libexec/yggdrasil/device-worker: wrote metrics range 2022-05-12 19:19:05.275 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397545275000000<span class="o">)</span><span class="nt">-2022-05-12</span> 19:24:05.276 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397845276000000<span class="o">)</span>
+May 12 19:24:11 localhost-live yggdrasild[5344]: <span class="o">[</span>yggdrasild] 2022/05/12 19:24:11 /usr/libexec/yggdrasil/device-worker: wrote metrics range 2022-05-12 19:24:05.277 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397845277000000<span class="o">)</span><span class="nt">-2022-05-12</span> 19:24:10.273 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397850273000000<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Or even better, query directly the metrics in the AWS Timestream service.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>By leveraging on open source technologies, Flotta is able to integrate with AWS to collect device metrics and logs. This means you can deploy Flotta in AWS and make use of their services to monitor your stack of devices in one single place.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

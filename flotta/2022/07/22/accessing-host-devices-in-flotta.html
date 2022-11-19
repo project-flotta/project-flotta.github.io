@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Accessing host devices in Flotta</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">Accessing host devices in Flotta</h1>
+        <p class="font-secondary">Published on Jul 22, 2022 by <span class="text-primary">Jordi Gil <jgil@redhat.com></span
+            class="text-primary"> on <span>podman </span><span>rootless </span><span>devices </span><span>webcam </span></p>
+        <div class="content">
+          
+
+          <p>In today’s container security, it is important to reduce the risk of a security breach in a container that can escape from the container runtime and put the device at risk. One way to reduce such risks is to run the container with a non-root user, so that if there is such spill the attacker won’t be able to gain access to root level privileges. These type of containers are what is called rootless containers.</p>
+
+<p>Rootless containers also limit the access to the host devices by default, as it depends on the privileges of the runtime user access. In Flotta we create the user <code class="language-plaintext highlighter-rouge">flotta</code> as part of the flotta rpm installation and run the workloads with that user. By default the flotta user does not have access to any mounted device (unless configured otherwise by the OS), so we have to make changes first on granting file access to <code class="language-plaintext highlighter-rouge">flotta</code> to the device in <code class="language-plaintext highlighter-rouge">/dev</code>, and then configuring the runtime to enable the access.</p>
+
+<p>To demonstrate the ability to interact with a host device, I will use the webcam in my laptop as an example. The webcam is mounted in <code class="language-plaintext highlighter-rouge">/dev/video2</code> with the following file system atrributes:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">ls</span> <span class="nt">-la</span> /dev/video2
+crw-rw----+ 1 root video 81, 2 Jul  22 11:30 /dev/video2
+</code></pre></div></div>
+
+<p>I have built a container from a fedora 36 image that runs the <code class="language-plaintext highlighter-rouge">ffmpeg</code> application and captures a screenshot from the webcam on a 10 seconds interval:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nb">rm</span> <span class="nt">-Rf</span> /tmp/helloworld-?.jpg
+<span class="k">for </span>i <span class="k">in</span> <span class="o">{</span>1..10<span class="o">}</span><span class="p">;</span> <span class="k">do
+  </span><span class="nb">echo </span>Taking snapshot
+  /usr/bin/ffmpeg <span class="nt">-f</span> video4linux2 <span class="nt">-s</span> 640x480 <span class="nt">-i</span> /dev/video2 <span class="nt">-ss</span> 0:0:2 <span class="nt">-frames</span> 1 /tmp/helloworld-<span class="nv">$i</span>.jpg
+  <span class="nb">echo </span>Sleeping 10 seconds
+  /usr/bin/sleep 10
+<span class="k">done
+</span><span class="nb">ls</span> <span class="nt">-la</span> /tmp/helloworld-?.jpg
+<span class="nb">sleep </span>infinity
+</code></pre></div></div>
+
+<p>And here are the contents of the <code class="language-plaintext highlighter-rouge">Dockerfile</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM registry.fedoraproject.org/fedora:36
+RUN dnf <span class="nb">install</span> <span class="nt">-y</span> ffmpeg-free
+COPY script.sh /script.sh
+ENTRYPOINT <span class="o">[</span><span class="s2">"/script.sh"</span><span class="o">]</span>
+</code></pre></div></div>
+
+<h2 id="configuing-the-host-to-capture-images-from-a-webcam">Configuing the host to capture images from a webcam</h2>
+
+<p>The device is read/write for <code class="language-plaintext highlighter-rouge">root</code> and members of the <code class="language-plaintext highlighter-rouge">video</code> group. Let’s check what are the <code class="language-plaintext highlighter-rouge">flotta</code> user group information:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">id </span>flotta
+<span class="nv">uid</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span>
+</code></pre></div></div>
+
+<p>There is no <code class="language-plaintext highlighter-rouge">video</code> supplementary group attached to <code class="language-plaintext highlighter-rouge">flotta</code>. If I want <code class="language-plaintext highlighter-rouge">flotta</code> to access this device, I need first to add the supplementary group <code class="language-plaintext highlighter-rouge">video</code> to <code class="language-plaintext highlighter-rouge">flotta</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# usermod <span class="nt">-a</span> <span class="nt">-G</span> video flotta
+</code></pre></div></div>
+
+<p>And now the <code class="language-plaintext highlighter-rouge">flotta</code> user has access to the <code class="language-plaintext highlighter-rouge">video</code> group:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">id </span>flotta
+<span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span>,39<span class="o">(</span>video<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Now I need to restart the flotta user service process to be aware of the group changes, otherwise the new group will not be reflected in the containers:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# systemctl restart user@<span class="si">$(</span><span class="nb">id </span>flotta <span class="nt">-g</span><span class="si">)</span>.service
+</code></pre></div></div>
+
+<h2 id="defining-the-workload">Defining the workload</h2>
+
+<p>At this step I have ensured that <code class="language-plaintext highlighter-rouge">flotta</code> as a user in the host has access to the webcam. Now I need to guarantee that the container is also able to share the same privileges. To that I will leverage on the annotation <code class="language-plaintext highlighter-rouge">run.oci.keep_original_groups=1</code>, supported by the <code class="language-plaintext highlighter-rouge">crun</code> container runtime, that allows containers to inherit the running user’s groups.</p>
+
+<h3 id="annotating-the-workload">Annotating the workload</h3>
+<p>Starting from podman 4.1.0, it is possible to add annotations when running pod workloads. These annotations are then propagated to the underlying container runtime. The Flotta operator propagates annotations to the device agent when defined in the <code class="language-plaintext highlighter-rouge">EdgeWorkload</code> with the <code class="language-plaintext highlighter-rouge">podman/</code> prefix. More precisely, it removes the prefix <code class="language-plaintext highlighter-rouge">podman/</code> from the annotation key name and propagates the remaining name and value.</p>
+
+<h3 id="configuring-the-pod-security-context-for-selinux">Configuring the pod security context for SELinux</h3>
+<p>As a security measure, SELinux prevents the container from accessing the device because the types mismatch. If I try to access <code class="language-plaintext highlighter-rouge">/dev/video2</code> from a container, SELinux will not allow me:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>AVC avc:  denied  <span class="o">{</span> <span class="nb">read </span>write <span class="o">}</span> <span class="k">for  </span><span class="nv">pid</span><span class="o">=</span>2393 <span class="nb">comm</span><span class="o">=</span><span class="s2">"ffmpeg"</span> <span class="nv">name</span><span class="o">=</span><span class="s2">"video2"</span> <span class="nv">dev</span><span class="o">=</span><span class="s2">"devtmpfs"</span> <span class="nv">ino</span><span class="o">=</span>515 <span class="nv">scontext</span><span class="o">=</span>system_u:system_r:container_t:s0:c56,c580 <span class="nv">tcontext</span><span class="o">=</span>system_u:object_r:v4l_device_t:s0 <span class="nv">tclass</span><span class="o">=</span>chr_file <span class="nv">permissive</span><span class="o">=</span>0
+</code></pre></div></div>
+
+<p>The source type is <code class="language-plaintext highlighter-rouge">container_t</code> and the target type is <code class="language-plaintext highlighter-rouge">v4l_device_t</code>.</p>
+
+<p>To solve this there are 2 options:</p>
+<ul>
+  <li>Configure SELinux to add the rules that allows container types to access the webcam type (see notes section for more detail).</li>
+  <li>Use the Super Privileged Container type <code class="language-plaintext highlighter-rouge">spc_t</code> in the pod’s <code class="language-plaintext highlighter-rouge">securityContext</code> section. This <a href="https://danwalsh.livejournal.com/74754.html">container type</a> disables SELinux in the container. Since we are running a rootless container, the security impact is limited to what the <code class="language-plaintext highlighter-rouge">flotta</code> user is able to do. <a href="https://developers.redhat.com/blog/2014/11/06/introducing-a-super-privileged-container-concept">Here</a> is more detailed explanation of what it is and can do for the those hungry with knowledge.</li>
+</ul>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">podman/run.oci.keep_original_groups</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/ffmpeg:latest</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">fedora</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">video</span>
+        <span class="na">securityContext</span><span class="pi">:</span>
+          <span class="na">seLinuxOptions</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s1">'</span><span class="s">spc_t'</span>
+      <span class="na">restartPolicy</span><span class="pi">:</span> <span class="s">Always</span>      
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">video</span> 
+        <span class="na">hostPath</span><span class="pi">:</span>
+          <span class="na">path</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">File</span>
+</code></pre></div></div>
+
+<p>In this example we are mounting the host device <code class="language-plaintext highlighter-rouge">/dev/video2</code> to the container’s equivalent <code class="language-plaintext highlighter-rouge">/dev/video2</code>. Be aware that your webcam location might be in a different device number, so best to identify which one before running the workload and change the scripts accordingly.</p>
+
+<h2 id="running-the-workload">Running the workload</h2>
+
+<p>At this point, we are ready to deploy the workload on the device. For this example, I have created a VM running fedora and attached the webcam in my laptop on <code class="language-plaintext highlighter-rouge">/dev/video2</code>. I have labeled my edge device with <code class="language-plaintext highlighter-rouge">app=webcam</code> to make sure that the Flotta controller schedules the workload on this specific device.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl create <span class="nt">-f</span> workload_webcam.yaml
+</code></pre></div></div>
+
+<p>Now let’s make sure that the workload is running by inspecting the status in the edgedevice:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl get edgedevice/4cc27d11334f4242baa7efc795d2bbc0 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>| jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-14T14:50:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>
+<span class="o">]</span>
+</code></pre></div></div>
+
+<p>Since I’m running this on a VM, I’m going to ssh to the device and become the <code class="language-plaintext highlighter-rouge">flotta</code> user to access the container and see that the images were created:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~] ssh <span class="nt">-l</span> root 192.168.122.23
+<span class="o">[</span>root@fedora ~]# su <span class="nt">-l</span> flotta <span class="nt">-s</span> /bin/bash <span class="nt">-c</span> <span class="s2">"podman exec -it webcam-fedora ls -lart /tmp"</span>
+total 112
+dr-xr-xr-x. 1 root root   54 Jul 22 15:02 ..
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8078 Jul 22 15:02 helloworld-1.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8078 Jul 22 15:02 helloworld-2.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8068 Jul 22 15:02 helloworld-3.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9172 Jul 22 15:03 helloworld-4.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8786 Jul 22 15:03 helloworld-5.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8699 Jul 22 15:03 helloworld-6.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8892 Jul 22 15:03 helloworld-7.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8981 Jul 22 15:03 helloworld-8.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9358 Jul 22 15:04 helloworld-9.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9414 Jul 22 15:04 helloworld-10.jpg
+drwxrwxrwt. 1 root root 4096 Jul 22 15:04 <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>There we have the 10 images inside the container. As an exercise, you can enhance this example by adding a data sync path to upload the images to a remote S3 storage using the data transfer capabilities of the Flotta agent. This way you won’t need to sneak into the VM like I did to see that the images were created.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Flotta is gradually improving the support of workloads that can run on devices without compromising the security of the device. With Flotta it is possible to run workloads that generate and consume data and are capable of synchronizing with a remote compatible S3 storage, as well as workloads that require access to the host mounted devices, such as webcams or sensors.</p>
+
+<p>There is still room for improvement in the usability with the ability to configure the supplementary groups without having to remote to the device each time. We hope in the next releases we can provide a mechanism to configure the host in these areas in a declarative manner. Feel free to drop suggestions or enhancements to the <a href="https://github.com/project-flotta/flotta-operator/issues">project</a> in the github repository!.</p>
+
+<h2 id="notes">Notes</h2>
+
+<p>In the case of my webcam, I was able to add the specific rules to SELinux to allow the <code class="language-plaintext highlighter-rouge">container_t</code> type to access the <code class="language-plaintext highlighter-rouge">v4l_device_t</code> type, which is the label type that is used by <code class="language-plaintext highlighter-rouge">/dev/video2</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# <span class="nb">ls</span> <span class="nt">-laZ</span> /dev/video2
+crw-rw----. 1 root video system_u:object_r:v4l_device_t:s0 81, 2 Jul 22 09:39 /dev/video2
+</code></pre></div></div>
+
+<p>The easiest way to identify the SELinux missing rules is using <code class="language-plaintext highlighter-rouge">audit2allow</code>. This utility analyzes the information in <code class="language-plaintext highlighter-rouge">/var/log/audit/audit.log</code> and generates the SELinux policies based on denied operations. In my case, I had to run the workload a few times until I was able to get all the rules.</p>
+
+<p>The utility created the following rules:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module v4linux 1.0<span class="p">;</span>
+
+require <span class="o">{</span>
+	<span class="nb">type </span>v4l_device_t<span class="p">;</span>
+	<span class="nb">type </span>container_t<span class="p">;</span>
+	class chr_file <span class="o">{</span> getattr ioctl map open <span class="nb">read </span>write <span class="o">}</span><span class="p">;</span>
+<span class="o">}</span>
+
+<span class="c">#============= container_t ==============</span>
+
+<span class="c">#!!!! This avc can be allowed using the boolean 'container_use_devices'</span>
+allow container_t v4l_device_t:chr_file <span class="o">{</span> getattr ioctl open <span class="nb">read </span>write <span class="o">}</span><span class="p">;</span>
+allow container_t v4l_device_t:chr_file map<span class="p">;</span>
+</code></pre></div></div>
+
+<p>To create the package for the rules rules you can either use the <code class="language-plaintext highlighter-rouge">audit2allow -a -M &lt;modulename&gt;.pp</code> command, or you use the following commands for a step by step execution:</p>
+
+<p>Store the contents of the rules in a file named <code class="language-plaintext highlighter-rouge">v4linux.te</code> in the device’s <code class="language-plaintext highlighter-rouge">/tmp</code></p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# <span class="nb">cat</span> <span class="o">&gt;</span>/tmp/webcam.te <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+module v4linux 1.0;
+
+require {
+	type v4l_device_t;
+	type container_t;
+	class chr_file { getattr ioctl map open read write };
+}
+
+#============= container_t ==============
+
+#!!!! This avc can be allowed using the boolean 'container_use_devices'
+allow container_t v4l_device_t:chr_file { getattr ioctl open read write };
+allow container_t v4l_device_t:chr_file map;
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>Now convert it to a policy module:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# checkmodule <span class="nt">-M</span> <span class="nt">-m</span> /tmp/v4linux.te <span class="nt">-o</span> /tmp/v4linux.mod
+</code></pre></div></div>
+
+<p>And generate the package:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]#  semodule_package <span class="nt">-o</span> /tmp/v4linux.pp <span class="nt">-m</span> /tmp/v4linux.mod
+</code></pre></div></div>
+
+<p>Finally install it:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# semodule <span class="nt">-i</span> /tmp/v4linux.pp
+</code></pre></div></div>
+
+<p>Now SELinux is configured to allow the container to interact with the webcam. To test this, I deploy a new workload that does not have the <code class="language-plaintext highlighter-rouge">seLinuxOptions</code> defined in the pod spec:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">webcam-nosecuritycontext</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">podman/run.oci.keep_original_groups</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/ffmpeg:latest</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">fedora</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">video</span>
+      <span class="na">restartPolicy</span><span class="pi">:</span> <span class="s">Always</span>      
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">video</span> 
+        <span class="na">hostPath</span><span class="pi">:</span>
+          <span class="na">path</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">File</span>
+</code></pre></div></div>
+
+<p>Checking the status of the workload we get a satisfactory <code class="language-plaintext highlighter-rouge">Running</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl get edgedevice/4cc27d11334f4242baa7efc795d2bbc0 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>| jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-22T15:02:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>,
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-22T15:31:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam-nosecuritycontext"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>
+<span class="o">]</span>
+</code></pre></div></div>
+
+<p>And finally, checking the contents of the <code class="language-plaintext highlighter-rouge">/tmp</code> directory we can see the images stored:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~] ssh <span class="nt">-l</span> root 192.168.122.23
+<span class="o">[</span>root@fedora tmp]# su <span class="nt">-l</span> flotta <span class="nt">-s</span> /bin/bash <span class="nt">-c</span> <span class="s2">"podman exec -it webcam-nosecuritycontext-fedora ls -lart /tmp"</span>
+total 84
+dr-xr-xr-x. 1 root root   42 Jul 22 15:30 ..
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7849 Jul 22 15:30 helloworld-1.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7730 Jul 22 15:31 helloworld-2.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7732 Jul 22 15:31 helloworld-3.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7743 Jul 22 15:31 helloworld-4.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7782 Jul 22 15:31 helloworld-5.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7868 Jul 22 15:32 helloworld-6.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7839 Jul 22 15:32 helloworld-7.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7822 Jul 22 15:32 helloworld-8.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7725 Jul 22 15:32 helloworld-9.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7754 Jul 22 15:32 helloworld-10.jpg
+drwxrwxrwt. 1 root root 4096 Jul 22 15:32 <span class="nb">.</span>
+</code></pre></div></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

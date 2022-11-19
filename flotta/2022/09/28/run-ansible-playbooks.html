@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Running Ansible Playbooks on Edge Devices</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">Running Ansible Playbooks on Edge Devices</h1>
+        <p class="font-secondary">Published on Sep 28, 2022 by <span class="text-primary">Gloria Ciavarrini <gciavarrini@redhat.com></span
+            class="text-primary"> on <span>flotta </span><span>devices </span><span>ansible </span></p>
+        <div class="content">
+          
+
+          <p>There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices.
+For example, in <a href="https://coreos.github.io/rpm-ostree/">rpm-ostree</a> during life cycle of the device a configuration change without rebooting may be needed.</p>
+
+<p><em>Project Flotta</em> makes your life easier by supporting <em>Ansible</em> playbook execution.
+How can we create an <em>Ansible</em> playbook for the edge devices? How does the execution work in <em>Project Flotta</em>?
+This is what we will cover in this blog post.</p>
+
+<h1 id="preliminary-steps">Preliminary steps</h1>
+<h2 id="1--define-the-ansible-playbook">1- Define the Ansible Playbook</h2>
+<p>First things first: we need to write your example <em>Ansible</em> playbook.
+To keep things easy, let’s say we want to create a txt file in some of our edge devices.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="pi">-</span>  <span class="na">name</span><span class="pi">:</span> <span class="s">Hello Ansible Playbook</span>
+   <span class="na">hosts</span><span class="pi">:</span> <span class="s">127.0.0.1</span>
+   <span class="na">gather_facts</span><span class="pi">:</span> <span class="no">false</span>
+   
+   <span class="na">tasks</span><span class="pi">:</span>
+   <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Create a file called '/tmp/hello.txt'</span>
+     <span class="na">copy</span><span class="pi">:</span>
+       <span class="na">content</span><span class="pi">:</span> <span class="s">Hello from Project Flotta!</span>
+       <span class="na">dest</span><span class="pi">:</span> <span class="s">/tmp/hello.txt</span>
+</code></pre></div></div>
+
+<h2 id="2---define-the-edgeconfig">2 - Define the EdgeConfig</h2>
+<p>Then, it’s time to send it to the <em>Flotta Operator</em> but… How?
+Easy! Let create an <code class="language-plaintext highlighter-rouge">EdgeConfig</code> CR! <br />
+(See <a href="https://project-flotta.io/documentation/v0_2_0/operations/crd.html#edgeconfig">CRD Reference</a> for detailed description).</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeConfig</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">edgeconfig-sample</span>
+<span class="na">spec</span><span class="pi">:</span>
+    <span class="na">edgePlaybook</span><span class="pi">:</span> 
+        <span class="na">playbooks</span><span class="pi">:</span> 
+            <span class="pi">-</span> <span class="na">content</span><span class="pi">:</span> <span class="s">LS0tCi0gIG5hbWU6IEhlbGxvIEFuc2libGUgUGxheWJvb2sKICAgaG9zdHM6IDEyNy4wLjAuMQogICBnYXRoZXJfZmFjdHM6IGZhbHNlCiAgIAogICB0YXNrczoKICAgLSBuYW1OiBDcmVhdGUgYSBmaWxlIGNhbGxlZCAnL3RtcC9oZWxsby50eHQnCiAgICAgY29weToKICAgICAgIGNvbnRlbnQ6IEhlbGxvIGZyb20gUHJvamVjdCBGbG90dGEhCiAgICAgICBkZXN0OiAvdG1wL2hlbGxvLnR4dAo=</span>
+              <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">10</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">content</code> item contains the <code class="language-plaintext highlighter-rouge">base64</code> encoding of our example playbook. It can be obtained using:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> <span class="nb">base64</span> <span class="o">&lt;&lt;</span> <span class="no">EOF</span><span class="sh">
+---
+-  name: Hello Ansible Playbook
+   hosts: 127.0.0.1
+   gather_facts: false
+   
+   tasks:
+   - name: Create a file called '/tmp/hello.txt'
+     copy:
+       content: Hello from Project Flotta!
+       dest: /tmp/hello.txt
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<h2 id="3---label-the-edge-devices">3 - Label the edge devices</h2>
+<p>To let the <em>Flotta Operator</em> know that you want execute your <code class="language-plaintext highlighter-rouge">edgeconfig-sample</code> on one more specific edge devices, you must label them.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> kubectl label edgedevice device1 config/device-by-config<span class="o">=</span>edgeconfig-sample
+<span class="o">&gt;&gt;</span> kubectl label edgedevice device3 config/device-by-config<span class="o">=</span>edgeconfig-sample
+</code></pre></div></div>
+<p>In this case, we want to run the playbook on two edge devices: <code class="language-plaintext highlighter-rouge">device1</code> and <code class="language-plaintext highlighter-rouge">device3</code></p>
+<h2 id="4---apply-the-edgeconfig-to-the-cluster">4 - Apply the EdgeConfig to the cluster</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> kubectl apply <span class="nt">-f</span> edgeconfig-sample.yaml
+</code></pre></div></div>
+
+<h1 id="architecture">Architecture</h1>
+<p>What happens when <em>Flotta Operator</em> receives the <code class="language-plaintext highlighter-rouge">EdgeConfig</code>?</p>
+
+<p>It automatically creates a <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CR for each device that has been properly labelled.</p>
+
+<p><img src="/assets/images/architecture_ansible_support.png" alt="High level architecture of Ansible support" width="1100" /></p>
+
+<p>In this way it is possible to monitor the execution of the playbook on each edge device, indeed the edge device will update the status of the <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CR according with the Ansible playbook execution result.</p>
+
+<p>The possible statuse are: <code class="language-plaintext highlighter-rouge">Deploying</code>, <code class="language-plaintext highlighter-rouge">Running</code>, <code class="language-plaintext highlighter-rouge">SuccessfullyCompleted</code>, <code class="language-plaintext highlighter-rouge">CompletedWithError</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">EdgeConfig</code> CR provides the possibility to specify the <em>Execution Type</em> of each <em>Ansible</em> playbook.
+The possible strategies provided are:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">StopOnFailure</code>: stop playbook execution as soon as failure occurs and do not re-execute it</li>
+  <li><code class="language-plaintext highlighter-rouge">RetryOnFailure</code>: retry to execute the playbook if a failure occurs during the playbook execution</li>
+  <li><code class="language-plaintext highlighter-rouge">ExecuteOnce</code>: execute the playbook only once</li>
+</ul>
+
+<p>At the moment, only <code class="language-plaintext highlighter-rouge">ExecuteOnce</code> is supported.</p>
+
+<h1 id="future-works">Future works</h1>
+
+<p>At the time of writing of this blog post some important features are still missing.
+For example, when does the <em>Flotta Operator</em> can consider the <code class="language-plaintext highlighter-rouge">EdgeConfig</code> <em>completed</em>?</p>
+
+<p>What if the user select 100 edge devices and some successfully completed the executions, others are no reachable and other completed the execution with errors?</p>
+
+<p>We need to implement a “<em>waiting strategy</em>”. The <code class="language-plaintext highlighter-rouge">EdgeConfig</code> has been designed to use <code class="language-plaintext highlighter-rouge">conditions</code>: in this way it possible to way until all the <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CRs are in a final state (<code class="language-plaintext highlighter-rouge">SuccessfullyCompleted</code> and <code class="language-plaintext highlighter-rouge">CompletedWithError</code>), or considered the <code class="language-plaintext highlighter-rouge">EdgeConfig</code> successfully executed if at least x% of the edge devices ran the playbook correctly.</p>
+
+<p>This is a good opportunity for you to start contributing on <em>Project Flotta</em>!</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

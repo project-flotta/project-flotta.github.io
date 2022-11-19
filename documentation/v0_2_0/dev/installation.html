@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Manual installation</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Intro
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html">What is flotta</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/usecases.html">Use cases</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/vs.html">Flotta vs others</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/concepts.html">Concepts</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Getting started
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/minikube.html">Minikube</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/kind.html">Kind</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/ocp.html">OCP</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/running_workloads.html">Running workloads</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Operations
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/requirements.html">System Requirements</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/deployment_options.html">Deployment options</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/configuration.html">Configuration</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/remote_data_store.html">Remote Edge Configuration API</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/observability.html">Observability</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/data_synchronization.html">Data Synchronization</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/troubleshooting.html">Troubleshooting</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/api.html">API reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/crd.html">CRD reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/host_devices.html">Accessing host devices</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              For developers
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/installation.html">Manual installation & tips</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/guide.html">Development Guide</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/profiling.html">Profiling</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+        </ul>
+        <p>Documentation for version: <b>v0.2.0</b></p>
+        <ul class="list-group list-group-collapse border-0">
+          <li class="list-group-item border-0">
+            <h5>Other versions</h5>
+
+            <ul class="list-group border-0">
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_1_0/intro/overview.html"> v0.1.0</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html"> latest</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html"> v0.2.0</a> </li>
+              
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+          <!-- Some cases we don't want to show the title -->
+          <h1 class="font-tertiary mb-5">Manual installation</h1>
+          
+          
+
+          <h2 id="base-repos-to-use">Base repos to use</h2>
+
+<p>These are the base repos that project-flotta needs to run as expected:</p>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Dependecy</th>
+      <th>Repo</th>
+      <th>Git Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>flotta-operator</td>
+      <td><a href="https://github.com/project-flotta/flotta-operator">project-flotta/flotta-operator</a></td>
+      <td>main</td>
+    </tr>
+    <tr>
+      <td>flotta-device-worker</td>
+      <td><a href="https://github.com/project-flotta/flotta-device-worker">project-flotta/flotta-device-worker</a></td>
+      <td>main</td>
+    </tr>
+    <tr>
+      <td>yggdrasil</td>
+      <td><a href="https://github.com/RedHatInsights/yggdrasil">RedHatInsights/yggdrasil</a></td>
+      <td>main(since d69d38da3de3c0a473cd0bd6a713e72c2ea842f9)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="common-things-to-all-repos">Common things to all repos:</h2>
+
+<h3 id="makefiles">Makefiles</h3>
+
+<p>By default, project use Makefiles, and all the project has a help
+section where information can be obtained:</p>
+
+<p>This is the example when running make help in the flotta-operator repo.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>-&gt; make <span class="nb">help
+
+</span>Usage:
+  make &lt;target&gt;
+
+General
+  <span class="nb">help             </span>Display this help.
+
+Development
+  manifests        Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+  generate         Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+  <span class="nb">fmt              </span>Run go <span class="nb">fmt </span>against code.
+  vet              Run go vet against code.
+  gosec            Run gosec locally
+  imports          fix and format go imports
+  lint             Check <span class="k">if </span>the go code is properly written, rules are <span class="k">in</span> .golangci.yml
+  <span class="nb">test             </span>Run tests.
+
+Build
+  build            Build manager binary.
+  fast-build       Fast build manager binary <span class="k">for </span><span class="nb">local </span>dev.
+  run              Run a controller from your host.
+  docker-build     Build docker image with the manager.
+  docker-push      Push docker image with the manager.
+
+Deployment
+  <span class="nb">install          </span>Install CRDs into the K8s cluster specified <span class="k">in</span> ~/.kube/config.
+  uninstall        Uninstall CRDs from the K8s cluster specified <span class="k">in</span> ~/.kube/config.
+  deploy           Deploy controller to the K8s cluster specified <span class="k">in</span> ~/.kube/config.
+  undeploy         Undeploy controller from the K8s cluster specified <span class="k">in</span> ~/.kube/config.
+  gen-manifests    Generates manifests <span class="k">for </span>deploying the operator into <span class="si">$(</span>TARGET<span class="si">)</span><span class="nt">-flotta-operator</span>.yaml
+  install-router   Install openshift router
+  controller-gen   Download controller-gen locally <span class="k">if </span>necessary.
+  kustomize        Download kustomize locally <span class="k">if </span>necessary.
+  ginkgo           Download ginkgo locally <span class="k">if </span>necessary.
+  client-gen       Download client-gen locally <span class="k">if </span>necessary.
+  lister-gen       Download lister-gen locally <span class="k">if </span>necessary.
+  informer-gen     Download client-gen locally <span class="k">if </span>necessary.
+  k8s-client-gen   Generate typed client <span class="k">for </span>flotta project.
+  validate-swagger  Validate swagger
+<span class="nv">$ </span>-&gt;
+</code></pre></div></div>
+
+<h2 id="operator-installation">Operator installation</h2>
+
+<p>For running operator, you need to install the CRD first, the best way to develop
+is in a small Kubernetes cluster, like Kind or Minikube.</p>
+
+<p>To install Operator you need to think that there are two main parts, the CRD
+installation and the operator itself.</p>
+
+<p>To install CRD, you need to run the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ -&gt; make install
+/home/eloy/dev/upstream/project-flotta/k4e-operator/bin/kustomize build config/crd | kubectl apply -f -
+customresourcedefinition.apiextensions.k8s.io/edgeconfigs.management.project-flotta.io configured
+customresourcedefinition.apiextensions.k8s.io/edgedevices.management.project-flotta.io configured
+customresourcedefinition.apiextensions.k8s.io/edgedevicesets.management.project-flotta.io configured
+customresourcedefinition.apiextensions.k8s.io/edgedevicesignedrequest.management.project-flotta.io configured
+customresourcedefinition.apiextensions.k8s.io/edgeworkloads.management.project-flotta.io configured
+customresourcedefinition.apiextensions.k8s.io/playbookexecutions.management.project-flotta.io configured
+</code></pre></div></div>
+
+<p>To run the operator, some dependencies need to be executed first, like
+openshift-router and cert-manager:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make install-router
+make install-cert-manager
+</code></pre></div></div>
+
+<p>To run operator locally, you can use the following code:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make run
+</code></pre></div></div>
+<p>To run the <em>Edge API</em> locally, execute:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make http-api-run
+</code></pre></div></div>
+
+<p>For registering devices, it’s important to download certs and set correct
+permission:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ -&gt; sudo rm /tmp/*.pem
+$ -&gt; make get-certs
+kubectl get secret -n flotta flotta-ca -o go-template='' &gt;/tmp/ca.pem
+kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='' &gt; /tmp/cert.pem
+kubectl get secret -n flotta reg-client-ca-2f5cpqwrhm -o go-template='' &gt; /tmp/key.pem
+$ -&gt; sudo chown root:root /tmp/*.pem
+</code></pre></div></div>
+
+<h2 id="device-installation">Device installation</h2>
+
+<p>On device, we have two different things to install, yggdrasil and device worker.
+There are two ways to run this piece:</p>
+
+<blockquote>
+  <p>⚠️ <strong>Golang 1.16</strong>: By default, device needs to compile in Golang 1.16 mainly
+because this software needs to be packaged as RPM, so the version for
+RHEL8 is golang 1.16</p>
+</blockquote>
+
+<h3 id="single-way-with-yggdrasil">Single way with Yggdrasil:</h3>
+
+<p>This way, means that Yggdrasil already knows where the device-worker is located,
+and it’s defined on workers.toml.</p>
+
+<p>So for this, on device-worker repo the following command should be run:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo</span> <span class="nt">--preserve-env</span><span class="o">=</span>XDG_RUNTIME_DIR,HOME,USER make <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>This will create two files:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>-&gt; <span class="nb">cat</span> /usr/local/etc/yggdrasil/workers/device-worker.toml
+<span class="nb">exec</span> <span class="o">=</span> <span class="s2">"/usr/local/libexec/yggdrasil/device-worker"</span>
+protocol <span class="o">=</span> <span class="s2">"grpc"</span>
+<span class="nb">env</span> <span class="o">=</span> <span class="o">[]</span>
+<span class="nv">$ </span>-&gt; <span class="nb">ls</span> /usr/local/libexec/yggdrasil/device-worker
+/usr/local/libexec/yggdrasil/device-worker
+</code></pre></div></div>
+
+<p>And yggdrasil can run with the following command:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo</span> ./yggd <span class="se">\</span>
+  <span class="nt">--log-level</span> trace <span class="se">\</span>
+  <span class="nt">--protocol</span> http<span class="se">\</span>
+  <span class="nt">--path-prefix</span> api/flotta-management/v1<span class="se">\</span>
+  <span class="nt">--client-id</span> <span class="si">$(</span><span class="nb">cat</span> /etc/machine-id<span class="si">)</span><span class="se">\</span>
+  <span class="nt">--cert-file</span> /tmp/cert.pem<span class="se">\</span>
+  <span class="nt">--key-file</span> /tmp/key.pem<span class="se">\</span>
+  <span class="nt">--ca-root</span> /tmp/ca.pem<span class="se">\</span>
+  <span class="nt">--server</span> 127.0.0.1:8043
+</code></pre></div></div>
+
+<p>That you can see that device-worker is running and starting to get data from
+Flotta Edge API:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[yggd] 2022/05/10 15:55:52 /home/eloy/dev/upstream/project-flotta/yggdrasil/cmd/yggd/main.go:201: starting yggd version 0.2.98
+....
+[yggd] 2022/05/10 15:55:52 /home/eloy/dev/upstream/project-flotta/yggdrasil/cmd/yggd/main.go:377: starting worker: device-worker
+...
+[yggd] 2022/05/10 15:55:52 /home/eloy/dev/upstream/project-flotta/yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: Data directory: /usr/local/etc/yggdrasil/device
+[yggd] 2022/05/10 15:55:52 /home/eloy/dev/upstream/project-flotta/yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: device config file: /usr/local/etc/yggdrasil/device/device-config.json
+</code></pre></div></div>
+
+<p>Running device-worker managed by yggdrasil is how the end users run in their
+devices, so this is the closest way to replicate user issues.</p>
+
+<h3 id="separate-instance-for-yggdrasil-and-device-worker">Separate instance for yggdrasil and device-worker</h3>
+
+<p>Because separate services are useful when developing, this way is useful to be
+able to separate logs from yggdrasil and device-worker, and be able to focus
+only on the device-worker part:</p>
+
+<p>Run yggdrasil in one tab, with the following unixsocket <code class="language-plaintext highlighter-rouge">@yggd</code></p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo</span> ./yggd <span class="se">\</span>
+  <span class="nt">--log-level</span> trace <span class="se">\</span>
+  <span class="nt">--protocol</span> http<span class="se">\</span>
+  <span class="nt">--path-prefix</span> api/flotta-management/v1<span class="se">\</span>
+  <span class="nt">--client-id</span> <span class="si">$(</span><span class="nb">cat</span> /etc/machine-id<span class="si">)</span><span class="se">\</span>
+  <span class="nt">--cert-file</span> /tmp/cert.pem<span class="se">\</span>
+  <span class="nt">--key-file</span> /tmp/key.pem<span class="se">\</span>
+  <span class="nt">--ca-root</span> /tmp/ca.pem<span class="se">\</span>
+  <span class="nt">--socket-addr</span> @yggd<span class="se">\</span>
+  <span class="nt">--server</span> 127.0.0.1:8043
+</code></pre></div></div>
+
+<p>And in other tab, just start device-worker manually, and making sure that
+<code class="language-plaintext highlighter-rouge">/usr/local/etc/yggdrasil/workers/device-worker.toml</code> is not present at all.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo -E YGG_LOG_LEVEL=debug \
+    YGG_CONFIG_DIR="/tmp/device" \
+    YGG_SOCKET_ADDR="unix:@yggd" \
+    YGG_CLIENT_ID="$(cat /etc/machine-id)" \
+    FLOTTA_XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR \
+    go run cmd/device-worker/main.go
+</code></pre></div></div>
+
+<p>And now, device-worker will register to the API, and start to do all
+enrolment/registration phase.</p>
+
+<h3 id="troubleshooting">Troubleshooting</h3>
+
+<p>If you encounter issue while installing the device, check the following:</p>
+<ul>
+  <li>Ensure that the location where the device is installed match the one yggdrasil is looking into. In the yggdrasil logs, you should have:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[yggd] 2022/05/18 09:19:17 yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: Data directory: /usr/local/etc/yggdrasil/device
+[yggd] 2022/05/18 09:19:17 yggdrasil/cmd/yggd/worker.go:114: /usr/local/libexec/yggdrasil/device-worker: device config file: /usr/local/etc/yggdrasil/device/device-config.json
+</code></pre></div>    </div>
+    <p>Here the PREFIX used by yggdrasil is <code class="language-plaintext highlighter-rouge">/usr/local/</code> so you need to check that the same base path is used in the device-worker, see the <code class="language-plaintext highlighter-rouge">make install</code> output:</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>install -D -m 755 ./bin/device-worker /usr/local/libexec/yggdrasil/device-worker
+</code></pre></div>    </div>
+    <p>If the base path does not match, re-install yggdrasil: ensure the environment variables PREFIX and MAKE_FLAGS are not set then, from yggdrasil folder, run <code class="language-plaintext highlighter-rouge">make clean install</code> and retry to run the device-worker.</p>
+  </li>
+  <li>If there is no enrol/registration requests in the logs (both sent by device-worker or received by the operator), check if you have a file located in <code class="language-plaintext highlighter-rouge">${PREFIX}/etc/yggdrasil/device/device-config.json</code>. If so, delete it and retry to run yggdrasil. By default, PREFIX equals <code class="language-plaintext highlighter-rouge">/usr/local</code>.</li>
+  <li>If you have 404 http status when the device tries to register, it means the edgedevice has not yet been created by the operator.
+    <ul>
+      <li>Check if there is an edgedevicesignedrequest (edsr) resource matching your device id. 
+If there is none, it either means the device worker is not up-to-date, and you should update it or there was an error in the operator while processing the enrol request. In that case, check yggdrasil and operator logs</li>
+      <li>If the edsr exists, check if it is already approved, otherwise, edit the resource to approve it. Else, check the operator’s logs to see why it is not created the associated edgedevice.
+        <ul>
+          <li>To approve an edsr, run the following: <code class="language-plaintext highlighter-rouge">kubectl edit edsr &lt;id of the device&gt;</code>. Then, search for <code class="language-plaintext highlighter-rouge">approved</code> and set the value to <code class="language-plaintext highlighter-rouge">true</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>If you have this error
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[yggd] 2022/02/21 16:55:00 ./cmd/yggd/main.go:189: starting yggd version 0.2.98
+cannot stop workers: cannot stop worker: cannot stop worker: cannot stop process: os: process already finished
+</code></pre></div>    </div>
+    <p>Run the following command</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo rm ${PREFIX}/var/run/yggdrasil/workers/device-worker.pid
+</code></pre></div>    </div>
+    <p>By default PREFIX equals <code class="language-plaintext highlighter-rouge">/usr/local</code>.</p>
+  </li>
+  <li>If deletion of edgedevice CR from the operator is pending, and the device is no longer present, then the de-registration process cannot be completed.
+In order to forcibly remove the edgedevice CR, you need to remove the finalizers from that CR. To do so, run the following command:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DEVICE=&lt;device id&gt;
+kubectl patch edgedevice/$DEVICE --type=merge -p '{"metadata": {"finalizers":null}}'
+kubectl delete edgedevice/$DEVICE
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h4 id="device-worker-cannot-connect-to-podman-socket">device-worker cannot connect to Podman socket</h4>
+
+<p>Because Flotta device works uses rootless podman, can be a way that podman pod
+is listening correctly but the podman user socket is not yet started. For podman
+be able to run, it’s important to check the status:</p>
+
+<p>Error message:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cannot start Workload Manager. DeviceID: eloy-test; err: workload cannot initialize podman manager: unable to connect to Podman socket: Get "http://d/v3.4.2/libpod/_ping": dial unix ///run/user/1000/podman/podman.sock: connect: no such file or directory
+</code></pre></div></div>
+
+<p>Podman status:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ -&gt; sudo systemctl status podman
+○ podman.service - Podman API Service
+     Loaded: loaded (/usr/lib/systemd/system/podman.service; disabled; vendor preset: disabled)
+     Active: inactive (dead) since Thu 2022-06-02 10:04:50 CEST; 5h 2min ago
+TriggeredBy: ● podman.socket
+       Docs: man:podman-system-service(1)
+    Process: 34417 ExecStart=/usr/bin/podman $LOGGING system service (code=exited, status=0/SUCCESS)
+   Main PID: 34417 (code=exited, status=0/SUCCESS)
+
+Jun 02 10:04:45 localhost.localdomain systemd[1]: Started Podman API Service.
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="/usr/bin/podman filtering at log level info"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Not using native diff for overlay, this may cause degraded perform&gt;
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Found CNI network podman (type=bridge) at /etc/cni/net.d/87-podman&gt;
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Found CNI network kind (type=bridge) at /etc/cni/net.d/kind.confli&gt;
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="Setting parallel job count to 25"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="using systemd socket activation to determine API endpoint"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="using API endpoint: ''"
+Jun 02 10:04:45 localhost.localdomain podman[34417]: time="2022-06-02T10:04:45+02:00" level=info msg="API service listening on \"/run/podman/podman.sock\""
+Jun 02 10:04:50 localhost.localdomain systemd[1]: podman.service: Deactivated successfully.
+</code></pre></div></div>
+
+<p>Podman user socket status:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ -&gt; systemctl status --user podman.socket
+● podman.socket - Podman API Socket
+     Loaded: loaded (/usr/lib/systemd/user/podman.socket; disabled; vendor preset: disabled)
+     Active: active (running) since Thu 2022-06-02 10:17:50 CEST; 4h 50min ago
+   Triggers: ● podman.service
+       Docs: man:podman-system-service(1)
+     Listen: /run/user/1000/podman/podman.sock (Stream)
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/podman.socket
+
+Jun 02 10:17:50 localhost.localdomain systemd[13455]: Listening on Podman API Socket.
+$ -&gt;
+</code></pre></div></div>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Deploy flotta-agent on Fedora CoreOS 35</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">Deploy flotta-agent on Fedora CoreOS 35</h1>
+        <p class="font-secondary">Published on May 23, 2022 by <span class="text-primary">Cosmin Tupangiu</span
+            class="text-primary"> on <span>guide </span><span>flotta </span><span>fcos </span><span>flotta-agent </span></p>
+        <div class="content">
+          
+
+          <p>During development, the user may need to spin off a large number of Edge Devices. Fedora CoreOS provides an easy way to create
+a virtual machine to deploy Edge Device on it. Moreover, the relatively low footprint of CoreOS VM allows you to have a large number of 
+Edge Devices on the same host.</p>
+
+<h2 id="general-flotta-agent-installation">General <code class="language-plaintext highlighter-rouge">flotta-agent</code> installation</h2>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta-agent</code> can be installed on any machine using the <code class="language-plaintext highlighter-rouge">rpm</code> provided by the <a href="https://copr.fedorainfracloud.org/coprs/project-flotta/">fedora copr</a>.
+To install <code class="language-plaintext highlighter-rouge">flotta-agent</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf copr <span class="nb">enable </span>project-flotta/flotta 
+<span class="nb">sudo </span>dnf <span class="nb">install</span> <span class="nt">-y</span> flotta-agent
+</code></pre></div></div>
+
+<p>Now, that <code class="language-plaintext highlighter-rouge">flotta-agent</code> has been installed on the OS, we need to configure <code class="language-plaintext highlighter-rouge">yggdrasil</code> to know how to connect to <code class="language-plaintext highlighter-rouge">Flotta Edge API</code>.
+By default, the configuration file can be found under <code class="language-plaintext highlighter-rouge">/etc/yggdrasil/config.toml</code>.
+An example of <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file is provided below:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">log-level = "debug"</span>
+<span class="s">cert-file = "/etc/pki/consumer/cert.pem"</span>
+<span class="s">key-file = "/etc/pki/consumer/key.pem"</span>
+<span class="s">ca-root = ["/etc/pki/consumer/ca.pem"]</span>
+<span class="s">path-prefix = "api/flotta-management/v1"</span>
+<span class="s">protocol = "http"</span>
+<span class="s">client-id = "&lt;some-id&gt;"</span>
+<span class="s">server = "flotta.io:8043"</span>
+</code></pre></div></div>
+
+<p>Let’s explain line by line the configuration:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">log-level</code>: sets the log level for <code class="language-plaintext highlighter-rouge">yggdrasil</code>. The options are: <code class="language-plaintext highlighter-rouge">debug</code>, <code class="language-plaintext highlighter-rouge">info</code>, <code class="language-plaintext highlighter-rouge">warn</code>, <code class="language-plaintext highlighter-rouge">error</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">cert-file</code>, <code class="language-plaintext highlighter-rouge">key-file</code>: path to client certification and private key.</li>
+  <li><code class="language-plaintext highlighter-rouge">ca-root</code>: CA root certification file.</li>
+  <li><code class="language-plaintext highlighter-rouge">path-prefix</code>: this is set to <code class="language-plaintext highlighter-rouge">api/flotta-management/v1</code>. All the request from the Edge Device will start with prefix followed by the id of the device (e.g. <code class="language-plaintext highlighter-rouge">/api/flotta-management/v1/data/&lt;device-id&gt;/in</code>).</li>
+  <li><code class="language-plaintext highlighter-rouge">protocol</code>: set to <code class="language-plaintext highlighter-rouge">http</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">server</code>: address of the <code class="language-plaintext highlighter-rouge">Flotta Edge API</code>. The domain name has to be the same as the domain set in the cluster because the certificates are valid only for that domain. The domain can be set in the cluster by modifying the configmap <code class="language-plaintext highlighter-rouge">flotta-operator-manager-config</code> and set <code class="language-plaintext highlighter-rouge">DOMAIN</code> to you desired value.</li>
+  <li><code class="language-plaintext highlighter-rouge">client-id</code>: the id of the client. Generally, we set this id to <code class="language-plaintext highlighter-rouge">/etc/machine-id</code> but you can use any value as long it is unique.</li>
+</ul>
+
+<p>The certificates can be obtained by running <code class="language-plaintext highlighter-rouge">make get-certs</code> in <code class="language-plaintext highlighter-rouge">Flotta Operator</code> cluster.</p>
+
+<h2 id="creation-of-the-ignition-file">Creation of the ignition file</h2>
+
+<p>CoreOS configures the system using an <a href="https://docs.fedoraproject.org/en-US/fedora-coreos/producing-ign/">ignition</a> file. The <code class="language-plaintext highlighter-rouge">ignition</code> file is produced from a <code class="language-plaintext highlighter-rouge">butane</code> file.
+You can find the specification of the <code class="language-plaintext highlighter-rouge">butane</code> file on <a href="https://coreos.github.io/butane/config-fcos-v1_3/">coreos/butane</a>. Basically, the <code class="language-plaintext highlighter-rouge">butane</code> file is a <code class="language-plaintext highlighter-rouge">yaml</code> file which specify
+how the system will be configured after startup.</p>
+
+<p>All the system configuration is done via <code class="language-plaintext highlighter-rouge">systemd</code> so to install and setup <code class="language-plaintext highlighter-rouge">flotta-agent</code> we need to create two services. These services run only one time when we are provisioning the system.</p>
+
+<h3 id="install-flotta-agent">Install <code class="language-plaintext highlighter-rouge">flotta-agent</code></h3>
+
+<p>Installing the <code class="language-plaintext highlighter-rouge">flotta-agent</code> through <code class="language-plaintext highlighter-rouge">systemd</code> requires adding <code class="language-plaintext highlighter-rouge">flotta-agent copr</code> and run <code class="language-plaintext highlighter-rouge">rpm-ostree</code>.</p>
+
+<p><strong>Remark</strong>: CoreOS is an <code class="language-plaintext highlighter-rouge">ostree</code> OS hence it is using <code class="language-plaintext highlighter-rouge">rpm-ostree</code> instead of <code class="language-plaintext highlighter-rouge">dnf</code>.</p>
+
+<p>The service could look like this:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">[</span><span class="nv">Unit</span><span class="pi">]</span>
+<span class="s">Description=Flotta setup service</span>
+<span class="s">Wants=network-online.target</span>
+<span class="s">After=network-online.target</span>
+<span class="s">ConditionPathExists=!/usr/lib/systemd/system/yggdrasild.service</span>
+
+<span class="pi">[</span><span class="nv">Service</span><span class="pi">]</span>
+<span class="s">Type=oneshot</span>
+<span class="s">ExecStartPre=curl https://copr.fedorainfracloud.org/coprs/project-flotta/flotta/repo/fedora-35/project-flotta-flotta-fedora-35.repo -o /etc/yum.repos.d/project-flotta.repo</span>
+<span class="s">ExecStart=rpm-ostree install flotta-agent</span>
+<span class="s">ExecStart=/bin/bash -c "echo \"client-id =</span> <span class="c1">##`cat /etc/machine-id`##\" &gt;&gt; /etc/yggdrasil/config.toml"</span>
+<span class="s">ExecStart=sed -i -s "s/##/\"/g" /etc/yggdrasil/config.toml</span>
+<span class="s">ExecStopPost=systemctl reboot</span>
+
+<span class="pi">[</span><span class="nv">Install</span><span class="pi">]</span>
+<span class="s">WantedBy=multi-user.target</span>
+</code></pre></div></div>
+
+<p>For those not familiar with <code class="language-plaintext highlighter-rouge">systemd</code>, here are some explications:</p>
+
+<ul>
+  <li>The service must start after the <code class="language-plaintext highlighter-rouge">network-online.target</code> meaning we need to have an internet connection.</li>
+  <li><code class="language-plaintext highlighter-rouge">ConditionPathExists</code> must be true for this service to start. This condition allows us to start this service only if <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> has not been install yet.</li>
+  <li>Before actually install the <code class="language-plaintext highlighter-rouge">flotta-agent</code>, we need to setup the <code class="language-plaintext highlighter-rouge">copr</code>. This is done with the target <code class="language-plaintext highlighter-rouge">ExecStartPre</code></li>
+  <li><code class="language-plaintext highlighter-rouge">ExecStart</code> installs what we need. The next <code class="language-plaintext highlighter-rouge">ExecStart</code> targets are set the <code class="language-plaintext highlighter-rouge">client-id</code>. Basically, what we what is to modify the provided <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file to set the <code class="language-plaintext highlighter-rouge">client-id</code> to the <code class="language-plaintext highlighter-rouge">machine-id</code>. 
+ This id is unique for each vm and it is available after the first run so we need to capture this id and added to <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file.</li>
+  <li>Finally, when everything is installed we reboot the vm with <code class="language-plaintext highlighter-rouge">ExecStopPost</code></li>
+</ul>
+
+<h3 id="enabling-flotta-agent-services">Enabling <code class="language-plaintext highlighter-rouge">flotta-agent</code> services</h3>
+
+<p>Normally, after you install a new service you need to run <code class="language-plaintext highlighter-rouge">systemctl enable --now &lt;service&gt;</code>. In CoreOS, to do this, we need another <code class="language-plaintext highlighter-rouge">service</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[Unit]
+Description=Flotta start service
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/usr/lib/systemd/system/yggdrasild.service
+ConditionPathExists=!/etc/systemd/system/multi-user.target.wants/yggdrasild.service
+
+[Service]
+Type=oneshot
+ExecStart=systemctl enable --now yggdrasild.service
+ExecStart=systemctl enable --now node_exporter.service
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div></div>
+
+<p>Here we have the same problem as before: we need to run this service only once at provisioning time. 
+For that, we use two <code class="language-plaintext highlighter-rouge">ConditionPathExists</code>. The first one is checking if <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> has been installed and the second is checking that <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> hasn’t been yet enabled.</p>
+
+<h3 id="butane-file">Butane file</h3>
+<p>Now, that we have the install and setup services, let’s create our butane file step by step.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">variant</span><span class="pi">:</span> <span class="s">fcos</span>
+<span class="na">version</span><span class="pi">:</span> <span class="s">1.3.0</span>
+<span class="na">passwd</span><span class="pi">:</span>
+  <span class="na">users</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">core</span>
+      <span class="na">uid</span><span class="pi">:</span> <span class="m">1000</span>
+      <span class="na">ssh_authorized_keys</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICsx5m3Pu9nxayhj6FIdNfzE2ppSlKqbJ9OJgG74jV9Q cosmin@fedora</span>
+</code></pre></div></div>
+
+<p>First we add a user and a ssh key. SSH key can be generated with <code class="language-plaintext highlighter-rouge">ssh-key-gen</code>. Here we put our public key.</p>
+
+<p>Next, we specify the <code class="language-plaintext highlighter-rouge">systemd</code> services:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">systemd</span><span class="pi">:</span>
+  <span class="na">units</span><span class="pi">:</span>
+    <span class="c1"># Enable auto-login for 'core' user.</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">serial-getty@ttyS0.service</span>
+      <span class="na">dropins</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">autologin-core.conf</span>
+        <span class="na">contents</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">[Service]</span>
+          <span class="s">ExecStart=</span>
+          <span class="s">ExecStart=-/usr/sbin/agetty --autologin core --noclear %I $TERM</span>
+          <span class="s">TTYVTDisallocate=no</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">zincati.service</span>
+      <span class="na">mask</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">podman.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">podman.socket</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">nftables.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">flotta-setup.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">flotta-start.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta-agent</code> needs <code class="language-plaintext highlighter-rouge">podman</code> and <code class="language-plaintext highlighter-rouge">nftables</code> services to run. Also, we are adding our two custom services <code class="language-plaintext highlighter-rouge">flotta-setup</code> and <code class="language-plaintext highlighter-rouge">flotta-start</code> to install and setup flotta.
+The first service is not mandatory but it is providing auto-login which is can be very useful. If you don’t use <code class="language-plaintext highlighter-rouge">noautoconsole</code> option in <code class="language-plaintext highlighter-rouge">virt-install</code>, the service <code class="language-plaintext highlighter-rouge">auto-login</code> will automatically log the user when the boot finished.</p>
+
+<p>The next section is the storage:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">storage</span><span class="pi">:</span>
+  <span class="na">trees</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/systemd/system</span>
+      <span class="na">local</span><span class="pi">:</span> <span class="s">systemd/</span>
+  <span class="na">directories</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0700</span>
+  <span class="na">files</span><span class="pi">:</span>
+    <span class="c1"># Hostname for virtual host.</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/hostname</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0644</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="s">edgedevice</span>
+    <span class="c1"># Certificates</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/key.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/key.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/cert.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/cert.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/ca.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/ca.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/yggdrasil/config.toml</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/config.toml</span>
+    <span class="c1"># Dont log audit messages</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/sysctl.d/20-silence-audit.conf</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0644</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s"># Raise console message logging level from DEBUG (7) to WARNING (4)</span>
+          <span class="s"># to hide audit messages from the interactive console.</span>
+          <span class="s">kernel.printk=4</span>
+    <span class="c1"># Set operator hostname</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/hosts</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">IPADDRESS DOMAIN</span>
+    <span class="c1"># linger root</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/systemd/logind.conf</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">KillExcludeUsers=root</span>
+    <span class="c1"># disable selinux</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/selinux/config</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">SELINUX=disabled</span>
+          <span class="s">SELINUXTYPE=targeted</span>
+</code></pre></div></div>
+
+<p>First, we need to copy our custom services to <code class="language-plaintext highlighter-rouge">systemd</code> folder. This is done under <code class="language-plaintext highlighter-rouge">trees</code> section.
+The section <code class="language-plaintext highlighter-rouge">directories</code> creates the <code class="language-plaintext highlighter-rouge">/etc/pki/customer</code> folder where we will copy the certificates. Next, we copy the certificates and the configuration file from the host to vm.
+The modification of <code class="language-plaintext highlighter-rouge">20-silence-audit.conf</code> is not mandatory but it will be useful not to have those debug messages in the log.</p>
+
+<p>A couple more files and we are done. First we need to setup <code class="language-plaintext highlighter-rouge">Flotta API</code> address and domain in the <code class="language-plaintext highlighter-rouge">/etc/hosts</code> file. 
+Next, we are enabling <code class="language-plaintext highlighter-rouge">linger</code> for <code class="language-plaintext highlighter-rouge">root</code> and disabling <code class="language-plaintext highlighter-rouge">SELINUX</code>.</p>
+
+<p>Voilà! We are done with the <code class="language-plaintext highlighter-rouge">butane</code> file.</p>
+
+<p>All that is rest is arrange all these file like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── files
+│   ├── ca.pem
+│   ├── cert.pem
+│   ├── config.toml
+│   └── key.pem
+├── spec.bu
+└── systemd
+    ├── flotta-setup.service
+    └── flotta-start.service
+
+</code></pre></div></div>
+
+<p>The folder <code class="language-plaintext highlighter-rouge">files</code> contains the files to be copied to OS and <code class="language-plaintext highlighter-rouge">system</code> folder contains our custom services.</p>
+
+<h3 id="generate-ignition-file">Generate ignition file</h3>
+
+<p>The ignition file can be generate either with <code class="language-plaintext highlighter-rouge">podman</code> or directly by installing <code class="language-plaintext highlighter-rouge">butane</code>:</p>
+
+<h5 id="via-podman">Via podman</h5>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman run <span class="nt">--interactive</span> <span class="nt">--rm</span> quay.io/coreos/butane:release <span class="se">\</span>
+       <span class="nt">--pretty</span> <span class="nt">--strict</span> spec.bu spec.ign
+</code></pre></div></div>
+
+<h5 id="via-butane">Via butane</h5>
+
+<p>Butane is available as Fedora package:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nb">install</span> <span class="nt">-y</span> butane
+</code></pre></div></div>
+
+<p>Run butane on the Butane file:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>butane <span class="nt">--pretty</span> <span class="nt">--strict</span> spec.bu <span class="o">&gt;</span> spec.ign
+</code></pre></div></div>
+
+<h3 id="ignite-coreos-instance">Ignite CoreOS instance</h3>
+
+<p>For this blog, I use <code class="language-plaintext highlighter-rouge">libvirt</code> but you have lots of other solutions to create your instance. Please take a look at CoreOS <a href="https://docs.fedoraproject.org/en-US/fedora-coreos/">doc</a>.</p>
+
+<p>After we fetch the latest image for <code class="language-plaintext highlighter-rouge">qemu</code>, the instance can be lunched using:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">IGNITION_CONFIG</span><span class="o">=</span><span class="s2">"spec.ign"</span>
+<span class="nv">IMAGE</span><span class="o">=</span><span class="s2">"/path/to/image.qcow2"</span>
+<span class="nv">VM_NAME</span><span class="o">=</span><span class="s2">"fcos-test-01"</span>
+<span class="nv">VCPUS</span><span class="o">=</span><span class="s2">"2"</span>
+<span class="nv">RAM_MB</span><span class="o">=</span><span class="s2">"2048"</span>
+<span class="nv">STREAM</span><span class="o">=</span><span class="s2">"stable"</span>
+<span class="nv">DISK_GB</span><span class="o">=</span><span class="s2">"10"</span>
+
+virt-install <span class="nt">--connect</span><span class="o">=</span><span class="s2">"qemu:///system"</span> <span class="nt">--name</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">VM_NAME</span><span class="k">}</span><span class="s2">"</span> <span class="nt">--vcpus</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">VCPUS</span><span class="k">}</span><span class="s2">"</span> <span class="nt">--memory</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">RAM_MB</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
+        <span class="nt">--os-variant</span><span class="o">=</span><span class="s2">"fedora-coreos-</span><span class="nv">$STREAM</span><span class="s2">"</span> <span class="nt">--import</span> <span class="nt">--graphics</span><span class="o">=</span>none <span class="se">\</span>
+        <span class="nt">--disk</span><span class="o">=</span><span class="s2">"size=</span><span class="k">${</span><span class="nv">DISK_GB</span><span class="k">}</span><span class="s2">,backing_store=</span><span class="k">${</span><span class="nv">IMAGE</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
+        <span class="nt">--network</span> <span class="nv">bridge</span><span class="o">=</span>virbr0 <span class="se">\</span>
+        <span class="nt">--qemu-commandline</span><span class="o">=</span><span class="s2">"-fw_cfg name=opt/com.coreos/config,file=</span><span class="k">${</span><span class="nv">IGNITION_CONFIG</span><span class="k">}</span><span class="s2">"</span>
+
+</code></pre></div></div>
+
+<p>If you don’t want to see the console, you can add <code class="language-plaintext highlighter-rouge">--noautoconsole</code> to virt-install command.</p>
+
+<p>Everything that we did here, you can find it on <a href="https://github.com/tupyy/flotta-agent-coreos">Github</a>.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

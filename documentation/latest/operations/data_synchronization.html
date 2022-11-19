@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Data Synchronization</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Intro
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html">What is flotta</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/usecases.html">Use cases</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/vs.html">Flotta vs others</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/concepts.html">Concepts</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Getting started
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/minikube.html">Minikube</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/kind.html">Kind</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/ocp.html">OCP</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/running_workloads.html">Running workloads</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Operations
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/requirements.html">System Requirements</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/deployment_options.html">Deployment options</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/configuration.html">Configuration</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/remote_data_store.html">Remote Edge Configuration API</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/observability.html">Observability</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/data_synchronization.html">Data Synchronization</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/troubleshooting.html">Troubleshooting</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/api.html">API reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/crd.html">CRD reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/host_devices.html">Accessing host devices</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              For developers
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/installation.html">Manual installation & tips</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/guide.html">Development Guide</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/profiling.html">Profiling</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+        </ul>
+        <p>Documentation for version: <b>latest</b></p>
+        <ul class="list-group list-group-collapse border-0">
+          <li class="list-group-item border-0">
+            <h5>Other versions</h5>
+
+            <ul class="list-group border-0">
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_1_0/intro/overview.html"> v0.1.0</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html"> latest</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html"> v0.2.0</a> </li>
+              
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+          <!-- Some cases we don't want to show the title -->
+          <h1 class="font-tertiary mb-5">Data Synchronization</h1>
+          
+          
+
+          <h2 id="design">Design</h2>
+
+<p>Flotta agent and Operator provide functionality of bidirectional synchronization of contents between 
+on-device directories and control-plane object storage. User can choose between
+in-cluster OCS storage or external storage. OCS takes precedence over external
+storage. The architecture of that solution is depicted by the diagrams below.</p>
+
+<p><object data="/uml/e66519fc27225a6f5fab4d4af6c6d64e.svg" type="image/svg+xml" class="plantuml"></object></p>
+
+<h2 id="ocs-storage">OCS storage</h2>
+
+<h3 id="object-bucket-claim">Object Bucket Claim</h3>
+
+<p>The objects uploaded from the edge device are stored in a device-dedicated
+Object Bucket Claim. Object Bucket Claim is provisioned when a device is
+registered with the cluster. The OBC is created in the same namespace and with
+the same name as <code class="language-plaintext highlighter-rouge">EdgeDevice</code> it’s created for.</p>
+
+<h3 id="s3">S3</h3>
+<p>The Object Bucket Claim is exposed with S3 API and can be accessed with any
+client that supports that protocol (i.e. AWS S3 CLI and libraries).</p>
+
+<p>Information needed to access the Bucket using S3 API is stored in following
+resources in the same namespace as the OBC (and <code class="language-plaintext highlighter-rouge">EdgeDevice</code>):</p>
+
+<ul>
+  <li><strong>ConfigMap</strong> with the same name as the OBC contains the Bucket name and in-cluster service endpoint address;</li>
+  <li><strong>Secret</strong> with the same name as the OBC contains <code class="language-plaintext highlighter-rouge">AWS_ACCESS_KEY_ID</code> and <code class="language-plaintext highlighter-rouge">AWS_SECRET_ACCESS_KEY</code>.</li>
+</ul>
+
+<h3 id="external-s3-storage">External S3 storage</h3>
+
+<p>You can use any S3 storage server for data upload.
+In order to configure storage for the device you need to do the following:</p>
+<ul>
+  <li>configure EdgeDevice</li>
+  <li>create storage configuration resources</li>
+</ul>
+
+<h2 id="configuring-edgedevice">Configuring EdgeDevice</h2>
+<p>The storage configuration is taken from a user supplied ConfigMap and Secret.
+Both resources must be located in the same namespace as the <code class="language-plaintext highlighter-rouge">EdgeDevice</code>.
+These resources are specified in the ‘spec.storage.s3’ section. Here’s an
+example of EdgeDevice with storage configuration:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">edgedevice-namespace</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">requestTime</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2021-10-19T18:13:04Z"</span><span class="err">,</span>
+  <span class="na">storage</span><span class="pi">:</span>
+    <span class="na">s3</span><span class="pi">:</span>
+      <span class="na">configMapName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">s3configmap-name"</span><span class="err">,</span>
+      <span class="na">secretName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">s3secret-name"</span><span class="err">,</span>
+</code></pre></div></div>
+
+<h3 id="configuration-resources">Configuration resources</h3>
+
+<p>Here are examples of the resources:</p>
+
+<h4 id="configmap">ConfigMap</h4>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">s3configmap-name</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">edgedevice-namespace</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">BUCKET_HOST</span><span class="pi">:</span> <span class="s">play.min.io</span>
+  <span class="na">BUCKET_NAME</span><span class="pi">:</span> <span class="s">device-bucket-6</span>
+  <span class="na">BUCKET_PORT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">443"</span>
+  <span class="na">BUCKET_REGION</span><span class="pi">:</span> <span class="s">us-east-1</span>
+</code></pre></div></div>
+
+<h4 id="secret">Secret</h4>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">s3secret-name</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">edgedevice-namespace</span>
+<span class="na">type</span><span class="pi">:</span> <span class="s">Opaque</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">AWS_ACCESS_KEY_ID</span><span class="pi">:</span> <span class="s">eWRheWFnaTEzNjk=</span>
+  <span class="na">AWS_SECRET_ACCESS_KEY</span><span class="pi">:</span> <span class="s">eWRheWFnaTEzNjk=</span>
+  <span class="na">tls.crt</span><span class="pi">:</span> <span class="s">LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZDVEND...</span> <span class="c1"># optional</span>
+</code></pre></div></div>
+
+<h3 id="s3-server-for-development-and-testing">S3 server for development and testing</h3>
+
+<p>You can use play.min.io as an S3 storage server.
+Use <code class="language-plaintext highlighter-rouge">minioadmin</code> as username and password or check <a href="https://docs.min.io/minio/baremetal/console/minio-console.html#minio-console">this
+page</a>
+for the updated username (access key) and password (secret key).
+The region of the bucket will probably be <code class="language-plaintext highlighter-rouge">us-east-1</code>.
+Go to <code class="language-plaintext highlighter-rouge">Settings</code> for viewing and editing the region.</p>
+
+<h2 id="bi-directional-configuration">Bi-directional configuration</h2>
+
+<p>The Flotta agent periodically downloads configuration from the Flotta operator
+and part of that configuration is data paths mapping for data synchronization 
+from the edge device to the S3 storage - specified in each <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">data</span><span class="pi">:</span>
+    <span class="na">egress</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">local/upload/log</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">remote/log</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">local/upload/telemetry</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">remote/telemetry</span>
+    <span class="na">ingress</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">remote/data</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">local/download/data</span>
+      
+</code></pre></div></div>
+
+<p>Each <code class="language-plaintext highlighter-rouge">egress</code> item specifies which on-device directory (<code class="language-plaintext highlighter-rouge">source</code>) should be
+synchronized to which directory (<code class="language-plaintext highlighter-rouge">target</code>). <code class="language-plaintext highlighter-rouge">source</code> directory is always a
+subdirectory of a “well-known” <code class="language-plaintext highlighter-rouge">/export</code> directory in every container running on
+the device.</p>
+
+<p>At the same time, the <code class="language-plaintext highlighter-rouge">ingress</code> pair specifies the data paths for the downstream data synchronization
+between the remote storage and the device. The <code class="language-plaintext highlighter-rouge">source</code> field defines the directory in the S3 storage
+that will be used as synchronization source point, whereas the <code class="language-plaintext highlighter-rouge">target</code> directory determines the end point
+inside the device where the content will be synchronized to. Note that currently there are no controls in place
+to control how much storage is being consumed by the ingress synchronization, which can lead to the device storage
+being filled due to the ingress synchronization process.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Ingress</code> and <code class="language-plaintext highlighter-rouge">egress</code> data synchronizations are independent from each other and are not required to be defined together in the workload manifest. You can have workloads that only import (<code class="language-plaintext highlighter-rouge">ingress</code>) or export (<code class="language-plaintext highlighter-rouge">egress</code>), or both like in this example.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">/export</code> directory is shared among containers of one workload (pod), but
+different workloads (pods) have them separate; each workload has <code class="language-plaintext highlighter-rouge">/export</code>
+directory backed by different host path volume. It is added automatically and
+should not be part of the <code class="language-plaintext highlighter-rouge">EdgeWorkload</code>.</p>
+
+<p>The device configuration provided by the Flotta operator also contains S3
+connection details (endpoint URL, bucket name, keys) for connecting to a bucket.</p>
+
+<h3 id="example">Example</h3>
+
+<p>EdgeWorkload:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">os-stats</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">dc</span><span class="pi">:</span> <span class="s">home</span>
+  <span class="na">data</span><span class="pi">:</span>
+    <span class="na">egress</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">stats</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">statistics</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">stats-collector</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jdzon/os-stats:v1</span>
+</code></pre></div></div>
+
+<p>Pod specification used to run the workload (generated):</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">kind</span><span class="pi">:</span> <span class="s">Pod</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">creationTimestamp</span><span class="pi">:</span> <span class="no">null</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">os-stats</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">containers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jdzon/os-stats:v1</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">stats-collector</span>
+    <span class="na">resources</span><span class="pi">:</span> <span class="pi">{}</span>
+    <span class="na">volumeMounts</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/export</span>
+      <span class="na">name</span><span class="pi">:</span> <span class="s">export-os-stats</span>
+  <span class="na">volumes</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">hostPath</span><span class="pi">:</span>
+      <span class="na">path</span><span class="pi">:</span> <span class="s">/var/local/yggdrasil/device/volumes/os-stats</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s">DirectoryOrCreate</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">export-os-stats```</span>
+</code></pre></div></div>
+
+<p>In this case on-device <code class="language-plaintext highlighter-rouge">/export/stats</code> directory will be synced to a
+<code class="language-plaintext highlighter-rouge">statistics</code> subdirectory in the bucket.</p>
+
+<h2 id="upload-files">Upload files</h2>
+
+<p>The Flotta agent synchronizes paths specified in the configuration every 15
+seconds. Only new or changed files are transferred.</p>
+
+<p>Files removed on the device are not removed from the storage. Unregistering the device will remove the used storage.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

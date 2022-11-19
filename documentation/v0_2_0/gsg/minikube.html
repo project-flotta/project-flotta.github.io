@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Run flotta on minikube</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Intro
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html">What is flotta</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/usecases.html">Use cases</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/vs.html">Flotta vs others</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/concepts.html">Concepts</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Getting started
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/minikube.html">Minikube</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/kind.html">Kind</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/ocp.html">OCP</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/gsg/running_workloads.html">Running workloads</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Operations
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/requirements.html">System Requirements</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/deployment_options.html">Deployment options</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/configuration.html">Configuration</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/remote_data_store.html">Remote Edge Configuration API</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/observability.html">Observability</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/data_synchronization.html">Data Synchronization</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/troubleshooting.html">Troubleshooting</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/api.html">API reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/crd.html">CRD reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/operations/host_devices.html">Accessing host devices</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              For developers
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/installation.html">Manual installation & tips</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/guide.html">Development Guide</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/dev/profiling.html">Profiling</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+        </ul>
+        <p>Documentation for version: <b>v0.2.0</b></p>
+        <ul class="list-group list-group-collapse border-0">
+          <li class="list-group-item border-0">
+            <h5>Other versions</h5>
+
+            <ul class="list-group border-0">
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_1_0/intro/overview.html"> v0.1.0</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html"> latest</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html"> v0.2.0</a> </li>
+              
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+          <!-- Some cases we don't want to show the title -->
+          <h1 class="font-tertiary mb-5">Run flotta on minikube</h1>
+          
+          
+
+          <p>Flotta can run on top of any Kubernetes distributions, for testing and
+development you can follow this guide to get started running flotta on your
+devices.</p>
+
+<p>Let’s start with minikube</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">---</span><span class="o">&gt;</span> minikube start
+😄  minikube v1.22.0 on Fedora 35
+🎉  minikube 1.25.2 is available! Download it: https://github.com/kubernetes/minikube/releases/tag/v1.25.2
+💡  To disable this notice, run: <span class="s1">'minikube config set WantUpdateNotification false'</span>
+
+✨  Automatically selected the docker driver
+👍  Starting control plane node minikube <span class="k">in </span>cluster minikube
+🚜  Pulling base image ...
+🔥  Creating docker container <span class="o">(</span><span class="nv">CPUs</span><span class="o">=</span>2, <span class="nv">Memory</span><span class="o">=</span>3900MB<span class="o">)</span> ...
+
+🧯  Docker is nearly out of disk space, which may cause deployments to fail! <span class="o">(</span>95% of capacity<span class="o">)</span>
+💡  Suggestion:
+
+    Try one or more of the following to free up space on the device:
+
+    1. Run <span class="s2">"docker system prune"</span> to remove unused Docker data <span class="o">(</span>optionally with <span class="s2">"-a"</span><span class="o">)</span>
+    2. Increase the storage allocated to Docker <span class="k">for </span>Desktop by clicking on:
+    Docker icon <span class="o">&gt;</span> Preferences <span class="o">&gt;</span> Resources <span class="o">&gt;</span> Disk Image Size
+    3. Run <span class="s2">"minikube ssh -- docker system prune"</span> <span class="k">if </span>using the Docker container runtime
+🍿  Related issue: https://github.com/kubernetes/minikube/issues/9024
+
+🐳  Preparing Kubernetes v1.21.2 on Docker 20.10.7 ...
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+🔎  Verifying Kubernetes components...
+    ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v5
+🌟  Enabled addons: storage-provisioner, default-storageclass
+🏄  Done! kubectl is now configured to use <span class="s2">"minikube"</span> cluster and <span class="s2">"default"</span> namespace by default
+</code></pre></div></div>
+
+<p>Check minikube status:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">---</span><span class="o">&gt;</span> minikube status
+minikube
+<span class="nb">type</span>: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+</code></pre></div></div>
+
+<p>Flotta operator has a few tools that helps to install flotta, for that, let’s
+clone it:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/project-flotta/flotta-operator <span class="nt">-b</span> v0.2.0 <span class="nt">--depth</span> 1
+<span class="nb">cd </span>flotta-operator
+</code></pre></div></div>
+
+<p>First, we need to install Openshift-router, the ingress that it’s supported now:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">---</span><span class="o">&gt;</span> make install-router
+kubectl apply <span class="nt">-f</span> https://raw.githubusercontent.com/openshift/router/master/deploy/router_rbac.yaml
+clusterrole.rbac.authorization.k8s.io/openshift-ingress-router created
+clusterrolebinding.rbac.authorization.k8s.io/openshift-ingress-router created
+clusterrolebinding.rbac.authorization.k8s.io/openshift-ingress-router-auth-delegator created
+namespace/openshift-ingress created
+serviceaccount/ingress-router created
+kubectl apply <span class="nt">-f</span> https://raw.githubusercontent.com/openshift/router/master/deploy/route_crd.yaml
+customresourcedefinition.apiextensions.k8s.io/routes.route.openshift.io created
+kubectl apply <span class="nt">-f</span> https://raw.githubusercontent.com/openshift/router/master/deploy/router.yaml
+deployment.apps/ingress-router created
+kubectl <span class="nb">wait</span> <span class="nt">--for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready pods <span class="nt">--all</span> <span class="nt">-n</span> openshift-ingress <span class="nt">--timeout</span><span class="o">=</span>60s
+pod/ingress-router-5b9b477c98-gx5pl condition met
+</code></pre></div></div>
+
+<p>Now let’s install Flotta on the cluster:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make deploy <span class="nv">IMG</span><span class="o">=</span>quay.io/project-flotta/flotta-operator:v0.2.0 <span class="nv">HTTP_IMG</span><span class="o">=</span>quay.io/project-flotta/flotta-edge-api:v0.2.0 <span class="nv">TARGET</span><span class="o">=</span>k8s
+
+</code></pre></div></div>
+
+<p>A bunch of CRDs are now created, where the definitions can be found
+<a href="/documentation/v0_2_0/operations/crd.html">here</a>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---&gt; kubectl  api-resources | grep flotta
+edgeconfigs                                    management.project-flotta.io/v1alpha1   true         EdgeConfig
+edgedevices                                    management.project-flotta.io/v1alpha1   true         EdgeDevice
+edgedevicesets                                 management.project-flotta.io/v1alpha1   true         EdgeDeviceSet
+edgedevicesignedrequest           edsr         management.project-flotta.io/v1alpha1   true         EdgeDeviceSignedRequest
+edgeworkloads                                  management.project-flotta.io/v1alpha1   true         EdgeWorkload
+playbookexecutions                             management.project-flotta.io/v1alpha1   true         PlaybookExecution
+---&gt;
+</code></pre></div></div>
+
+<p>At the same time, in the flotta namespace the operator and the edge-api pods should be running:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---&gt; kubectl -n flotta get pods
+NAME                                             READY   STATUS    RESTARTS        AGE
+pod/flotta-controller-manager-7fd45874c6-wxxfv   2/2     Running   0               3d17h
+pod/flotta-edge-api-8649fbb9dc-bt4r9             2/2     Running   0               3d17h
+---&gt;
+</code></pre></div></div>
+
+<p>Flotta is now running and ready to register edgedevices. To register a
+edgedevice we need first to retrieve the install scripts using the Makefile
+target <code class="language-plaintext highlighter-rouge">agent-install-scripts</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make agent-install-scripts
+</code></pre></div></div>
+
+<p>Now, two scripts are created:</p>
+<ul>
+  <li>hack/install-agent-dnf.sh: To install on normal Fedora installations</li>
+  <li>hack/install-agent-rpm-ostree.sh: To install on rpm-ostree devices.</li>
+</ul>
+
+<p>Minikube is a local virtual machine, so <code class="language-plaintext highlighter-rouge">$ minikube ip</code> cannot be reached from
+your edgedevice, for sharing the flotta API port to the edgedevice the best way
+is to use kubectl port-forward:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ kubectl port-forward service/flotta-edge-api -n flotta 8043 --address 0.0.0.0
+</code></pre></div></div>
+
+<p>On the device, with Fedora already installed, we need to execute the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo hack/install-agent-dnf.sh -i 192.168.2.10
+</code></pre></div></div>
+
+<p>Where 192.168.2.10 is your host ip.</p>
+
+<p>After a while, if you list the devices in your cluster, you can see that the
+edgedevice is already registered:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>---&gt; kubectl get edgedevices
+NAME        AGE
+camera-ny   118s
+</code></pre></div></div>
+
+<p>From here, you should be able to deploy workloads to these devices. As explained
+<a href="/documentation/v0_2_0/gsg/running_workloads.html">here</a></p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,1739 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://project-flotta.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://project-flotta.github.io/" rel="alternate" type="text/html" /><updated>2022-11-19T15:54:09+00:00</updated><id>https://project-flotta.github.io/feed.xml</id><title type="html">Flotta</title><subtitle>Flotta edge device management.</subtitle><entry><title type="html">Running Ansible Playbooks on Edge Devices</title><link href="https://project-flotta.github.io/flotta/2022/09/28/run-ansible-playbooks.html" rel="alternate" type="text/html" title="Running Ansible Playbooks on Edge Devices" /><published>2022-09-28T11:00:00+00:00</published><updated>2022-09-28T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/09/28/run-ansible-playbooks</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/09/28/run-ansible-playbooks.html"><![CDATA[<p>There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices.
+For example, in <a href="https://coreos.github.io/rpm-ostree/">rpm-ostree</a> during life cycle of the device a configuration change without rebooting may be needed.</p>
+
+<p><em>Project Flotta</em> makes your life easier by supporting <em>Ansible</em> playbook execution.
+How can we create an <em>Ansible</em> playbook for the edge devices? How does the execution work in <em>Project Flotta</em>?
+This is what we will cover in this blog post.</p>
+
+<h1 id="preliminary-steps">Preliminary steps</h1>
+<h2 id="1--define-the-ansible-playbook">1- Define the Ansible Playbook</h2>
+<p>First things first: we need to write your example <em>Ansible</em> playbook.
+To keep things easy, let’s say we want to create a txt file in some of our edge devices.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="pi">-</span>  <span class="na">name</span><span class="pi">:</span> <span class="s">Hello Ansible Playbook</span>
+   <span class="na">hosts</span><span class="pi">:</span> <span class="s">127.0.0.1</span>
+   <span class="na">gather_facts</span><span class="pi">:</span> <span class="no">false</span>
+   
+   <span class="na">tasks</span><span class="pi">:</span>
+   <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Create a file called '/tmp/hello.txt'</span>
+     <span class="na">copy</span><span class="pi">:</span>
+       <span class="na">content</span><span class="pi">:</span> <span class="s">Hello from Project Flotta!</span>
+       <span class="na">dest</span><span class="pi">:</span> <span class="s">/tmp/hello.txt</span>
+</code></pre></div></div>
+
+<h2 id="2---define-the-edgeconfig">2 - Define the EdgeConfig</h2>
+<p>Then, it’s time to send it to the <em>Flotta Operator</em> but… How?
+Easy! Let create an <code class="language-plaintext highlighter-rouge">EdgeConfig</code> CR! <br />
+(See <a href="https://project-flotta.io/documentation/v0_2_0/operations/crd.html#edgeconfig">CRD Reference</a> for detailed description).</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeConfig</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">edgeconfig-sample</span>
+<span class="na">spec</span><span class="pi">:</span>
+    <span class="na">edgePlaybook</span><span class="pi">:</span> 
+        <span class="na">playbooks</span><span class="pi">:</span> 
+            <span class="pi">-</span> <span class="na">content</span><span class="pi">:</span> <span class="s">LS0tCi0gIG5hbWU6IEhlbGxvIEFuc2libGUgUGxheWJvb2sKICAgaG9zdHM6IDEyNy4wLjAuMQogICBnYXRoZXJfZmFjdHM6IGZhbHNlCiAgIAogICB0YXNrczoKICAgLSBuYW1OiBDcmVhdGUgYSBmaWxlIGNhbGxlZCAnL3RtcC9oZWxsby50eHQnCiAgICAgY29weToKICAgICAgIGNvbnRlbnQ6IEhlbGxvIGZyb20gUHJvamVjdCBGbG90dGEhCiAgICAgICBkZXN0OiAvdG1wL2hlbGxvLnR4dAo=</span>
+              <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">10</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">content</code> item contains the <code class="language-plaintext highlighter-rouge">base64</code> encoding of our example playbook. It can be obtained using:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> <span class="nb">base64</span> <span class="o">&lt;&lt;</span> <span class="no">EOF</span><span class="sh">
+---
+-  name: Hello Ansible Playbook
+   hosts: 127.0.0.1
+   gather_facts: false
+   
+   tasks:
+   - name: Create a file called '/tmp/hello.txt'
+     copy:
+       content: Hello from Project Flotta!
+       dest: /tmp/hello.txt
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<h2 id="3---label-the-edge-devices">3 - Label the edge devices</h2>
+<p>To let the <em>Flotta Operator</em> know that you want execute your <code class="language-plaintext highlighter-rouge">edgeconfig-sample</code> on one more specific edge devices, you must label them.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> kubectl label edgedevice device1 config/device-by-config<span class="o">=</span>edgeconfig-sample
+<span class="o">&gt;&gt;</span> kubectl label edgedevice device3 config/device-by-config<span class="o">=</span>edgeconfig-sample
+</code></pre></div></div>
+<p>In this case, we want to run the playbook on two edge devices: <code class="language-plaintext highlighter-rouge">device1</code> and <code class="language-plaintext highlighter-rouge">device3</code></p>
+<h2 id="4---apply-the-edgeconfig-to-the-cluster">4 - Apply the EdgeConfig to the cluster</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;</span> kubectl apply <span class="nt">-f</span> edgeconfig-sample.yaml
+</code></pre></div></div>
+
+<h1 id="architecture">Architecture</h1>
+<p>What happens when <em>Flotta Operator</em> receives the <code class="language-plaintext highlighter-rouge">EdgeConfig</code>?</p>
+
+<p>It automatically creates a <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CR for each device that has been properly labelled.</p>
+
+<p><img src="/assets/images/architecture_ansible_support.png" alt="High level architecture of Ansible support" width="1100" /></p>
+
+<p>In this way it is possible to monitor the execution of the playbook on each edge device, indeed the edge device will update the status of the <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CR according with the Ansible playbook execution result.</p>
+
+<p>The possible statuse are: <code class="language-plaintext highlighter-rouge">Deploying</code>, <code class="language-plaintext highlighter-rouge">Running</code>, <code class="language-plaintext highlighter-rouge">SuccessfullyCompleted</code>, <code class="language-plaintext highlighter-rouge">CompletedWithError</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">EdgeConfig</code> CR provides the possibility to specify the <em>Execution Type</em> of each <em>Ansible</em> playbook.
+The possible strategies provided are:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">StopOnFailure</code>: stop playbook execution as soon as failure occurs and do not re-execute it</li>
+  <li><code class="language-plaintext highlighter-rouge">RetryOnFailure</code>: retry to execute the playbook if a failure occurs during the playbook execution</li>
+  <li><code class="language-plaintext highlighter-rouge">ExecuteOnce</code>: execute the playbook only once</li>
+</ul>
+
+<p>At the moment, only <code class="language-plaintext highlighter-rouge">ExecuteOnce</code> is supported.</p>
+
+<h1 id="future-works">Future works</h1>
+
+<p>At the time of writing of this blog post some important features are still missing.
+For example, when does the <em>Flotta Operator</em> can consider the <code class="language-plaintext highlighter-rouge">EdgeConfig</code> <em>completed</em>?</p>
+
+<p>What if the user select 100 edge devices and some successfully completed the executions, others are no reachable and other completed the execution with errors?</p>
+
+<p>We need to implement a “<em>waiting strategy</em>”. The <code class="language-plaintext highlighter-rouge">EdgeConfig</code> has been designed to use <code class="language-plaintext highlighter-rouge">conditions</code>: in this way it possible to way until all the <code class="language-plaintext highlighter-rouge">PlaybookExecution</code> CRs are in a final state (<code class="language-plaintext highlighter-rouge">SuccessfullyCompleted</code> and <code class="language-plaintext highlighter-rouge">CompletedWithError</code>), or considered the <code class="language-plaintext highlighter-rouge">EdgeConfig</code> successfully executed if at least x% of the edge devices ran the playbook correctly.</p>
+
+<p>This is a good opportunity for you to start contributing on <em>Project Flotta</em>!</p>]]></content><author><name>Gloria Ciavarrini &lt;gciavarrini@redhat.com&gt;</name></author><category term="flotta" /><category term="flotta" /><category term="devices" /><category term="ansible" /><summary type="html"><![CDATA[There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in rpm-ostree during life cycle of the device a configuration change without rebooting may be needed.]]></summary></entry><entry><title type="html">Edge Example App: CPU Temperature</title><link href="https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-cpu-temp.html" rel="alternate" type="text/html" title="Edge Example App: CPU Temperature" /><published>2022-09-05T02:27:05+00:00</published><updated>2022-09-05T02:27:05+00:00</updated><id>https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-cpu-temp</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-cpu-temp.html"><![CDATA[<p>Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:</p>
+
+<p>Sensing the Internet (which helps to construct devices network topology). (see <a href="https://project-flotta.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1.html">part 1</a> and <a href="https://project-flotta.io/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">part 2</a>)
+Read CPU temperature (which indicate how much load the device is handling).&lt;= this article</p>
+
+<p>As Project Flotta goal is to manage workloads deployed on small-footprint devices, reading the CPU temperature is a good way to know how much load the device is handling. this App Along with the Web UI Interface, helps to collect and visualize the CPU temperature of the device over the day by presenting it as a Line Graph, making it easy to identify the time of the day when the device is handling more load.</p>
+
+<h2 id="how-this-app-works">How this app works</h2>
+
+<p>This app reads the CPU temperature from the device and saves it to a file on the device, the device worker will send it to the edge cluster, and the edge cluster will save it to the S3 bucket (same synchronization mechanism used for the Internet sensing feature).</p>
+
+<p>On the backend side, the edge cluster will read the file from the S3 bucket, calculate the average temperature for every hour and expose this data to the web UI with endpoints, which will present it to the user as a line graph.</p>
+
+<h2 id="example-of-logs-produced-by-this-app">Example of logs produced by this app</h2>
+<pre><code class="language-log">2022/09/04 11:11:25 {"Temp":43}
+2022/09/04 11:12:25 {"Temp":42.5}
+2022/09/04 12:13:25 {"Temp":42.5}
+2022/09/04 12:14:25 {"Temp":43}
+2022/09/04 13:15:25 {"Temp":44}
+</code></pre>
+
+<h2 id="example-of-presented-data">Example of presented data</h2>
+<p><img src="/assets/images/cpu-temp-graph.png" alt="CPU line graph" width="800" /></p>
+
+<h2 id="how-to-use-this-app">How to use this app</h2>
+
+<p>This feature is part of the Edge Example App, so you can use the same manifests explained in <a href="https://project-flotta.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1.html">part 1</a> to deploy the app to your device.</p>
+
+<h2 id="future-work-ideas">Future work Ideas</h2>
+<ul>
+  <li>Add more sensors to the app, like CPU usage, memory usage, etc.</li>
+  <li>Upload the data to Prometheus or Thanos as it provides more features for data visualization and analysis.</li>
+</ul>
+
+<h2 id="github-repositories">GitHub Repositories</h2>
+<ul>
+  <li><a href="https://github.com/project-flotta/flotta-edge-example">https://github.com/project-flotta/flotta-edge-example</a> &lt;= Device App</li>
+  <li><a href="https://github.com/project-flotta/flotta-webapp-frontend">https://github.com/project-flotta/flotta-webapp-frontend</a> &lt;= Web App frontend</li>
+  <li><a href="https://github.com/project-flotta/flotta-webapp-backend">https://github.com/project-flotta/flotta-webapp-backend</a> &lt;= Web App backend</li>
+</ul>]]></content><author><name>Ahmad Ateya &lt;ahmad.m.ateya@gmail.com&gt;</name></author><category term="flotta" /><category term="flotta" /><category term="devices" /><category term="workloads" /><category term="gsoc" /><summary type="html"><![CDATA[Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:]]></summary></entry><entry><title type="html">Edge Example App: Sense the Internet Part 2</title><link href="https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" rel="alternate" type="text/html" title="Edge Example App: Sense the Internet Part 2" /><published>2022-09-05T02:27:05+00:00</published><updated>2022-09-05T02:27:05+00:00</updated><id>https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html"><![CDATA[<p>Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:</p>
+<ul>
+  <li>Sensing the Internet (which helps to construct devices network topology). &lt;= this article (Part 2)</li>
+  <li>Read CPU temperature (which indicate how much load the device is handling).</li>
+</ul>
+
+<h2 id="how-this-app-works">How this app works</h2>
+<p>This app is the presenting layer of the Flotta Edge devices, get its data from the <a href="https://github.com/project-flotta/flotta-webapp-backend">backend app</a> endpoints and display it to the user.</p>
+
+<p>You can list all devices that uses your S3 Bucket as storage bucket, and for each device you can see its information and its network topology.</p>
+
+<p>Here are screenshots of the app:</p>
+
+<ul>
+  <li>List Devices page</li>
+</ul>
+
+<p><img src="/assets/images/list-devices-page.png" alt="List devices" width="800" /></p>
+
+<ul>
+  <li>Device page with app features</li>
+</ul>
+
+<p><img src="/assets/images/device-features-page.png" alt="List devices" width="800" /></p>
+
+<ul>
+  <li>Network topology page</li>
+</ul>
+
+<p><img src="/assets/images/network-topology-page.png" alt="List devices" width="800" /></p>
+
+<h2 id="how-to-use-this-app">How to use this app</h2>
+<p>The <a href="https://github.com/project-flotta/flotta-webapp-backend">backend app</a> is the only requirement, so deploy the backend app, check <a href="https://github.com/project-flotta/flotta-webapp-backend#getting-started">here</a>, and then you’re ready to deploy this app, check <a href="https://github.com/project-flotta/flotta-webapp-frontend#getting-started">here</a>.</p>
+
+<p>All you need have to use this app is to have S3 bucket to store the data, and to configure the backend app to use this bucket.</p>
+
+<h2 id="future-work-ideas">Future work ideas</h2>
+<ul>
+  <li>Add more filters to the Network Topology graph (e.g. by date etc.).</li>
+  <li>Add more information to the devices list (e.g. device type, device location etc.).</li>
+</ul>
+
+<h2 id="github-repositories">GitHub Repositories</h2>
+<ul>
+  <li><a href="https://github.com/project-flotta/flotta-edge-example">https://github.com/project-flotta/flotta-edge-example</a> &lt;= Device App</li>
+  <li><a href="https://github.com/project-flotta/flotta-webapp-frontend">https://github.com/project-flotta/flotta-webapp-frontend</a> &lt;= Web App frontend</li>
+  <li><a href="https://github.com/project-flotta/flotta-webapp-backend">https://github.com/project-flotta/flotta-webapp-backend</a> &lt;= Web App backend</li>
+</ul>]]></content><author><name>Ahmad Ateya &lt;ahmad.m.ateya@gmail.com&gt;</name></author><category term="flotta" /><category term="flotta" /><category term="devices" /><category term="workloads" /><category term="gsoc" /><summary type="html"><![CDATA[Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps to construct devices network topology). &lt;= this article (Part 2) Read CPU temperature (which indicate how much load the device is handling).]]></summary></entry><entry><title type="html">Edge Example App: Sense the Internet Part 1</title><link href="https://project-flotta.github.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1.html" rel="alternate" type="text/html" title="Edge Example App: Sense the Internet Part 1" /><published>2022-09-04T02:27:05+00:00</published><updated>2022-09-04T02:27:05+00:00</updated><id>https://project-flotta.github.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/09/04/edge-example-app-sense-the-internet-part-1.html"><![CDATA[<p>Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:</p>
+<ul>
+  <li>Sensing the Internet (which helps to construct devices network topology). &lt;= this article</li>
+  <li>Read CPU temperature (which indicate how much load the device is handling).</li>
+</ul>
+
+<p>As Project Flotta goal is to manage workloads deployed on small-footprint devices and dealing with network connectivity issues, this app provides a way of collecting network information that will be exported to the edge cluster.
+This App Along with the Web UI Interface, provides a good view of the network topology and the devices that are connected to the Internet.</p>
+
+<h2 id="how-this-app-works">How this app works</h2>
+<p>Taking the simple way of getting network information, this app collects its information about the network by sending a packet on the IP network to the Edge Cluster, calculating the time taken for each hop the packet makes during its route to the destination, this much like traceroute in the network but done on the device.</p>
+
+<p><img src="/assets/images/traceroute.png" alt="" /></p>
+
+<p>As a workload app, this app benefits from Flotta Edge devices architecture, collecting its information and saving it to a file on the device and let the device worker send it to the edge cluster, this way</p>
+
+<h2 id="how-to-use-this-app">How to use this app</h2>
+<p>Use the following manifests to deploy the app to your device:</p>
+
+<h4 id="first-apply-your-secrets-and-configmaps">First apply your secrets and configmaps:</h4>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">s3secret</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">type</span><span class="pi">:</span> <span class="s">Opaque</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">AWS_ACCESS_KEY_ID</span><span class="pi">:</span> <span class="s">&lt;your-aws-access-key-id&gt;</span>
+  <span class="na">AWS_SECRET_ACCESS_KEY</span><span class="pi">:</span> <span class="s">&lt;your-aws-secret-key&gt;</span>
+</code></pre></div></div>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">dc1-syslog</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">Address</span><span class="pi">:</span> <span class="s">dc1.syslog.project-flotta.io:601</span>
+  <span class="na">Protocol</span><span class="pi">:</span> <span class="s">tcp</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">secure-syslog</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">Address</span><span class="pi">:</span> <span class="s">secure.dc1.syslog.project-flotta.io:601</span>
+  <span class="na">Protocol</span><span class="pi">:</span> <span class="s">tcp</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">s3config</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">BUCKET_HOST</span><span class="pi">:</span> <span class="s">s3://flotta-data-bucket</span>
+  <span class="na">BUCKET_NAME</span><span class="pi">:</span> <span class="s">flotta-data-bucket</span>
+  <span class="na">BUCKET_PORT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">443"</span>
+  <span class="na">BUCKET_REGION</span><span class="pi">:</span> <span class="s">us-east-1</span>
+</code></pre></div></div>
+
+<h4 id="second-apply-the-device-by-this-manifest-or-update-it-if-it-already-exists">Second apply the device by this manifest (or update it if it already exists):</h4>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeDevice</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">&lt;your-device-name&gt;</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+  <span class="na">labels</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">&lt;some-label-here&gt;</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">requestTime</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2022-07-14T04:55:44Z"</span>
+  <span class="na">logCollection</span><span class="pi">:</span>
+    <span class="na">dc1-syslog</span><span class="pi">:</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">10</span> <span class="c1"># 10 megabytes of size</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">dc1-syslog</span>
+    <span class="na">secure-syslog</span><span class="pi">:</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">100</span> <span class="c1"># 100 megabytes of size</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">secure-syslog</span>
+  <span class="na">storage</span><span class="pi">:</span>
+    <span class="na">s3</span><span class="pi">:</span>
+      <span class="na">configMapName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">s3config"</span>
+      <span class="na">secretName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">s3secret"</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>Note: these files explained in the <a href="https://project-flotta.io/documentation/v0_2_0/operations/data_synchronization.html#configuring-edgedevice">Docs</a></p>
+</blockquote>
+
+<h4 id="finally-apply-the-app-to-the-device">Finally, apply the app to the device:</h4>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">&lt;workload-name&gt;</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">logCollection</span><span class="pi">:</span> <span class="s">dc1-syslog</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">&lt;device-label&gt;</span> <span class="c1"># same as the device label</span>
+  <span class="na">data</span><span class="pi">:</span>
+    <span class="na">egress</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">export</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">example-edge-device</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">edge-example-workload</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">docker.io/ahmadateya/flotta-edge-example-workload:latest</span>
+          <span class="na">securityContext</span><span class="pi">:</span>
+            <span class="na">capabilities</span><span class="pi">:</span>
+              <span class="na">add</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">ALL"</span><span class="pi">]</span>
+</code></pre></div></div>
+
+<p>in <a href="https://project-flotta.io/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">part 2</a>, we will see how the Web App presents the network topology and the devices that are connected to the Internet.</p>
+<h3 id="github-repository">GitHub Repository</h3>
+<ul>
+  <li><a href="https://github.com/project-flotta/flotta-edge-example">https://github.com/project-flotta/flotta-edge-example</a></li>
+</ul>]]></content><author><name>Ahmad Ateya &lt;ahmad.m.ateya@gmail.com&gt;</name></author><category term="flotta" /><category term="flotta" /><category term="devices" /><category term="workloads" /><category term="gsoc" /><summary type="html"><![CDATA[Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps to construct devices network topology). &lt;= this article Read CPU temperature (which indicate how much load the device is handling).]]></summary></entry><entry><title type="html">Flotta Image Classification tool for edgedevices</title><link href="https://project-flotta.github.io/flotta/2022/08/27/image-classification-on-edgedevices.html" rel="alternate" type="text/html" title="Flotta Image Classification tool for edgedevices" /><published>2022-08-27T06:14:17+00:00</published><updated>2022-08-27T06:14:17+00:00</updated><id>https://project-flotta.github.io/flotta/2022/08/27/image-classification-on-edgedevices</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/08/27/image-classification-on-edgedevices.html"><![CDATA[<p>The ability to detect objects is essential in a number of fields, including computer vision, robotics, and autonomous driving. With the idea of applying real-time object identification on edge devices with low inference time and high accuracy, many approaches to object detection can hardly operate on the resource-constrained edge devices.</p>
+
+<p>The Flotta Image Classification tool overcomes the aforementioned limitations, by delivering amazingly precise object detection while enabling faster object detection on edge devices (like Raspberry Pi, etc.)</p>
+
+<p>Workload Dependencies -</p>
+<ul>
+  <li>Python &gt;=3.7</li>
+  <li>OpenCV 4.6</li>
+</ul>
+
+<p>Device configuration (at least) -</p>
+<ul>
+  <li>CPU 1GHz</li>
+  <li>Memory 1024MB</li>
+  <li>Disk Space 2GB</li>
+</ul>
+
+<h2 id="prerequisite">Prerequisite</h2>
+<ul>
+  <li>Flotta-configured device. (see <a href="https://project-flotta.io/documentation/v0_2_0/intro/overview.html">documentation</a>)</li>
+</ul>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p><strong>Project repository can be found <a href="https://github.com/project-flotta/image-classification">here</a>.</strong></p>
+
+<h3 id="preparations">Preparations</h3>
+<p>As part of the flotta installation, prioritizing security of containers we create the user flotta and utilise that user to execute the tasks.
+By default, the flotta user does not have access to any mounted devices, thus we must first make changes to provide flotta user access to the device in <code class="language-plaintext highlighter-rouge">/dev</code> before configuring the runtime to permit the access.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#video group access to flotta user </span>
+<span class="o">[</span>root@device ~]# usermod <span class="nt">-a</span> <span class="nt">-G</span> video flotta
+
+<span class="c">#expected</span>
+<span class="o">[</span>root@device ~]# <span class="nb">id </span>flotta
+<span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span>,39<span class="o">(</span>video<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Following device <a href="https://project-flotta.io/flotta/2022/04/15/flotta-and-raspberry-pi.html#installation">registration</a>, to run our workload on specific device, we need to label the device -</p>
+
+<p>Use following command to add the label:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label edgedevice &lt;device CR name&gt; <span class="nv">app</span><span class="o">=</span>camera
+</code></pre></div></div>
+
+<p>Confirm that you have an EdgeDevice labelled with app=camera</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl get edgedevice <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>camera
+NAME                                          AGE
+ff8612a5bd1a40cca403ac1fc95cc2ad              3m
+</code></pre></div></div>
+<p>Now we will define the manifests using the same label.</p>
+
+<p><strong>Next</strong>, you will need a webcam mounted to your workload or else it fails with no device connected. Change the device id from 0 to 1/2/3… specific to your device.</p>
+
+<p>Using the webcam in my system as an example mounted in /dev/video0. Make sure you specify them in the <code class="language-plaintext highlighter-rouge">edgeworkload.yaml</code> -</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">volumemounts</span><span class="pi">:</span>
+ <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/dev/video0</span>
+   <span class="na">name</span><span class="pi">:</span> <span class="s">video</span>
+</code></pre></div></div>
+<p>(and here)</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">volumes</span><span class="pi">:</span>
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">video</span> 
+  <span class="na">hostPath</span><span class="pi">:</span>
+    <span class="na">path</span><span class="pi">:</span> <span class="s">/dev/video0</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">File</span>
+</code></pre></div></div>
+
+<h3 id="storage">Storage</h3>
+<p>Specified in <code class="language-plaintext highlighter-rouge">edgedevice.yaml</code>.</p>
+
+<p><strong>Keep in mind</strong> the S3 api credentials should be <code class="language-plaintext highlighter-rouge">base64</code> encoded in <code class="language-plaintext highlighter-rouge">secrets.yaml</code>, else the data sync will not initiate.</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">storage</span><span class="pi">:</span>
+    <span class="na">s3</span><span class="pi">:</span>
+      <span class="na">secretName</span><span class="pi">:</span> <span class="s">s3secret</span> <span class="c1"># secret containing S3 API access credentials</span>
+      <span class="na">configMapName</span><span class="pi">:</span> <span class="s">s3config</span> <span class="c1"># configmap containing S3 API access configuration options</span>
+</code></pre></div></div>
+<p>The default directory <code class="language-plaintext highlighter-rouge">"../export/images/"</code> is used for saving images.</p>
+
+<p>Note: Any path that you specify in data sync configuration should be placed under /export in the container.</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">data</span><span class="pi">:</span>
+    <span class="na">egress</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">source</span><span class="pi">:</span> <span class="s">images</span> <span class="c1"># container folder under /export</span>
+        <span class="na">target</span><span class="pi">:</span> <span class="s">images</span> <span class="c1"># object storage bucket folder</span>
+</code></pre></div></div>
+<p>Note: Data is synced every 15 seconds.</p>
+
+<h3 id="deploy">Deploy</h3>
+<p>First deploying the <code class="language-plaintext highlighter-rouge">configmaps.yaml</code> and <code class="language-plaintext highlighter-rouge">secrets.yaml</code> manifests following <code class="language-plaintext highlighter-rouge">edgedevice.yaml</code> then finally <code class="language-plaintext highlighter-rouge">edgeworkload.yaml</code>.</p>
+
+<p>Let’s monitor EdgeDevice object in our cluster to see when the device becomes available:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>watch <span class="nt">-t</span> kubectl get edgedevice ff8612a5bd1a40cca403ac1fc95cc2ad <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>
+</code></pre></div></div>
+<p>it should show our workload -</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[{"lastTransitionTime":"2022-08-28T16:03:51Z","name":"edge-ic-workload","phase":"Running"}]
+</code></pre></div></div>
+<p>(if showing <code class="language-plaintext highlighter-rouge">deploying</code> phase, wait for a while as the image is being pulled)</p>
+
+<h3 id="controls-startstop">Controls (START/STOP)</h3>
+<ol>
+  <li>Using environment variable in <code class="language-plaintext highlighter-rouge">configmaps.yaml</code> -
+    <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">data</span><span class="pi">:</span>
+  <span class="na">CAPTURE</span><span class="pi">:</span> <span class="s2">"</span><span class="s">True"</span> <span class="c1"># starts detection </span>
+</code></pre></div>    </div>
+    <p>Setting <code class="language-plaintext highlighter-rouge">CAPTURE: "False"</code> will stop the camera but keep the workload running.</p>
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl apply <span class="nt">-f</span> configmaps.yaml
+</code></pre></div>    </div>
+  </li>
+  <li>(OR) Removing the workload from the device using -
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl delete <span class="nt">-f</span> edgeworkload.yaml
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<h3 id="output--">Output -</h3>
+
+<p>SSH to the device and become the flotta user to access the container and see that the images were created -</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora]<span class="nv">$ </span><span class="nb">sudo </span>su <span class="nt">-l</span> flotta <span class="nt">-s</span> /bin/bash <span class="nt">-c</span> <span class="s2">"podman exec -it edge-ic-workload-edge-ic-workload ls ../export/images/"</span>
+2022-08-29_17-32-58.jpeg      2022-08-29_17-33-03.jpeg
+2022-08-29_17-32-58.json      2022-08-29_17-33-03.json
+</code></pre></div></div>
+<p>Using json for keeping track of detected objects specific to images -</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-08-29_17-32-58"</span><span class="p">,</span><span class="w"> </span><span class="nl">"detected"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"tvmonitor"</span><span class="p">,</span><span class="w"> </span><span class="s2">"laptop"</span><span class="p">,</span><span class="w"> </span><span class="s2">"keyboard"</span><span class="p">]}</span><span class="w">
+</span></code></pre></div></div>
+<blockquote>
+  <p>Note: Remember that the files are only produced when an object is found, thus if none are produced, this might be the case.</p>
+</blockquote>
+
+<h3 id="configurable-parameters">Configurable parameters</h3>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">data</span><span class="pi">:</span>
+  <span class="na">CAPTURE</span><span class="pi">:</span> <span class="s2">"</span><span class="s">True"</span>
+  <span class="na">THRES</span><span class="pi">:</span> <span class="s2">"</span><span class="s">0.25"</span>
+  <span class="na">TIMEINT</span><span class="pi">:</span> <span class="s2">"</span><span class="s">5"</span>
+</code></pre></div></div>
+<p><img src="/assets/images/flotta_image_classification-table.png" alt="Table" /></p>
+
+<h2 id="workflow">Workflow</h2>
+<p><img src="/assets/images/flotta_image_classification-workflow.png" alt="Workflow" /></p>
+
+<p>Once the edge device is configured, it begins real-time object recognition on the camera feed at the specified time interval and if an object is detected it captures and stores the images with the localization of those objects.</p>
+
+<p>The functionality of the Flotta agent and Operator of bidirectional data sync between the device and storage is then used to sync these images from the device with object storage. (Learn more on Data Synchronization <a href="https://project-flotta.io/documentation/v0_2_0/operations/data_synchronization.html">here</a>)</p>
+
+<p>Next the images can be browsed using flotta web app running in a cluster.</p>
+
+<p>(<em>Quick tip</em>: Click on the images for expanded view)</p>
+
+<p>Some example images detected using Flotta Image Classification Tool <a href="http://www.youtube.com/watch?v=RHNfVsw2V7E">here</a>.</p>
+
+<p>Please feel free to share any issues or propose new ideas at <a href="https://github.com/project-flotta/image-classification/issues">GitHub Issues</a></p>]]></content><author><name>Deependra Singh Shekhawat</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><category term="image-classification" /><summary type="html"><![CDATA[The ability to detect objects is essential in a number of fields, including computer vision, robotics, and autonomous driving. With the idea of applying real-time object identification on edge devices with low inference time and high accuracy, many approaches to object detection can hardly operate on the resource-constrained edge devices.]]></summary></entry><entry><title type="html">OSBuild operator for OS lifecycle management</title><link href="https://project-flotta.github.io/flotta/2022/07/27/osbuild-operator-for-os-lifecycle-in-flotta.html" rel="alternate" type="text/html" title="OSBuild operator for OS lifecycle management" /><published>2022-07-27T11:00:00+00:00</published><updated>2022-07-27T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/07/27/osbuild-operator-for-os-lifecycle-in-flotta</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/07/27/osbuild-operator-for-os-lifecycle-in-flotta.html"><![CDATA[<p>The OSBuild operator provides a kubernetes API by the means of new Custom Resource Definitions for building OSTree images as part of OS lifecycle management,
+in flotta project.</p>
+
+<p>The first release of the operator allows the user to build edge-container for RHEL images (RHEL &gt;= 8.6) and make them accessible in S3 bucket.</p>
+
+<p>Please see below the step-by-step guide for producing a new edge-container image.
+A complete demo can be found <a href="https://www.youtube.com/watch?v=SnNcHToCcDQ">here</a></p>
+
+<h2 id="prerequisites-installation">Prerequisites installation</h2>
+<h3 id="clone-the-osbuild-operator-repository">Clone the osbuild-operator repository</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/project-flotta/osbuild-operator.git
+<span class="nb">cd </span>osbuild-operator
+</code></pre></div></div>
+
+<h3 id="store-a-rhel-image-in-an-accessible-endpoint-for-creating-osbuild-workers">Store a RHEL image in an accessible endpoint for creating osbuild-workers</h3>
+<p>Here we will use Nexus for storing a RHEL image and make it accessible for installing OSBuild-Worker VMs.   <br />
+Deploy Nexus operator by following the instruction <a href="https://github.com/RedHatGov/nexus-operator#installation">here</a> 
+and after deploying Nexus operator finished, create a new Nexus instance by running</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/deploy_nexus.yaml
+</code></pre></div></div>
+
+<p>Install the Nexus CLI</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>nexus3-cli
+</code></pre></div></div>
+
+<p>Login to Nexus</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+oc get secret <span class="nt">-n</span> osbuild nexus-osbuild-admin-credentials <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.data.password<span class="o">}</span> | <span class="nb">base64</span> <span class="nt">-d</span> | xargs nexus3 login <span class="nt">--url</span> https://nexus-osbuild-osbuild.apps.<span class="k">${</span><span class="nv">CLUSTER_DOMAIN</span><span class="k">}</span> <span class="nt">--no-x509_verify</span> <span class="nt">--username</span> admin <span class="nt">--password</span>
+</code></pre></div></div>
+
+<p>Create a Hosted Raw repository named disk-images</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nexus3 repository create hosted raw disk-images
+</code></pre></div></div>
+
+<p>Upload the rhel qcow2 image (it was tested with <a href="https://access.cdn.redhat.com/content/origin/files/sha256/c9/c9b32bef88d605d754b932aad0140e1955ab9446818c70c4c36ca75d6f442fe9/rhel-8.6-x86_64-kvm.qcow2?user=07786f290529f76887dfea2fc9631d69&amp;_auth_=1659009182_73d2e99e48a4486633a014b63d7e3312">RHEL 8.6</a>)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nexus3 upload rhel-8.6-x86_64-kvm.qcow2 disk-images
+</code></pre></div></div>
+
+<h3 id="create-an-s3-service">Create an S3 service</h3>
+<p>Deploy MinIO</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/deploy_minio.yaml
+
+</code></pre></div></div>
+
+<p>Create a bucket name osbuild-images. You can use the aws cli (please follow the <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">installation instructions</a>)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+<span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>minioadmin <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>minioadmin aws <span class="nt">--endpoint-url</span> https://minio-s3-osbuild.apps.<span class="k">${</span><span class="nv">CLUSTER_DOMAIN</span><span class="k">}</span> <span class="nt">--no-verify-ssl</span> s3 mb s3://osbuild-images
+</code></pre></div></div>
+
+<p>Create a secret for the S3 credentials</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic osbuild-s3-credentials <span class="nt">-n</span> osbuild <span class="nt">--from-literal</span><span class="o">=</span>access-key-id<span class="o">=</span>minioadmin <span class="nt">--from-literal</span><span class="o">=</span>secret-access-key<span class="o">=</span>minioadmin
+
+</code></pre></div></div>
+<p>Create a secret for the CA Bundle using the OCP route</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get secrets <span class="nt">-n</span> openshift-ingress-operator router-ca <span class="nt">-o</span> <span class="s2">"jsonpath={.data.tls</span><span class="se">\.</span><span class="s2">crt}"</span> | <span class="nb">base64</span> <span class="nt">-d</span> <span class="o">&gt;</span> /tmp/ca-bundle
+oc create secret generic osbuild-s3-ca-bundle <span class="nt">-n</span> osbuild <span class="nt">--from-file</span><span class="o">=</span>/tmp/ca-bundle
+
+</code></pre></div></div>
+
+<h3 id="create-a-secret-for-your-red-hat-credentials">Create a Secret for your Red Hat Credentials</h3>
+
+<p>Find your Red Hat credentials and create a secret:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic redhat-portal-credentials <span class="nt">-n</span> osbuild <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">username</span><span class="o">=</span>&lt;USERNAME&gt; <span class="nt">--from-literal</span><span class="o">=</span><span class="nv">password</span><span class="o">=</span>&lt;PASSWORD&gt;
+</code></pre></div></div>
+
+<h3 id="create-a-postgresql-server">Create a PostgreSQL Server</h3>
+<p>Currently, the controller does not support creating the PostgreSQL server on its own, making this step mandatory</p>
+
+<p>Edit the file <code class="language-plaintext highlighter-rouge">config/creating_env/psql.env</code> and set a real password</p>
+
+<p>Create the PostgreSQL server by running</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc new-app <span class="nt">--env-file</span> config/creating_env/psql.env postgresql:13-el8 <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>Edit the file <code class="language-plaintext highlighter-rouge">config/creating_env/postgress_secret.yaml</code> with the same password</p>
+
+<p>Create new secret (please enter a real encoded password)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create <span class="nt">-f</span> config/creating_env/postgress_secret.yaml
+</code></pre></div></div>
+
+<h3 id="provision-an-external-worker-vm-using-cnv">Provision an External Worker VM using CNV</h3>
+<p>Create an SSH key-pair</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> rsa <span class="nt">-b</span> 4096 <span class="nt">-C</span> cloud-user@external-builder <span class="nt">-f</span> ~/.ssh/external-builder
+</code></pre></div></div>
+
+<p>Create symlinks to the files to facilitate the next step</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-s</span> ~/.ssh/external-builder.pub config/creating_env/ssh-publickey
+<span class="nb">ln</span> <span class="nt">-s</span> ~/.ssh/external-builder config/creating_env/ssh-privatekey
+</code></pre></div></div>
+
+<p>Generate the secret</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create secret generic external-builder-ssh-pair <span class="nt">--from-file</span><span class="o">=</span>config/creating_env/ssh-privatekey <span class="nt">--from-file</span><span class="o">=</span>config/creating_env/ssh-publickey <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>Deploy the VM</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc apply <span class="nt">-n</span> osbuild <span class="nt">-f</span> config/creating_env/external-worker-vm.yaml
+oc <span class="nb">wait</span> <span class="nt">-n</span> osbuild <span class="nt">--for</span><span class="o">=</span><span class="s1">'condition=Ready'</span> vm/external-builder
+</code></pre></div></div>
+
+<p>Get VM Address</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc get vmi external-builder <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.status.interfaces[0].ipAddress<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="create-osbuildenvconfig-singleton-cr">Create OSBuildEnvConfig singleton CR</h2>
+<p>Apply OSBuildEnvConfig</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLUSTER_DOMAIN</span><span class="o">=</span><span class="s1">'mycluster.example.com'</span>
+<span class="nb">export </span><span class="nv">EXTERNAL_WORKER_IP</span><span class="o">=</span><span class="sb">`</span>oc get vmi external-builder <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">={</span>.status.interfaces[0].ipAddress<span class="o">}</span><span class="sb">`</span>
+<span class="nb">cat </span>config/samples/osbuilder_v1alpha1_osbuildenvconfig.yaml | envsubst | oc apply <span class="nt">-f</span> -
+</code></pre></div></div>
+
+<h2 id="create-an-edge-container-image">Create an edge-container image</h2>
+<p>Apply osbuildConfig that contains all the relevant configuration for running osbuild-composer job.
+You can use that sample:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc create <span class="nt">-f</span> config/samples/osbuilder_v1alpha1_osbuildconfig.yaml <span class="nt">-n</span> osbuild
+</code></pre></div></div>
+
+<p>After applying osbuildConfig CR you should see a new osbuild CR that was triggered automatically</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>oc describe osbuild osbuildconfig-sample-1 <span class="nt">-n</span> osbuild 
+</code></pre></div></div>
+
+<p>As part of that osbuild CR you can find the osbuild-composer job status, the job composer ID, and once the job finishes, you can also find the containerUrl in the S3 bucket</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  status:
+    conditions:
+    - message: Edge-container job is still running
+      status: <span class="s2">""</span>
+      <span class="nb">type</span>: startedContainerBuild
+    - message: Edge-container job was finished successfully
+      status: <span class="s2">""</span>
+      <span class="nb">type</span>: containerBuildDone
+    containerComposeId: 80125a8c-6e4a-42fe-8c06-8f90398fe5b1
+    containerUrl: https://minio-s3-osbuild.apps.my-cluster.example.com/osbuild-images/composer-api-2ca271b8-1a9e-4bae-bcec-ab151c2bdc5b-container.tar?X-Amz-Algorithm<span class="o">=</span>AWS4-HMAC-SHA256&amp;X-Amz-Credential<span class="o">=</span>minioadmin%2F20220720%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date<span class="o">=</span>20220720T095954Z&amp;X-Amz-Expires<span class="o">=</span>604800&amp;X-Amz-SignedHeaders<span class="o">=</span>host&amp;X-Amz-Signature<span class="o">=</span>ac57b8499450dd4b62b80936277db89e7e850d5c3efab9e39bb9a493c064921f
+</code></pre></div></div>
+
+<h2 id="run-a-vm-using-the-newly-created-edge-container">Run a VM using the newly created edge-container</h2>
+
+<h3 id="upload-the-tar-file-to-container-image-registry">Upload the tar file to container image registry</h3>
+<p>Download the tar file to your local environment</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-k</span> &lt;containerUrl&gt; <span class="nt">-o</span> /tmp/local.tar
+</code></pre></div></div>
+
+<p>Upload the image to your Container Registry using skopeo, pay attention that a Path Prefix might be required (e.g. your account name)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">IMAGE_NAME</span><span class="o">=</span>&lt;Container-Registry-URL&gt;/osbuild:v1
+skopeo login <span class="nt">--username</span> &lt;USER&gt; <span class="nt">-p</span> &lt;PASSWORD&gt; &lt;Container-Registry-URL&gt;
+skopeo copy oci-archive:/tmp/local.tar docker://<span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+</code></pre></div></div>
+
+<h3 id="run-the-container-using-podman">Run the container using podman</h3>
+<p>Run the container</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman pull <span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+podman run <span class="nt">--detach</span> <span class="nt">--name</span> osbuild-test <span class="nt">-p</span> 8080:8080  <span class="k">${</span><span class="nv">IMAGE_NAME</span><span class="k">}</span>
+</code></pre></div></div>
+
+<p>Install a VM using a kickstart file that config the ostree to point to the running container</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>virt-install <span class="nt">--name</span> device <span class="nt">--memory</span> 4096 <span class="nt">--vcpu</span> 4 <span class="nt">--disk</span> <span class="nv">size</span><span class="o">=</span>8 <span class="nt">--location</span> &lt;rhel-8.6-iso-location&gt; <span class="nt">--initrd-inject</span><span class="o">=</span>/home/deploy/edgedevice.ks <span class="nt">--extra-args</span><span class="o">=</span><span class="s2">"ks=file:/edgedevice.ks console=tty0 console=ttyS0,115200n8"</span>
+</code></pre></div></div>
+
+<p>The kickstart file should contain</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ostreesetup <span class="nt">--nogpg</span> <span class="nt">--url</span><span class="o">=</span>http://&lt;Host-Container-Machine-URL&gt;/repo/ <span class="nt">--osname</span><span class="o">=</span>rhel <span class="nt">--remote</span><span class="o">=</span>edge <span class="nt">--ref</span><span class="o">=</span>rhel/8/x86_64/edge
+</code></pre></div></div>
+
+<p>Validate the rpm-ostre status is identical to the running container commit ID (from inside the VM)</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-k</span> http://&lt;Host-Container-Machine-URL&gt;/repo/refs/head/rhel/8/x86_64/edge
+rpm-ostre status
+</code></pre></div></div>]]></content><author><name>Danielle Barda &lt;dbarda@redhat.com&gt;</name></author><category term="flotta" /><category term="osbuild" /><category term="oslifecycle" /><summary type="html"><![CDATA[The OSBuild operator provides a kubernetes API by the means of new Custom Resource Definitions for building OSTree images as part of OS lifecycle management, in flotta project.]]></summary></entry><entry><title type="html">Accessing host devices in Flotta</title><link href="https://project-flotta.github.io/flotta/2022/07/22/accessing-host-devices-in-flotta.html" rel="alternate" type="text/html" title="Accessing host devices in Flotta" /><published>2022-07-22T11:00:00+00:00</published><updated>2022-07-22T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/07/22/accessing-host-devices-in-flotta</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/07/22/accessing-host-devices-in-flotta.html"><![CDATA[<p>In today’s container security, it is important to reduce the risk of a security breach in a container that can escape from the container runtime and put the device at risk. One way to reduce such risks is to run the container with a non-root user, so that if there is such spill the attacker won’t be able to gain access to root level privileges. These type of containers are what is called rootless containers.</p>
+
+<p>Rootless containers also limit the access to the host devices by default, as it depends on the privileges of the runtime user access. In Flotta we create the user <code class="language-plaintext highlighter-rouge">flotta</code> as part of the flotta rpm installation and run the workloads with that user. By default the flotta user does not have access to any mounted device (unless configured otherwise by the OS), so we have to make changes first on granting file access to <code class="language-plaintext highlighter-rouge">flotta</code> to the device in <code class="language-plaintext highlighter-rouge">/dev</code>, and then configuring the runtime to enable the access.</p>
+
+<p>To demonstrate the ability to interact with a host device, I will use the webcam in my laptop as an example. The webcam is mounted in <code class="language-plaintext highlighter-rouge">/dev/video2</code> with the following file system atrributes:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">ls</span> <span class="nt">-la</span> /dev/video2
+crw-rw----+ 1 root video 81, 2 Jul  22 11:30 /dev/video2
+</code></pre></div></div>
+
+<p>I have built a container from a fedora 36 image that runs the <code class="language-plaintext highlighter-rouge">ffmpeg</code> application and captures a screenshot from the webcam on a 10 seconds interval:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nb">rm</span> <span class="nt">-Rf</span> /tmp/helloworld-?.jpg
+<span class="k">for </span>i <span class="k">in</span> <span class="o">{</span>1..10<span class="o">}</span><span class="p">;</span> <span class="k">do
+  </span><span class="nb">echo </span>Taking snapshot
+  /usr/bin/ffmpeg <span class="nt">-f</span> video4linux2 <span class="nt">-s</span> 640x480 <span class="nt">-i</span> /dev/video2 <span class="nt">-ss</span> 0:0:2 <span class="nt">-frames</span> 1 /tmp/helloworld-<span class="nv">$i</span>.jpg
+  <span class="nb">echo </span>Sleeping 10 seconds
+  /usr/bin/sleep 10
+<span class="k">done
+</span><span class="nb">ls</span> <span class="nt">-la</span> /tmp/helloworld-?.jpg
+<span class="nb">sleep </span>infinity
+</code></pre></div></div>
+
+<p>And here are the contents of the <code class="language-plaintext highlighter-rouge">Dockerfile</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM registry.fedoraproject.org/fedora:36
+RUN dnf <span class="nb">install</span> <span class="nt">-y</span> ffmpeg-free
+COPY script.sh /script.sh
+ENTRYPOINT <span class="o">[</span><span class="s2">"/script.sh"</span><span class="o">]</span>
+</code></pre></div></div>
+
+<h2 id="configuing-the-host-to-capture-images-from-a-webcam">Configuing the host to capture images from a webcam</h2>
+
+<p>The device is read/write for <code class="language-plaintext highlighter-rouge">root</code> and members of the <code class="language-plaintext highlighter-rouge">video</code> group. Let’s check what are the <code class="language-plaintext highlighter-rouge">flotta</code> user group information:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">id </span>flotta
+<span class="nv">uid</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1000<span class="o">(</span>flotta<span class="o">)</span>
+</code></pre></div></div>
+
+<p>There is no <code class="language-plaintext highlighter-rouge">video</code> supplementary group attached to <code class="language-plaintext highlighter-rouge">flotta</code>. If I want <code class="language-plaintext highlighter-rouge">flotta</code> to access this device, I need first to add the supplementary group <code class="language-plaintext highlighter-rouge">video</code> to <code class="language-plaintext highlighter-rouge">flotta</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# usermod <span class="nt">-a</span> <span class="nt">-G</span> video flotta
+</code></pre></div></div>
+
+<p>And now the <code class="language-plaintext highlighter-rouge">flotta</code> user has access to the <code class="language-plaintext highlighter-rouge">video</code> group:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# <span class="nb">id </span>flotta
+<span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span>,39<span class="o">(</span>video<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Now I need to restart the flotta user service process to be aware of the group changes, otherwise the new group will not be reflected in the containers:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@device ~]# systemctl restart user@<span class="si">$(</span><span class="nb">id </span>flotta <span class="nt">-g</span><span class="si">)</span>.service
+</code></pre></div></div>
+
+<h2 id="defining-the-workload">Defining the workload</h2>
+
+<p>At this step I have ensured that <code class="language-plaintext highlighter-rouge">flotta</code> as a user in the host has access to the webcam. Now I need to guarantee that the container is also able to share the same privileges. To that I will leverage on the annotation <code class="language-plaintext highlighter-rouge">run.oci.keep_original_groups=1</code>, supported by the <code class="language-plaintext highlighter-rouge">crun</code> container runtime, that allows containers to inherit the running user’s groups.</p>
+
+<h3 id="annotating-the-workload">Annotating the workload</h3>
+<p>Starting from podman 4.1.0, it is possible to add annotations when running pod workloads. These annotations are then propagated to the underlying container runtime. The Flotta operator propagates annotations to the device agent when defined in the <code class="language-plaintext highlighter-rouge">EdgeWorkload</code> with the <code class="language-plaintext highlighter-rouge">podman/</code> prefix. More precisely, it removes the prefix <code class="language-plaintext highlighter-rouge">podman/</code> from the annotation key name and propagates the remaining name and value.</p>
+
+<h3 id="configuring-the-pod-security-context-for-selinux">Configuring the pod security context for SELinux</h3>
+<p>As a security measure, SELinux prevents the container from accessing the device because the types mismatch. If I try to access <code class="language-plaintext highlighter-rouge">/dev/video2</code> from a container, SELinux will not allow me:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>AVC avc:  denied  <span class="o">{</span> <span class="nb">read </span>write <span class="o">}</span> <span class="k">for  </span><span class="nv">pid</span><span class="o">=</span>2393 <span class="nb">comm</span><span class="o">=</span><span class="s2">"ffmpeg"</span> <span class="nv">name</span><span class="o">=</span><span class="s2">"video2"</span> <span class="nv">dev</span><span class="o">=</span><span class="s2">"devtmpfs"</span> <span class="nv">ino</span><span class="o">=</span>515 <span class="nv">scontext</span><span class="o">=</span>system_u:system_r:container_t:s0:c56,c580 <span class="nv">tcontext</span><span class="o">=</span>system_u:object_r:v4l_device_t:s0 <span class="nv">tclass</span><span class="o">=</span>chr_file <span class="nv">permissive</span><span class="o">=</span>0
+</code></pre></div></div>
+
+<p>The source type is <code class="language-plaintext highlighter-rouge">container_t</code> and the target type is <code class="language-plaintext highlighter-rouge">v4l_device_t</code>.</p>
+
+<p>To solve this there are 2 options:</p>
+<ul>
+  <li>Configure SELinux to add the rules that allows container types to access the webcam type (see notes section for more detail).</li>
+  <li>Use the Super Privileged Container type <code class="language-plaintext highlighter-rouge">spc_t</code> in the pod’s <code class="language-plaintext highlighter-rouge">securityContext</code> section. This <a href="https://danwalsh.livejournal.com/74754.html">container type</a> disables SELinux in the container. Since we are running a rootless container, the security impact is limited to what the <code class="language-plaintext highlighter-rouge">flotta</code> user is able to do. <a href="https://developers.redhat.com/blog/2014/11/06/introducing-a-super-privileged-container-concept">Here</a> is more detailed explanation of what it is and can do for the those hungry with knowledge.</li>
+</ul>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">podman/run.oci.keep_original_groups</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/ffmpeg:latest</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">fedora</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">video</span>
+        <span class="na">securityContext</span><span class="pi">:</span>
+          <span class="na">seLinuxOptions</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s1">'</span><span class="s">spc_t'</span>
+      <span class="na">restartPolicy</span><span class="pi">:</span> <span class="s">Always</span>      
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">video</span> 
+        <span class="na">hostPath</span><span class="pi">:</span>
+          <span class="na">path</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">File</span>
+</code></pre></div></div>
+
+<p>In this example we are mounting the host device <code class="language-plaintext highlighter-rouge">/dev/video2</code> to the container’s equivalent <code class="language-plaintext highlighter-rouge">/dev/video2</code>. Be aware that your webcam location might be in a different device number, so best to identify which one before running the workload and change the scripts accordingly.</p>
+
+<h2 id="running-the-workload">Running the workload</h2>
+
+<p>At this point, we are ready to deploy the workload on the device. For this example, I have created a VM running fedora and attached the webcam in my laptop on <code class="language-plaintext highlighter-rouge">/dev/video2</code>. I have labeled my edge device with <code class="language-plaintext highlighter-rouge">app=webcam</code> to make sure that the Flotta controller schedules the workload on this specific device.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl create <span class="nt">-f</span> workload_webcam.yaml
+</code></pre></div></div>
+
+<p>Now let’s make sure that the workload is running by inspecting the status in the edgedevice:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl get edgedevice/4cc27d11334f4242baa7efc795d2bbc0 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>| jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-14T14:50:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>
+<span class="o">]</span>
+</code></pre></div></div>
+
+<p>Since I’m running this on a VM, I’m going to ssh to the device and become the <code class="language-plaintext highlighter-rouge">flotta</code> user to access the container and see that the images were created:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~] ssh <span class="nt">-l</span> root 192.168.122.23
+<span class="o">[</span>root@fedora ~]# su <span class="nt">-l</span> flotta <span class="nt">-s</span> /bin/bash <span class="nt">-c</span> <span class="s2">"podman exec -it webcam-fedora ls -lart /tmp"</span>
+total 112
+dr-xr-xr-x. 1 root root   54 Jul 22 15:02 ..
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8078 Jul 22 15:02 helloworld-1.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8078 Jul 22 15:02 helloworld-2.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8068 Jul 22 15:02 helloworld-3.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9172 Jul 22 15:03 helloworld-4.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8786 Jul 22 15:03 helloworld-5.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8699 Jul 22 15:03 helloworld-6.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8892 Jul 22 15:03 helloworld-7.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 8981 Jul 22 15:03 helloworld-8.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9358 Jul 22 15:04 helloworld-9.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 9414 Jul 22 15:04 helloworld-10.jpg
+drwxrwxrwt. 1 root root 4096 Jul 22 15:04 <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>There we have the 10 images inside the container. As an exercise, you can enhance this example by adding a data sync path to upload the images to a remote S3 storage using the data transfer capabilities of the Flotta agent. This way you won’t need to sneak into the VM like I did to see that the images were created.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Flotta is gradually improving the support of workloads that can run on devices without compromising the security of the device. With Flotta it is possible to run workloads that generate and consume data and are capable of synchronizing with a remote compatible S3 storage, as well as workloads that require access to the host mounted devices, such as webcams or sensors.</p>
+
+<p>There is still room for improvement in the usability with the ability to configure the supplementary groups without having to remote to the device each time. We hope in the next releases we can provide a mechanism to configure the host in these areas in a declarative manner. Feel free to drop suggestions or enhancements to the <a href="https://github.com/project-flotta/flotta-operator/issues">project</a> in the github repository!.</p>
+
+<h2 id="notes">Notes</h2>
+
+<p>In the case of my webcam, I was able to add the specific rules to SELinux to allow the <code class="language-plaintext highlighter-rouge">container_t</code> type to access the <code class="language-plaintext highlighter-rouge">v4l_device_t</code> type, which is the label type that is used by <code class="language-plaintext highlighter-rouge">/dev/video2</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# <span class="nb">ls</span> <span class="nt">-laZ</span> /dev/video2
+crw-rw----. 1 root video system_u:object_r:v4l_device_t:s0 81, 2 Jul 22 09:39 /dev/video2
+</code></pre></div></div>
+
+<p>The easiest way to identify the SELinux missing rules is using <code class="language-plaintext highlighter-rouge">audit2allow</code>. This utility analyzes the information in <code class="language-plaintext highlighter-rouge">/var/log/audit/audit.log</code> and generates the SELinux policies based on denied operations. In my case, I had to run the workload a few times until I was able to get all the rules.</p>
+
+<p>The utility created the following rules:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module v4linux 1.0<span class="p">;</span>
+
+require <span class="o">{</span>
+	<span class="nb">type </span>v4l_device_t<span class="p">;</span>
+	<span class="nb">type </span>container_t<span class="p">;</span>
+	class chr_file <span class="o">{</span> getattr ioctl map open <span class="nb">read </span>write <span class="o">}</span><span class="p">;</span>
+<span class="o">}</span>
+
+<span class="c">#============= container_t ==============</span>
+
+<span class="c">#!!!! This avc can be allowed using the boolean 'container_use_devices'</span>
+allow container_t v4l_device_t:chr_file <span class="o">{</span> getattr ioctl open <span class="nb">read </span>write <span class="o">}</span><span class="p">;</span>
+allow container_t v4l_device_t:chr_file map<span class="p">;</span>
+</code></pre></div></div>
+
+<p>To create the package for the rules rules you can either use the <code class="language-plaintext highlighter-rouge">audit2allow -a -M &lt;modulename&gt;.pp</code> command, or you use the following commands for a step by step execution:</p>
+
+<p>Store the contents of the rules in a file named <code class="language-plaintext highlighter-rouge">v4linux.te</code> in the device’s <code class="language-plaintext highlighter-rouge">/tmp</code></p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# <span class="nb">cat</span> <span class="o">&gt;</span>/tmp/webcam.te <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+module v4linux 1.0;
+
+require {
+	type v4l_device_t;
+	type container_t;
+	class chr_file { getattr ioctl map open read write };
+}
+
+#============= container_t ==============
+
+#!!!! This avc can be allowed using the boolean 'container_use_devices'
+allow container_t v4l_device_t:chr_file { getattr ioctl open read write };
+allow container_t v4l_device_t:chr_file map;
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>Now convert it to a policy module:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# checkmodule <span class="nt">-M</span> <span class="nt">-m</span> /tmp/v4linux.te <span class="nt">-o</span> /tmp/v4linux.mod
+</code></pre></div></div>
+
+<p>And generate the package:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]#  semodule_package <span class="nt">-o</span> /tmp/v4linux.pp <span class="nt">-m</span> /tmp/v4linux.mod
+</code></pre></div></div>
+
+<p>Finally install it:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@fedora ~]# semodule <span class="nt">-i</span> /tmp/v4linux.pp
+</code></pre></div></div>
+
+<p>Now SELinux is configured to allow the container to interact with the webcam. To test this, I deploy a new workload that does not have the <code class="language-plaintext highlighter-rouge">seLinuxOptions</code> defined in the pod spec:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">webcam-nosecuritycontext</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">podman/run.oci.keep_original_groups</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">webcam</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/ffmpeg:latest</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">fedora</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">video</span>
+      <span class="na">restartPolicy</span><span class="pi">:</span> <span class="s">Always</span>      
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">video</span> 
+        <span class="na">hostPath</span><span class="pi">:</span>
+          <span class="na">path</span><span class="pi">:</span> <span class="s">/dev/video2</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">File</span>
+</code></pre></div></div>
+
+<p>Checking the status of the workload we get a satisfactory <code class="language-plaintext highlighter-rouge">Running</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~]<span class="nv">$ </span>kubectl get edgedevice/4cc27d11334f4242baa7efc795d2bbc0 <span class="nt">-ojsonpath</span><span class="o">=</span><span class="s2">"{.status.workloads}"</span>| jq <span class="nb">.</span>
+<span class="o">[</span>
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-22T15:02:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>,
+  <span class="o">{</span>
+    <span class="s2">"lastTransitionTime"</span>: <span class="s2">"2022-07-22T15:31:28Z"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"webcam-nosecuritycontext"</span>,
+    <span class="s2">"phase"</span>: <span class="s2">"Running"</span>
+  <span class="o">}</span>
+<span class="o">]</span>
+</code></pre></div></div>
+
+<p>And finally, checking the contents of the <code class="language-plaintext highlighter-rouge">/tmp</code> directory we can see the images stored:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>jgil@fedora ~] ssh <span class="nt">-l</span> root 192.168.122.23
+<span class="o">[</span>root@fedora tmp]# su <span class="nt">-l</span> flotta <span class="nt">-s</span> /bin/bash <span class="nt">-c</span> <span class="s2">"podman exec -it webcam-nosecuritycontext-fedora ls -lart /tmp"</span>
+total 84
+dr-xr-xr-x. 1 root root   42 Jul 22 15:30 ..
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7849 Jul 22 15:30 helloworld-1.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7730 Jul 22 15:31 helloworld-2.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7732 Jul 22 15:31 helloworld-3.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7743 Jul 22 15:31 helloworld-4.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7782 Jul 22 15:31 helloworld-5.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7868 Jul 22 15:32 helloworld-6.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7839 Jul 22 15:32 helloworld-7.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7822 Jul 22 15:32 helloworld-8.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7725 Jul 22 15:32 helloworld-9.jpg
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 7754 Jul 22 15:32 helloworld-10.jpg
+drwxrwxrwt. 1 root root 4096 Jul 22 15:32 <span class="nb">.</span>
+</code></pre></div></div>]]></content><author><name>Jordi Gil &lt;jgil@redhat.com&gt;</name></author><category term="flotta" /><category term="podman" /><category term="rootless" /><category term="devices" /><category term="webcam" /><summary type="html"><![CDATA[In today’s container security, it is important to reduce the risk of a security breach in a container that can escape from the container runtime and put the device at risk. One way to reduce such risks is to run the container with a non-root user, so that if there is such spill the attacker won’t be able to gain access to root level privileges. These type of containers are what is called rootless containers.]]></summary></entry><entry><title type="html">Flotta Developer CLI</title><link href="https://project-flotta.github.io/flotta/2022/07/20/developer-cli.html" rel="alternate" type="text/html" title="Flotta Developer CLI" /><published>2022-07-20T02:00:00+00:00</published><updated>2022-07-20T02:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/07/20/developer-cli</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/07/20/developer-cli.html"><![CDATA[<p>Flotta Developer CLI was created to enable easy creation of edge devices and deploy predefine workloads on them.
+The CLI creates edge devices as docker containers, therefore docker is a requirement for the CLI to work.
+The CLI uses the local k8s cluster pointed by the <code class="language-plaintext highlighter-rouge">$KUBECONFIG</code> environment variable or <code class="language-plaintext highlighter-rouge">$HOME/.kube/config</code> to obtain
+necessary information for the registration process.</p>
+
+<p>To get started using the developer CLI, install the Flotta Developer CLI.
+Packages are available for fc36, epel8 and epel9 at project-flotta COPR repository.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nt">-y</span> copr <span class="nb">enable </span>project-flotta/flotta-testing
+<span class="nb">sudo </span>dnf <span class="nt">-y</span> <span class="nb">install </span>flotta-dev-cli
+</code></pre></div></div>
+
+<p>You may enable auto-completion for the CLI by running the following command:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta completion bash <span class="o">&gt;</span> /usr/share/bash-completion/completions/flotta
+</code></pre></div></div>
+<p>Or (if the above command failed with permission denied error):</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta completion bash | <span class="nb">sudo tee</span> /usr/share/bash-completion/completions/flotta
+</code></pre></div></div>
+
+<p>And by pressing the <code class="language-plaintext highlighter-rouge">TAB</code> key, you can use the auto-completion:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta &lt;tab&gt;&lt;tab&gt;&lt;tab&gt;
+flotta
+add         <span class="o">(</span>Add a new flotta resource<span class="o">)</span>                                   list        <span class="o">(</span>List flotta resources<span class="o">)</span>
+completion  <span class="o">(</span>Generate the autocompletion script <span class="k">for </span>the specified shell<span class="o">)</span>  start       <span class="o">(</span>Start flotta resource<span class="o">)</span>
+delete      <span class="o">(</span>Delete the flotta resource<span class="o">)</span>                                  stop        <span class="o">(</span>Stop flotta resource<span class="o">)</span>
+<span class="nb">help</span>        <span class="o">(</span>Help about any <span class="nb">command</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Now, you can easily add a new edge device by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta add device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was added 
+</code></pre></div></div>
+<p>Note that the first execution of this command will take some since the edge-device image is being pulled to the local
+image registry. The image will be available for the next executions.</p>
+
+<p>You can view edge device <code class="language-plaintext highlighter-rouge">device1</code> under the list of the registered devices:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		running		46 seconds ago	
+</code></pre></div></div>
+
+<p>Once you have a registered edge device, you can deploy workloads on it:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta add workload <span class="nt">--device</span> device1
+workload <span class="s1">'nginx1-21-6-ygneqhis'</span> was added to device <span class="s1">'device1'</span>
+</code></pre></div></div>
+
+<p>To view list of workloads use:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta list workload
+NAME			STATUS		CREATED		
+nginx1-21-6-ygneqhis	Running		2 minutes ago	
+nginx1-21-6-kkejlmol	Running		5 minutes ago	
+</code></pre></div></div>
+
+<p>You can also stop and start a registered device:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta stop device <span class="nt">--name</span> device1
+edgedevice <span class="s1">'device1'</span> was stopped 
+
+<span class="c"># view stopped device status</span>
+<span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		exited		2 minutes ago
+
+<span class="c"># start device</span>
+<span class="nv">$ </span>flotta start device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was started 
+
+<span class="c"># view started device status</span>
+<span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		running		3 minutes ago	
+</code></pre></div></div>
+
+<p>Finally, if you wish to delete a device or workload, you can run:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># delete workload</span>
+<span class="nv">$ </span>flotta delete workload <span class="nt">--name</span> nginx1-21-6-kkejlmol
+workload <span class="s1">'nginx1-21-6-kkejlmol'</span> was deleted 
+
+<span class="c"># delete device</span>
+<span class="nv">$ </span>flotta delete device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was deleted 
+</code></pre></div></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>As things might not always be clear, here are some tips to help you:</p>
+<ul>
+  <li><em>flotta-dev-cli</em> runs the edge device as a container, therefore you need to have docker installed and permissions to
+pull and image and to create a container.</li>
+  <li>Workloads are deployed as containers(by <em>podman</em>) in the edge device (a nested container).</li>
+  <li>Workloads are run under the <em>flotta</em> user. Workloads debugging needs to be done also as <em>flotta</em> user on the device.</li>
+</ul>
+
+<h3 id="debug-the-device">Debug the device</h3>
+<p>To connect to a device, use docker command to list the running edge device containers and their status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker ps <span class="nt">--filter</span> <span class="nv">label</span><span class="o">=</span>flotta
+CONTAINER ID   IMAGE                                      COMMAND         CREATED          STATUS         PORTS   NAMES
+1ca4bf233b2f   quay.io/project-flotta/edgedevice:latest   <span class="s2">"/sbin/init"</span>    25 minutes ago   Up 25 minutes          edge1
+</code></pre></div></div>
+<p>With the device name or container ID, you can connect to the device by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker <span class="nb">exec</span> <span class="nt">-it</span> edge1 bash
+<span class="o">[</span>root@1ca4bf233b2f project]#
+</code></pre></div></div>
+<p>Once connected to device, the <em>yggdrasil</em> daemon can be checked for errors:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@1ca4bf233b2f project]# systemctl status yggdrasild
+● yggdrasild.service - yggdrasil daemon
+     Loaded: loaded <span class="o">(</span>/usr/lib/systemd/system/yggdrasild.service<span class="p">;</span> disabled<span class="p">;</span> vendor preset: disabled<span class="o">)</span>
+     Active: active <span class="o">(</span>running<span class="o">)</span> since Tue 2022-07-26 12:58:04 UTC<span class="p">;</span> 38min ago
+       Docs: https://github.com/redhatinsights/yggdrasil
+   Main PID: 128 <span class="o">(</span>yggdrasild<span class="o">)</span>
+      Tasks: 30 <span class="o">(</span>limit: 5671<span class="o">)</span>
+     Memory: 134.1M
+        CPU: 12.229s
+     CGroup: /system.slice/yggdrasild.service
+             ├─ 128 /usr/sbin/yggdrasild
+             └─ 147 /usr/libexec/yggdrasil/device-worker
+</code></pre></div></div>
+<p>And so <em>yggdrasil</em> logs can be viewed as well. The log contains also the output of the device-worker which is flotta’s
+component that runs the workloads. The log can be viewed by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@1ca4bf233b2f project]# journalctl <span class="nt">-u</span> yggdrasild
+</code></pre></div></div>
+<p>View logs is useful when you are debugging a device, failure to register or failure to deploy workloads.</p>
+
+<h3 id="debug-the-workload">Debug the workload</h3>
+<p>In case of failure to run the workload, the output of listing the workloads may show an undesired status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ flotta list workload
+NAME                    STATUS  CREATED
+nginx1-21-6-xmkdetkh    Exited  40 minutes ago
+</code></pre></div></div>
+
+<p>In order to debug a failure to run a workload, there is a need to connect as <em>flotta</em> user.
+<em>flotta</em> user was created with <em>nologin</em> shell, therefore you need to specify one to become <em>flotta</em> user:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker <span class="nb">exec</span> <span class="nt">-it</span> 1ca4bf233b2f /bin/bash
+<span class="o">[</span>root@1ca4bf233b2f project]# <span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
+
+<span class="c"># expected to fail</span>
+<span class="o">[</span>root@1ca4bf233b2f project]# su - flotta
+This account is currently not available.
+
+<span class="c"># expected to succeed</span>
+<span class="o">[</span>root@1ca4bf233b2f project]# su - flotta <span class="nt">-s</span> /bin/sh
+<span class="nt">-sh-5</span>.1<span class="nv">$ </span><span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span>
+<span class="nt">-sh-5</span>.1<span class="err">$</span>
+</code></pre></div></div>
+
+<p>As <em>flotta</em> user, you can view the workload system files:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span> /var/home/flotta/.config/systemd/user/
+total 16
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root   root    936 Jul 26 13:00 container-nginx1-21-6-xmkdetkh-nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 13:00 default.target.wants
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root   root    858 Jul 26 13:00 nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 12:58 sockets.target.wants
+</code></pre></div></div>
+<p>and test their status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span>systemctl status nginx1-21-6-xmkdetkh.service
+</code></pre></div></div>
+
+<p>Examine podman service status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span>systemctl <span class="nt">--user</span> status podman
+● podman.service - Podman API Service
+     Loaded: loaded <span class="o">(</span>/usr/lib/systemd/user/podman.service<span class="p">;</span> disabled<span class="p">;</span> vendor preset: disabled<span class="o">)</span>
+     Active: active <span class="o">(</span>running<span class="o">)</span> since Wed 2022-07-27 12:05:58 UTC<span class="p">;</span> 47min ago
+TriggeredBy: ● podman.socket
+       Docs: man:podman-system-service<span class="o">(</span>1<span class="o">)</span>
+   Main PID: 203 <span class="o">(</span>podman<span class="o">)</span>
+      Tasks: 13 <span class="o">(</span>limit: 5671<span class="o">)</span>
+     Memory: 18.6M
+        CPU: 10.142s
+     CGroup: /user.slice/user-1001.slice/user@1001.service/app.slice/podman.service
+             └─ 203 /usr/bin/podman <span class="nt">--log-level</span><span class="o">=</span>info system service
+</code></pre></div></div>
+<p>And view podman logs to find for issues to run the workload:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@366d67a90f10 ~]<span class="nv">$ </span>journalctl <span class="nt">--user</span> <span class="nt">-u</span> podman
+</code></pre></div></div>
+
+<p>If you find an issue with <em>flotta-dev-cli</em>, please report it to the <a href="https://github.com/project-flotta/flotta-dev-cli/issues">Github issue tracker</a>.</p>]]></content><author><name>Ariel Ireni, Moti Asayag</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><category term="dev-cli" /><summary type="html"><![CDATA[Flotta Developer CLI was created to enable easy creation of edge devices and deploy predefine workloads on them. The CLI creates edge devices as docker containers, therefore docker is a requirement for the CLI to work. The CLI uses the local k8s cluster pointed by the $KUBECONFIG environment variable or $HOME/.kube/config to obtain necessary information for the registration process.]]></summary></entry><entry><title type="html">Deploy flotta-agent on Fedora CoreOS 35</title><link href="https://project-flotta.github.io/flotta/2022/05/23/deploy-agent-on-fedora-coreos.html" rel="alternate" type="text/html" title="Deploy flotta-agent on Fedora CoreOS 35" /><published>2022-05-23T02:00:00+00:00</published><updated>2022-05-23T02:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/05/23/deploy-agent-on-fedora-coreos</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/05/23/deploy-agent-on-fedora-coreos.html"><![CDATA[<p>During development, the user may need to spin off a large number of Edge Devices. Fedora CoreOS provides an easy way to create
+a virtual machine to deploy Edge Device on it. Moreover, the relatively low footprint of CoreOS VM allows you to have a large number of 
+Edge Devices on the same host.</p>
+
+<h2 id="general-flotta-agent-installation">General <code class="language-plaintext highlighter-rouge">flotta-agent</code> installation</h2>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta-agent</code> can be installed on any machine using the <code class="language-plaintext highlighter-rouge">rpm</code> provided by the <a href="https://copr.fedorainfracloud.org/coprs/project-flotta/">fedora copr</a>.
+To install <code class="language-plaintext highlighter-rouge">flotta-agent</code>:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf copr <span class="nb">enable </span>project-flotta/flotta 
+<span class="nb">sudo </span>dnf <span class="nb">install</span> <span class="nt">-y</span> flotta-agent
+</code></pre></div></div>
+
+<p>Now, that <code class="language-plaintext highlighter-rouge">flotta-agent</code> has been installed on the OS, we need to configure <code class="language-plaintext highlighter-rouge">yggdrasil</code> to know how to connect to <code class="language-plaintext highlighter-rouge">Flotta Edge API</code>.
+By default, the configuration file can be found under <code class="language-plaintext highlighter-rouge">/etc/yggdrasil/config.toml</code>.
+An example of <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file is provided below:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">log-level = "debug"</span>
+<span class="s">cert-file = "/etc/pki/consumer/cert.pem"</span>
+<span class="s">key-file = "/etc/pki/consumer/key.pem"</span>
+<span class="s">ca-root = ["/etc/pki/consumer/ca.pem"]</span>
+<span class="s">path-prefix = "api/flotta-management/v1"</span>
+<span class="s">protocol = "http"</span>
+<span class="s">client-id = "&lt;some-id&gt;"</span>
+<span class="s">server = "flotta.io:8043"</span>
+</code></pre></div></div>
+
+<p>Let’s explain line by line the configuration:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">log-level</code>: sets the log level for <code class="language-plaintext highlighter-rouge">yggdrasil</code>. The options are: <code class="language-plaintext highlighter-rouge">debug</code>, <code class="language-plaintext highlighter-rouge">info</code>, <code class="language-plaintext highlighter-rouge">warn</code>, <code class="language-plaintext highlighter-rouge">error</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">cert-file</code>, <code class="language-plaintext highlighter-rouge">key-file</code>: path to client certification and private key.</li>
+  <li><code class="language-plaintext highlighter-rouge">ca-root</code>: CA root certification file.</li>
+  <li><code class="language-plaintext highlighter-rouge">path-prefix</code>: this is set to <code class="language-plaintext highlighter-rouge">api/flotta-management/v1</code>. All the request from the Edge Device will start with prefix followed by the id of the device (e.g. <code class="language-plaintext highlighter-rouge">/api/flotta-management/v1/data/&lt;device-id&gt;/in</code>).</li>
+  <li><code class="language-plaintext highlighter-rouge">protocol</code>: set to <code class="language-plaintext highlighter-rouge">http</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">server</code>: address of the <code class="language-plaintext highlighter-rouge">Flotta Edge API</code>. The domain name has to be the same as the domain set in the cluster because the certificates are valid only for that domain. The domain can be set in the cluster by modifying the configmap <code class="language-plaintext highlighter-rouge">flotta-operator-manager-config</code> and set <code class="language-plaintext highlighter-rouge">DOMAIN</code> to you desired value.</li>
+  <li><code class="language-plaintext highlighter-rouge">client-id</code>: the id of the client. Generally, we set this id to <code class="language-plaintext highlighter-rouge">/etc/machine-id</code> but you can use any value as long it is unique.</li>
+</ul>
+
+<p>The certificates can be obtained by running <code class="language-plaintext highlighter-rouge">make get-certs</code> in <code class="language-plaintext highlighter-rouge">Flotta Operator</code> cluster.</p>
+
+<h2 id="creation-of-the-ignition-file">Creation of the ignition file</h2>
+
+<p>CoreOS configures the system using an <a href="https://docs.fedoraproject.org/en-US/fedora-coreos/producing-ign/">ignition</a> file. The <code class="language-plaintext highlighter-rouge">ignition</code> file is produced from a <code class="language-plaintext highlighter-rouge">butane</code> file.
+You can find the specification of the <code class="language-plaintext highlighter-rouge">butane</code> file on <a href="https://coreos.github.io/butane/config-fcos-v1_3/">coreos/butane</a>. Basically, the <code class="language-plaintext highlighter-rouge">butane</code> file is a <code class="language-plaintext highlighter-rouge">yaml</code> file which specify
+how the system will be configured after startup.</p>
+
+<p>All the system configuration is done via <code class="language-plaintext highlighter-rouge">systemd</code> so to install and setup <code class="language-plaintext highlighter-rouge">flotta-agent</code> we need to create two services. These services run only one time when we are provisioning the system.</p>
+
+<h3 id="install-flotta-agent">Install <code class="language-plaintext highlighter-rouge">flotta-agent</code></h3>
+
+<p>Installing the <code class="language-plaintext highlighter-rouge">flotta-agent</code> through <code class="language-plaintext highlighter-rouge">systemd</code> requires adding <code class="language-plaintext highlighter-rouge">flotta-agent copr</code> and run <code class="language-plaintext highlighter-rouge">rpm-ostree</code>.</p>
+
+<p><strong>Remark</strong>: CoreOS is an <code class="language-plaintext highlighter-rouge">ostree</code> OS hence it is using <code class="language-plaintext highlighter-rouge">rpm-ostree</code> instead of <code class="language-plaintext highlighter-rouge">dnf</code>.</p>
+
+<p>The service could look like this:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">[</span><span class="nv">Unit</span><span class="pi">]</span>
+<span class="s">Description=Flotta setup service</span>
+<span class="s">Wants=network-online.target</span>
+<span class="s">After=network-online.target</span>
+<span class="s">ConditionPathExists=!/usr/lib/systemd/system/yggdrasild.service</span>
+
+<span class="pi">[</span><span class="nv">Service</span><span class="pi">]</span>
+<span class="s">Type=oneshot</span>
+<span class="s">ExecStartPre=curl https://copr.fedorainfracloud.org/coprs/project-flotta/flotta/repo/fedora-35/project-flotta-flotta-fedora-35.repo -o /etc/yum.repos.d/project-flotta.repo</span>
+<span class="s">ExecStart=rpm-ostree install flotta-agent</span>
+<span class="s">ExecStart=/bin/bash -c "echo \"client-id =</span> <span class="c1">##`cat /etc/machine-id`##\" &gt;&gt; /etc/yggdrasil/config.toml"</span>
+<span class="s">ExecStart=sed -i -s "s/##/\"/g" /etc/yggdrasil/config.toml</span>
+<span class="s">ExecStopPost=systemctl reboot</span>
+
+<span class="pi">[</span><span class="nv">Install</span><span class="pi">]</span>
+<span class="s">WantedBy=multi-user.target</span>
+</code></pre></div></div>
+
+<p>For those not familiar with <code class="language-plaintext highlighter-rouge">systemd</code>, here are some explications:</p>
+
+<ul>
+  <li>The service must start after the <code class="language-plaintext highlighter-rouge">network-online.target</code> meaning we need to have an internet connection.</li>
+  <li><code class="language-plaintext highlighter-rouge">ConditionPathExists</code> must be true for this service to start. This condition allows us to start this service only if <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> has not been install yet.</li>
+  <li>Before actually install the <code class="language-plaintext highlighter-rouge">flotta-agent</code>, we need to setup the <code class="language-plaintext highlighter-rouge">copr</code>. This is done with the target <code class="language-plaintext highlighter-rouge">ExecStartPre</code></li>
+  <li><code class="language-plaintext highlighter-rouge">ExecStart</code> installs what we need. The next <code class="language-plaintext highlighter-rouge">ExecStart</code> targets are set the <code class="language-plaintext highlighter-rouge">client-id</code>. Basically, what we what is to modify the provided <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file to set the <code class="language-plaintext highlighter-rouge">client-id</code> to the <code class="language-plaintext highlighter-rouge">machine-id</code>. 
+ This id is unique for each vm and it is available after the first run so we need to capture this id and added to <code class="language-plaintext highlighter-rouge">yggdrasil</code> configuration file.</li>
+  <li>Finally, when everything is installed we reboot the vm with <code class="language-plaintext highlighter-rouge">ExecStopPost</code></li>
+</ul>
+
+<h3 id="enabling-flotta-agent-services">Enabling <code class="language-plaintext highlighter-rouge">flotta-agent</code> services</h3>
+
+<p>Normally, after you install a new service you need to run <code class="language-plaintext highlighter-rouge">systemctl enable --now &lt;service&gt;</code>. In CoreOS, to do this, we need another <code class="language-plaintext highlighter-rouge">service</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[Unit]
+Description=Flotta start service
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/usr/lib/systemd/system/yggdrasild.service
+ConditionPathExists=!/etc/systemd/system/multi-user.target.wants/yggdrasild.service
+
+[Service]
+Type=oneshot
+ExecStart=systemctl enable --now yggdrasild.service
+ExecStart=systemctl enable --now node_exporter.service
+
+[Install]
+WantedBy=multi-user.target
+</code></pre></div></div>
+
+<p>Here we have the same problem as before: we need to run this service only once at provisioning time. 
+For that, we use two <code class="language-plaintext highlighter-rouge">ConditionPathExists</code>. The first one is checking if <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> has been installed and the second is checking that <code class="language-plaintext highlighter-rouge">yggdrasild.service</code> hasn’t been yet enabled.</p>
+
+<h3 id="butane-file">Butane file</h3>
+<p>Now, that we have the install and setup services, let’s create our butane file step by step.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">variant</span><span class="pi">:</span> <span class="s">fcos</span>
+<span class="na">version</span><span class="pi">:</span> <span class="s">1.3.0</span>
+<span class="na">passwd</span><span class="pi">:</span>
+  <span class="na">users</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">core</span>
+      <span class="na">uid</span><span class="pi">:</span> <span class="m">1000</span>
+      <span class="na">ssh_authorized_keys</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICsx5m3Pu9nxayhj6FIdNfzE2ppSlKqbJ9OJgG74jV9Q cosmin@fedora</span>
+</code></pre></div></div>
+
+<p>First we add a user and a ssh key. SSH key can be generated with <code class="language-plaintext highlighter-rouge">ssh-key-gen</code>. Here we put our public key.</p>
+
+<p>Next, we specify the <code class="language-plaintext highlighter-rouge">systemd</code> services:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">systemd</span><span class="pi">:</span>
+  <span class="na">units</span><span class="pi">:</span>
+    <span class="c1"># Enable auto-login for 'core' user.</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">serial-getty@ttyS0.service</span>
+      <span class="na">dropins</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">autologin-core.conf</span>
+        <span class="na">contents</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">[Service]</span>
+          <span class="s">ExecStart=</span>
+          <span class="s">ExecStart=-/usr/sbin/agetty --autologin core --noclear %I $TERM</span>
+          <span class="s">TTYVTDisallocate=no</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">zincati.service</span>
+      <span class="na">mask</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">podman.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">podman.socket</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">nftables.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">flotta-setup.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">flotta-start.service</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="no">true</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Flotta-agent</code> needs <code class="language-plaintext highlighter-rouge">podman</code> and <code class="language-plaintext highlighter-rouge">nftables</code> services to run. Also, we are adding our two custom services <code class="language-plaintext highlighter-rouge">flotta-setup</code> and <code class="language-plaintext highlighter-rouge">flotta-start</code> to install and setup flotta.
+The first service is not mandatory but it is providing auto-login which is can be very useful. If you don’t use <code class="language-plaintext highlighter-rouge">noautoconsole</code> option in <code class="language-plaintext highlighter-rouge">virt-install</code>, the service <code class="language-plaintext highlighter-rouge">auto-login</code> will automatically log the user when the boot finished.</p>
+
+<p>The next section is the storage:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">storage</span><span class="pi">:</span>
+  <span class="na">trees</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/systemd/system</span>
+      <span class="na">local</span><span class="pi">:</span> <span class="s">systemd/</span>
+  <span class="na">directories</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0700</span>
+  <span class="na">files</span><span class="pi">:</span>
+    <span class="c1"># Hostname for virtual host.</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/hostname</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0644</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="s">edgedevice</span>
+    <span class="c1"># Certificates</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/key.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/key.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/cert.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/cert.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/pki/consumer/ca.pem</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/ca.pem</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">id</span><span class="pi">:</span> <span class="m">1000</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/yggdrasil/config.toml</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0666</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">local</span><span class="pi">:</span> <span class="s">files/config.toml</span>
+    <span class="c1"># Dont log audit messages</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/sysctl.d/20-silence-audit.conf</span>
+      <span class="na">mode</span><span class="pi">:</span> <span class="m">0644</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s"># Raise console message logging level from DEBUG (7) to WARNING (4)</span>
+          <span class="s"># to hide audit messages from the interactive console.</span>
+          <span class="s">kernel.printk=4</span>
+    <span class="c1"># Set operator hostname</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/hosts</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">IPADDRESS DOMAIN</span>
+    <span class="c1"># linger root</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/systemd/logind.conf</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">KillExcludeUsers=root</span>
+    <span class="c1"># disable selinux</span>
+    <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/etc/selinux/config</span>
+      <span class="na">overwrite</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">contents</span><span class="pi">:</span>
+        <span class="na">inline</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">SELINUX=disabled</span>
+          <span class="s">SELINUXTYPE=targeted</span>
+</code></pre></div></div>
+
+<p>First, we need to copy our custom services to <code class="language-plaintext highlighter-rouge">systemd</code> folder. This is done under <code class="language-plaintext highlighter-rouge">trees</code> section.
+The section <code class="language-plaintext highlighter-rouge">directories</code> creates the <code class="language-plaintext highlighter-rouge">/etc/pki/customer</code> folder where we will copy the certificates. Next, we copy the certificates and the configuration file from the host to vm.
+The modification of <code class="language-plaintext highlighter-rouge">20-silence-audit.conf</code> is not mandatory but it will be useful not to have those debug messages in the log.</p>
+
+<p>A couple more files and we are done. First we need to setup <code class="language-plaintext highlighter-rouge">Flotta API</code> address and domain in the <code class="language-plaintext highlighter-rouge">/etc/hosts</code> file. 
+Next, we are enabling <code class="language-plaintext highlighter-rouge">linger</code> for <code class="language-plaintext highlighter-rouge">root</code> and disabling <code class="language-plaintext highlighter-rouge">SELINUX</code>.</p>
+
+<p>Voilà! We are done with the <code class="language-plaintext highlighter-rouge">butane</code> file.</p>
+
+<p>All that is rest is arrange all these file like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── files
+│   ├── ca.pem
+│   ├── cert.pem
+│   ├── config.toml
+│   └── key.pem
+├── spec.bu
+└── systemd
+    ├── flotta-setup.service
+    └── flotta-start.service
+
+</code></pre></div></div>
+
+<p>The folder <code class="language-plaintext highlighter-rouge">files</code> contains the files to be copied to OS and <code class="language-plaintext highlighter-rouge">system</code> folder contains our custom services.</p>
+
+<h3 id="generate-ignition-file">Generate ignition file</h3>
+
+<p>The ignition file can be generate either with <code class="language-plaintext highlighter-rouge">podman</code> or directly by installing <code class="language-plaintext highlighter-rouge">butane</code>:</p>
+
+<h5 id="via-podman">Via podman</h5>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman run <span class="nt">--interactive</span> <span class="nt">--rm</span> quay.io/coreos/butane:release <span class="se">\</span>
+       <span class="nt">--pretty</span> <span class="nt">--strict</span> spec.bu spec.ign
+</code></pre></div></div>
+
+<h5 id="via-butane">Via butane</h5>
+
+<p>Butane is available as Fedora package:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nb">install</span> <span class="nt">-y</span> butane
+</code></pre></div></div>
+
+<p>Run butane on the Butane file:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>butane <span class="nt">--pretty</span> <span class="nt">--strict</span> spec.bu <span class="o">&gt;</span> spec.ign
+</code></pre></div></div>
+
+<h3 id="ignite-coreos-instance">Ignite CoreOS instance</h3>
+
+<p>For this blog, I use <code class="language-plaintext highlighter-rouge">libvirt</code> but you have lots of other solutions to create your instance. Please take a look at CoreOS <a href="https://docs.fedoraproject.org/en-US/fedora-coreos/">doc</a>.</p>
+
+<p>After we fetch the latest image for <code class="language-plaintext highlighter-rouge">qemu</code>, the instance can be lunched using:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">IGNITION_CONFIG</span><span class="o">=</span><span class="s2">"spec.ign"</span>
+<span class="nv">IMAGE</span><span class="o">=</span><span class="s2">"/path/to/image.qcow2"</span>
+<span class="nv">VM_NAME</span><span class="o">=</span><span class="s2">"fcos-test-01"</span>
+<span class="nv">VCPUS</span><span class="o">=</span><span class="s2">"2"</span>
+<span class="nv">RAM_MB</span><span class="o">=</span><span class="s2">"2048"</span>
+<span class="nv">STREAM</span><span class="o">=</span><span class="s2">"stable"</span>
+<span class="nv">DISK_GB</span><span class="o">=</span><span class="s2">"10"</span>
+
+virt-install <span class="nt">--connect</span><span class="o">=</span><span class="s2">"qemu:///system"</span> <span class="nt">--name</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">VM_NAME</span><span class="k">}</span><span class="s2">"</span> <span class="nt">--vcpus</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">VCPUS</span><span class="k">}</span><span class="s2">"</span> <span class="nt">--memory</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">RAM_MB</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
+        <span class="nt">--os-variant</span><span class="o">=</span><span class="s2">"fedora-coreos-</span><span class="nv">$STREAM</span><span class="s2">"</span> <span class="nt">--import</span> <span class="nt">--graphics</span><span class="o">=</span>none <span class="se">\</span>
+        <span class="nt">--disk</span><span class="o">=</span><span class="s2">"size=</span><span class="k">${</span><span class="nv">DISK_GB</span><span class="k">}</span><span class="s2">,backing_store=</span><span class="k">${</span><span class="nv">IMAGE</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
+        <span class="nt">--network</span> <span class="nv">bridge</span><span class="o">=</span>virbr0 <span class="se">\</span>
+        <span class="nt">--qemu-commandline</span><span class="o">=</span><span class="s2">"-fw_cfg name=opt/com.coreos/config,file=</span><span class="k">${</span><span class="nv">IGNITION_CONFIG</span><span class="k">}</span><span class="s2">"</span>
+
+</code></pre></div></div>
+
+<p>If you don’t want to see the console, you can add <code class="language-plaintext highlighter-rouge">--noautoconsole</code> to virt-install command.</p>
+
+<p>Everything that we did here, you can find it on <a href="https://github.com/tupyy/flotta-agent-coreos">Github</a>.</p>]]></content><author><name>Cosmin Tupangiu</name></author><category term="flotta" /><category term="guide" /><category term="flotta" /><category term="fcos" /><category term="flotta-agent" /><summary type="html"><![CDATA[During development, the user may need to spin off a large number of Edge Devices. Fedora CoreOS provides an easy way to create a virtual machine to deploy Edge Device on it. Moreover, the relatively low footprint of CoreOS VM allows you to have a large number of Edge Devices on the same host.]]></summary></entry><entry><title type="html">Sending logs and metrics of Flotta devices to AWS</title><link href="https://project-flotta.github.io/flotta/2022/05/13/sending-logs-metrics-to-aws.html" rel="alternate" type="text/html" title="Sending logs and metrics of Flotta devices to AWS" /><published>2022-05-13T11:00:00+00:00</published><updated>2022-05-13T11:00:00+00:00</updated><id>https://project-flotta.github.io/flotta/2022/05/13/sending-logs-metrics-to-aws</id><content type="html" xml:base="https://project-flotta.github.io/flotta/2022/05/13/sending-logs-metrics-to-aws.html"><![CDATA[<p>Flotta exposes the workload logs in syslog format, the data is then captured by the device worker and sent to the appropiate log collector defined in the device. Metrics generated in the device are prometheus compatible format. These metrics are pushed in bulk to a configured endpoint in the device, usually being Thanos hosted in a cluster.</p>
+
+<p><img src="/assets/images/flotta-logs-metrics-aws.jpg" alt="Flotta integration with AWS services" /></p>
+
+<p>In this post we will see how to configure Flotta devices and workloads to send the logs and metrics generated to AWS, in particular to the Open Search service (or elasticsearch) and to the TimeStream service for storing metrics.</p>
+
+<h2 id="setting-up-logstash">Setting up logstash</h2>
+
+<p>Flotta currently supports the syslog protocol as the default log format. In our case, we will use logtash as an intermediate entity to consolidate the logs from the workload and forward them to AWS’s elasticsearch service.</p>
+
+<p>We’ll then proceed to deploy a logstash instance in our kubernetes cluster and expose the service’s endpoint outside the cluster. This last part is required to allow the flotta device worker to reach the service outside the cluster.</p>
+
+<p>But first, we store the AWS service’s credentials for Open Search in a secret.
+In order to authenticate against AWS’s service, we’ll need to create new credentials in the Open Search service. We’ll use <code class="language-plaintext highlighter-rouge">logstash-secret</code> as the given name with <code class="language-plaintext highlighter-rouge">LOGSTASH_USERNAME</code> and <code class="language-plaintext highlighter-rouge">LOGSTASH_PASSWORD</code> as the keys. These values are used by the logstash deployment later on.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Secret</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+<span class="na">type</span><span class="pi">:</span> <span class="s">Opaque</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">LOGSTASH_PASSWORD</span><span class="pi">:</span> <span class="s">S0FEN3sv....</span>
+  <span class="na">LOGSTASH_USERNAME</span><span class="pi">:</span> <span class="s">am9343s...</span>
+</code></pre></div></div>
+
+<p>With that, we are ready to deploy our logstash instance. Note the input configuration for syslog and the output to connect to AWS.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash</span>
+        <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">LOGSTASH_PASSWORD</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">LOGSTASH_PASSWORD</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">LOGSTASH_USERNAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">secretKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-secret</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">LOGSTASH_USERNAME</span>
+
+        <span class="na">image</span><span class="pi">:</span> <span class="s">docker.elastic.co/logstash/logstash-oss:7.7.1</span>
+        <span class="na">ports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">514</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">config-volume</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/usr/share/logstash/config</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-pipeline-volume</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/usr/share/logstash/pipeline</span>
+        <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">4Gi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2500m"</span>
+            <span class="na">requests</span><span class="pi">:</span> 
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">4Gi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">800m"</span>
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">config-volume</span>
+        <span class="na">configMap</span><span class="pi">:</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">logstash.yml</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">logstash.yml</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-pipeline-volume</span>
+        <span class="na">configMap</span><span class="pi">:</span>
+          <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">logstash.conf</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">logstash.conf</span>
+<span class="nn">---</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-service</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">logstash</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">5140</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">5140</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">syslog</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-configmap</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">logstash.yml</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">http.host: "0.0.0.0"</span>
+    <span class="s">path.config: /usr/share/logstash/pipeline    </span>
+  <span class="na">logstash.conf</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">input {</span>
+      <span class="s">syslog {</span>
+        <span class="s">port =&gt; 5140</span>
+      <span class="s">}</span>
+    <span class="s">}</span>
+    <span class="s">output {</span>
+      <span class="s">elasticsearch {</span>
+        <span class="s">ilm_enabled =&gt; false</span>
+        <span class="s">hosts =&gt; ["https://search-project-flotta-lpfibcnqkcpgavdbprrueysk6a.us-east-1.es.amazonaws.com:443"]</span>
+        <span class="s">user =&gt; "\${LOGSTASH_USERNAME}"</span>
+        <span class="s">password =&gt; "\${LOGSTASH_PASSWORD}"</span>
+        <span class="s">index =&gt; "logstash-%{+YYYY.MM.dd}"</span>
+      <span class="s">}</span>
+    <span class="s">} </span>
+</code></pre></div></div>
+
+<p>And we validate that the pod has successfully deployed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span>kubectl get pod 
+NAME                                                        READY   STATUS    RESTARTS   AGE
+logstash-deployment-7fc4567f6d-594xh                        1/1     Running   0          60s 0          1h
+</code></pre></div></div>
+
+<p>Finally, we manually expose the service via the port-forward command in <code class="language-plaintext highlighter-rouge">kubectl</code>. In a production environment, this should point to a public FQDN or IP accessible outside the cluster.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span> kubectl port-forward svc/logstash-service 5140 <span class="nt">--address</span> 0.0.0.0
+</code></pre></div></div>
+
+<h3 id="configuring-the-edgedevice-to-expose-logstash">Configuring the edgedevice to expose logstash</h3>
+
+<p>Now that logstash is deployed and connected to AWS, we need to configure the edge device to expose the logstash collector. Following the details described in <a href="https://project-flotta.github.io/flotta/2022/04/10/using-log-collection.html">this  blog post</a>, we create the configmap and define the specification in the edge device:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">default</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">Address</span><span class="pi">:</span> <span class="s">192.168.1.134:5140</span>
+  <span class="na">Protocol</span><span class="pi">:</span> <span class="s">tcp</span>
+</code></pre></div></div>
+
+<p>Here we use the cluster host’s IP where logstash is running. The service will be reachable thanks to the <code class="language-plaintext highlighter-rouge">port-forward</code> command previously executed on the cluster’s host.</p>
+
+<p>Next is to update the EdgeDevice specification to expose the log collector. Here we define the log collector <code class="language-plaintext highlighter-rouge">logstash-syslog</code> with a maximum buffer size of 10mb.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">logCollection</span><span class="pi">:</span>
+    <span class="na">logstash-syslog</span><span class="pi">:</span>
+      <span class="na">bufferSize</span><span class="pi">:</span> <span class="m">10</span>
+      <span class="na">kind</span><span class="pi">:</span> <span class="s">syslog</span>
+      <span class="na">syslogConfig</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+</code></pre></div></div>
+
+<p>To instruct the workload to use the given log collector, we just have to define it as part of the manifest:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">management.project-flotta.io/v1alpha1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">EdgeWorkload</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">random-workload</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">logCollection</span><span class="pi">:</span> <span class="s">logstash-syslog</span>
+  <span class="na">deviceSelector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">foo</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">pod</span>
+  <span class="na">pod</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">random-server</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">docker.io/eloycoto/logexample</span>
+</code></pre></div></div>
+
+<p>And with that, the logs will be sent to our backend in AWS. To confirm that it’s working fine, we query the service to list the contents of the index we defined in the configmap:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>index =&gt; "logstash-%{+YYYY.MM.dd}"
+</code></pre></div></div>
+
+<p>Which, in this case it translates to <code class="language-plaintext highlighter-rouge">logstash-2022.05.12</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">username</span><span class="o">=</span><span class="si">$(</span>oc get secret logstash-secret <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LOGSTASH_USERNAME}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span>
+<span class="nv">password</span><span class="o">=</span><span class="si">$(</span>oc get secret logstash-secret <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.LOGSTASH_PASSWORD}'</span> | <span class="nb">base64</span> <span class="nt">-d</span><span class="si">)</span>
+curl <span class="nt">-u</span> <span class="nv">$username</span>:<span class="nv">$password</span> <span class="nt">-X</span> GET <span class="s2">"https://search-project-flotta-lpfibcnqkcpgavdbprrueysk6a.us-east-1.es.amazonaws.com:443/logstash-2022.05.12/_search?pretty=true"</span> <span class="nt">-H</span> <span class="s1">'Content-Type: application/json'</span> <span class="nt">-d</span><span class="s1">'
+{
+    "query": {
+        "match_all": {}
+    }
+}
+'</span>
+</code></pre></div></div>
+
+<p>And we get a few results already, displaying the first one to reduce cluttery.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">  </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"total"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"value"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">1162</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"relation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"max_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"hits"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"_index"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"logstash-2022.05.12"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"_doc"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_id"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"z07vuYAB7aBvPfPHfBaK"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_score"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"_source"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"@version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"severity"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"facility"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"severity_label"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Emergency"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"@timestamp"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-05-12T20:22:01.494Z"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"host"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"127.0.0.1"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"tags"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"_grokparsefailure_sysloginput"</span><span class="w">
+          </span><span class="p">],</span><span class="w">
+          </span><span class="nl">"facility_label"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"kernel"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"priority"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;6&gt;2022-05-12T16:22:01-04:00  random-workload[3966]: dcc80a53ab7e5871f38e6b5184d785d58f5c698505fe74dd04597dcaac372c1b: New message at: Thu May 12 20:22:01 UTC 2022</span><span class="se">\n</span><span class="s2">"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="setting-up-prometheus-adapter-for-aws-timestream">Setting up prometheus adapter for AWS Timestream</h2>
+
+<p>Flotta collects metrics using the prometheus format. The information is pushed from the device back to a remote write entity configured in the device, usually a Thanos instance hosted in a cluster collecting all the metrics from all devices.
+AWS provides a time series database service named Timestream. This service is not compatible with the prometheus format, so in order to push the metrics we need an adapter that can transform the data in AWS format. That’s where the <a href="https://github.com/dpattmann/prometheus-timestream-adapter">prometheus timestream adapter</a> comes to save the day: This small application transforms the data in prometheus format to the DB format in the Timestream service, making it possible to push the device’s metrics to AWS and later on display them using Grafana.</p>
+
+<p>But first, we need to configure the device with the service endpoint, metrics to push and the interval by adding these fields under the <code class="language-plaintext highlighter-rouge">spec</code> section:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">spec</span><span class="pi">:</span>
+  <span class="na">metrics</span><span class="pi">:</span>
+    <span class="na">receiverConfiguration</span><span class="pi">:</span>
+      <span class="na">url</span><span class="pi">:</span> <span class="s">http://project-flotta.io:9201/write</span>
+    <span class="na">system</span><span class="pi">:</span>
+      <span class="na">allowList</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">system-allow-list</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="m">5</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">system-allow-list</code> is a configmap that contains the metrics names to be pushed. For this demonstration, we’ll leverage on tree metrics from node exporter. Further information about metrics configuration can be found in the <a href="https://project-flotta.github.io/documentation/latest/operations/observability.html">observability document</a>. Let’s create a saple confimap containing 3 node exporter metrics:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">system-allow-list</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">metrics_list.yaml</span><span class="pi">:</span> <span class="pi">|</span>
+    <span class="s">names: </span>
+      <span class="s">- node_disk_io_now</span>
+      <span class="s">- node_memory_Mapped_bytes</span>
+      <span class="s">- node_network_speed_bytes</span>
+</code></pre></div></div>
+
+<p>The prometheus timestream adapter leverages on the aws credential and config files to authenticate against the Timestream service. For this example, we’ll create a secret named <code class="language-plaintext highlighter-rouge">aws-credentials</code>  Note that the deployment expects to find the AWS credentials and configuration files under <code class="language-plaintext highlighter-rouge">~/.aws/</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create secret generic aws-credentials <span class="nt">--from-file</span><span class="o">=</span><span class="nv">config</span><span class="o">=</span><span class="nv">$HOME</span>/.aws/config <span class="nt">--from-file</span><span class="o">=</span><span class="nv">credentials</span><span class="o">=</span><span class="nv">$HOME</span>/.aws/credentials
+</code></pre></div></div>
+
+<p>We will use the following manifests to deploy the service in the cluster:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter-deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">adapter</span>
+        <span class="na">env</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_CONFIG_FILE</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="s">/var/mount/aws/config</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_SHARED_CREDENTIALS_FILE</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="s">/var/mount/aws/credentials</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">AWS_REGION</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">awsRegion</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">DATABASE_NAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">databaseName</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">TABLE_NAME</span>
+            <span class="na">valueFrom</span><span class="pi">:</span>
+              <span class="na">configMapKeyRef</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+                <span class="na">key</span><span class="pi">:</span> <span class="s">tableName</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/jordigilh/prometheus-timestream-adapter:latest</span>
+        <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">IfNotPresent</span>
+        <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">/usr/local/bin/prometheus-timestream-adapter"</span><span class="pi">]</span>
+        <span class="na">args</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">--awsRegion"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(AWS_REGION)"</span><span class="pi">,</span><span class="s2">"</span><span class="s">--databaseName"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(DATABASE_NAME)"</span><span class="pi">,</span><span class="s2">"</span><span class="s">--tableName"</span><span class="pi">,</span><span class="s2">"</span><span class="s">$(TABLE_NAME)"</span><span class="pi">]</span>
+        <span class="na">ports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">9201</span>
+        <span class="na">volumeMounts</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+            <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/var/mount/aws</span>
+            <span class="na">readOnly</span><span class="pi">:</span> <span class="no">true</span>
+        <span class="na">resources</span><span class="pi">:</span>
+            <span class="na">limits</span><span class="pi">:</span>
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">512Mi"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+            <span class="na">requests</span><span class="pi">:</span> 
+              <span class="na">memory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">512M"</span>
+              <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">500m"</span>
+      <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+        <span class="na">secret</span><span class="pi">:</span>
+          <span class="na">secretName</span><span class="pi">:</span> <span class="s">aws-credentials</span>
+          <span class="na">items</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">credentials</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">credentials</span>
+            <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">config</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">config</span>
+<span class="nn">---</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter-service</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">prometheus-timestream-adapter</span>
+  <span class="na">ports</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">port</span><span class="pi">:</span> <span class="m">9201</span>
+    <span class="na">targetPort</span><span class="pi">:</span> <span class="m">9201</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">adapter</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">ClusterIP</span>
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">ConfigMap</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">prometheus-adapter</span>
+<span class="na">data</span><span class="pi">:</span>
+  <span class="na">awsRegion</span><span class="pi">:</span> <span class="s">us-east-1</span>
+  <span class="na">databaseName</span><span class="pi">:</span> <span class="s">flotta</span>
+  <span class="na">tableName</span><span class="pi">:</span> <span class="s">metrics</span>
+</code></pre></div></div>
+
+<p>Note it contains a <code class="language-plaintext highlighter-rouge">Deployment</code>, <code class="language-plaintext highlighter-rouge">Service</code> and <code class="language-plaintext highlighter-rouge">ConfigMap</code>. The deployment mounts the aws credentials in <code class="language-plaintext highlighter-rouge">/var/mount/aws</code> and also exposes the ConfigMap values as part of the environment. We’ve parametrized the aws region, database name and table name values in the configmap to make it easier to customize the deployment.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$&gt;</span> kubectl get pod
+NAME                                                       READY   STATUS    RESTARTS   AGE
+logstash-deployment-7fc4567f6d-594xh                       1/1     Running   0          1h
+prometheus-timestream-adapter-deployment-859f96565-s5zgp   1/1     Running   0          1h
+</code></pre></div></div>
+
+<p>Since the device is outside the cluster, again we’ll need to expose the new service by forwarding the port using the kubectl command. This would not be needed if the service was accessible directly by the device:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl port-forward svc/prometheus-timestream-adapter-service 9201 <span class="nt">--address</span> 0.0.0.0
+</code></pre></div></div>
+
+<p>To validate that the metrics are being forwarded correctly, we can check the journaltcl logs from the device:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>May 12 19:24:11 localhost-live yggdrasild[5344]: <span class="o">[</span>yggdrasild] 2022/05/12 19:24:11 /usr/libexec/yggdrasil/device-worker: wrote metrics range 2022-05-12 19:19:05.275 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397545275000000<span class="o">)</span><span class="nt">-2022-05-12</span> 19:24:05.276 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397845276000000<span class="o">)</span>
+May 12 19:24:11 localhost-live yggdrasild[5344]: <span class="o">[</span>yggdrasild] 2022/05/12 19:24:11 /usr/libexec/yggdrasil/device-worker: wrote metrics range 2022-05-12 19:24:05.277 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397845277000000<span class="o">)</span><span class="nt">-2022-05-12</span> 19:24:10.273 <span class="nt">-0400</span> EDT<span class="o">(</span>1652397850273000000<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Or even better, query directly the metrics in the AWS Timestream service.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>By leveraging on open source technologies, Flotta is able to integrate with AWS to collect device metrics and logs. This means you can deploy Flotta in AWS and make use of their services to monitor your stack of devices in one single place.</p>]]></content><author><name>Jordi Gil &lt;jgil@redhat.com&gt;</name></author><category term="flotta" /><category term="logs" /><category term="metrics" /><category term="aws" /><summary type="html"><![CDATA[Flotta exposes the workload logs in syslog format, the data is then captured by the device worker and sent to the appropiate log collector defined in the device. Metrics generated in the device are prometheus compatible format. These metrics are pushed in bulk to a configured endpoint in the device, usually being Thanos hosted in a cluster.]]></summary></entry></feed>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Flotta Developer CLI</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container documentation">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="font-tertiary mb-5">Flotta Developer CLI</h1>
+        <p class="font-secondary">Published on Jul 20, 2022 by <span class="text-primary">Ariel Ireni, Moti Asayag</span
+            class="text-primary"> on <span>guide </span><span>flotta </span><span>dev-cli </span></p>
+        <div class="content">
+          
+
+          <p>Flotta Developer CLI was created to enable easy creation of edge devices and deploy predefine workloads on them.
+The CLI creates edge devices as docker containers, therefore docker is a requirement for the CLI to work.
+The CLI uses the local k8s cluster pointed by the <code class="language-plaintext highlighter-rouge">$KUBECONFIG</code> environment variable or <code class="language-plaintext highlighter-rouge">$HOME/.kube/config</code> to obtain
+necessary information for the registration process.</p>
+
+<p>To get started using the developer CLI, install the Flotta Developer CLI.
+Packages are available for fc36, epel8 and epel9 at project-flotta COPR repository.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>dnf <span class="nt">-y</span> copr <span class="nb">enable </span>project-flotta/flotta-testing
+<span class="nb">sudo </span>dnf <span class="nt">-y</span> <span class="nb">install </span>flotta-dev-cli
+</code></pre></div></div>
+
+<p>You may enable auto-completion for the CLI by running the following command:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta completion bash <span class="o">&gt;</span> /usr/share/bash-completion/completions/flotta
+</code></pre></div></div>
+<p>Or (if the above command failed with permission denied error):</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta completion bash | <span class="nb">sudo tee</span> /usr/share/bash-completion/completions/flotta
+</code></pre></div></div>
+
+<p>And by pressing the <code class="language-plaintext highlighter-rouge">TAB</code> key, you can use the auto-completion:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flotta &lt;tab&gt;&lt;tab&gt;&lt;tab&gt;
+flotta
+add         <span class="o">(</span>Add a new flotta resource<span class="o">)</span>                                   list        <span class="o">(</span>List flotta resources<span class="o">)</span>
+completion  <span class="o">(</span>Generate the autocompletion script <span class="k">for </span>the specified shell<span class="o">)</span>  start       <span class="o">(</span>Start flotta resource<span class="o">)</span>
+delete      <span class="o">(</span>Delete the flotta resource<span class="o">)</span>                                  stop        <span class="o">(</span>Stop flotta resource<span class="o">)</span>
+<span class="nb">help</span>        <span class="o">(</span>Help about any <span class="nb">command</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Now, you can easily add a new edge device by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta add device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was added 
+</code></pre></div></div>
+<p>Note that the first execution of this command will take some since the edge-device image is being pulled to the local
+image registry. The image will be available for the next executions.</p>
+
+<p>You can view edge device <code class="language-plaintext highlighter-rouge">device1</code> under the list of the registered devices:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		running		46 seconds ago	
+</code></pre></div></div>
+
+<p>Once you have a registered edge device, you can deploy workloads on it:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta add workload <span class="nt">--device</span> device1
+workload <span class="s1">'nginx1-21-6-ygneqhis'</span> was added to device <span class="s1">'device1'</span>
+</code></pre></div></div>
+
+<p>To view list of workloads use:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta list workload
+NAME			STATUS		CREATED		
+nginx1-21-6-ygneqhis	Running		2 minutes ago	
+nginx1-21-6-kkejlmol	Running		5 minutes ago	
+</code></pre></div></div>
+
+<p>You can also stop and start a registered device:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>flotta stop device <span class="nt">--name</span> device1
+edgedevice <span class="s1">'device1'</span> was stopped 
+
+<span class="c"># view stopped device status</span>
+<span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		exited		2 minutes ago
+
+<span class="c"># start device</span>
+<span class="nv">$ </span>flotta start device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was started 
+
+<span class="c"># view started device status</span>
+<span class="nv">$ </span>flotta list device
+NAME		STATUS		CREATED		
+device1		running		3 minutes ago	
+</code></pre></div></div>
+
+<p>Finally, if you wish to delete a device or workload, you can run:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># delete workload</span>
+<span class="nv">$ </span>flotta delete workload <span class="nt">--name</span> nginx1-21-6-kkejlmol
+workload <span class="s1">'nginx1-21-6-kkejlmol'</span> was deleted 
+
+<span class="c"># delete device</span>
+<span class="nv">$ </span>flotta delete device <span class="nt">--name</span> device1
+device <span class="s1">'device1'</span> was deleted 
+</code></pre></div></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>As things might not always be clear, here are some tips to help you:</p>
+<ul>
+  <li><em>flotta-dev-cli</em> runs the edge device as a container, therefore you need to have docker installed and permissions to
+pull and image and to create a container.</li>
+  <li>Workloads are deployed as containers(by <em>podman</em>) in the edge device (a nested container).</li>
+  <li>Workloads are run under the <em>flotta</em> user. Workloads debugging needs to be done also as <em>flotta</em> user on the device.</li>
+</ul>
+
+<h3 id="debug-the-device">Debug the device</h3>
+<p>To connect to a device, use docker command to list the running edge device containers and their status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker ps <span class="nt">--filter</span> <span class="nv">label</span><span class="o">=</span>flotta
+CONTAINER ID   IMAGE                                      COMMAND         CREATED          STATUS         PORTS   NAMES
+1ca4bf233b2f   quay.io/project-flotta/edgedevice:latest   <span class="s2">"/sbin/init"</span>    25 minutes ago   Up 25 minutes          edge1
+</code></pre></div></div>
+<p>With the device name or container ID, you can connect to the device by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker <span class="nb">exec</span> <span class="nt">-it</span> edge1 bash
+<span class="o">[</span>root@1ca4bf233b2f project]#
+</code></pre></div></div>
+<p>Once connected to device, the <em>yggdrasil</em> daemon can be checked for errors:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@1ca4bf233b2f project]# systemctl status yggdrasild
+● yggdrasild.service - yggdrasil daemon
+     Loaded: loaded <span class="o">(</span>/usr/lib/systemd/system/yggdrasild.service<span class="p">;</span> disabled<span class="p">;</span> vendor preset: disabled<span class="o">)</span>
+     Active: active <span class="o">(</span>running<span class="o">)</span> since Tue 2022-07-26 12:58:04 UTC<span class="p">;</span> 38min ago
+       Docs: https://github.com/redhatinsights/yggdrasil
+   Main PID: 128 <span class="o">(</span>yggdrasild<span class="o">)</span>
+      Tasks: 30 <span class="o">(</span>limit: 5671<span class="o">)</span>
+     Memory: 134.1M
+        CPU: 12.229s
+     CGroup: /system.slice/yggdrasild.service
+             ├─ 128 /usr/sbin/yggdrasild
+             └─ 147 /usr/libexec/yggdrasil/device-worker
+</code></pre></div></div>
+<p>And so <em>yggdrasil</em> logs can be viewed as well. The log contains also the output of the device-worker which is flotta’s
+component that runs the workloads. The log can be viewed by running:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>root@1ca4bf233b2f project]# journalctl <span class="nt">-u</span> yggdrasild
+</code></pre></div></div>
+<p>View logs is useful when you are debugging a device, failure to register or failure to deploy workloads.</p>
+
+<h3 id="debug-the-workload">Debug the workload</h3>
+<p>In case of failure to run the workload, the output of listing the workloads may show an undesired status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ flotta list workload
+NAME                    STATUS  CREATED
+nginx1-21-6-xmkdetkh    Exited  40 minutes ago
+</code></pre></div></div>
+
+<p>In order to debug a failure to run a workload, there is a need to connect as <em>flotta</em> user.
+<em>flotta</em> user was created with <em>nologin</em> shell, therefore you need to specify one to become <em>flotta</em> user:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>→ docker <span class="nb">exec</span> <span class="nt">-it</span> 1ca4bf233b2f /bin/bash
+<span class="o">[</span>root@1ca4bf233b2f project]# <span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
+
+<span class="c"># expected to fail</span>
+<span class="o">[</span>root@1ca4bf233b2f project]# su - flotta
+This account is currently not available.
+
+<span class="c"># expected to succeed</span>
+<span class="o">[</span>root@1ca4bf233b2f project]# su - flotta <span class="nt">-s</span> /bin/sh
+<span class="nt">-sh-5</span>.1<span class="nv">$ </span><span class="nb">id
+</span><span class="nv">uid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span> <span class="nb">groups</span><span class="o">=</span>1001<span class="o">(</span>flotta<span class="o">)</span>
+<span class="nt">-sh-5</span>.1<span class="err">$</span>
+</code></pre></div></div>
+
+<p>As <em>flotta</em> user, you can view the workload system files:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-l</span> /var/home/flotta/.config/systemd/user/
+total 16
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root   root    936 Jul 26 13:00 container-nginx1-21-6-xmkdetkh-nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 13:00 default.target.wants
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root   root    858 Jul 26 13:00 nginx1-21-6-xmkdetkh.service
+drwxr-xr-x. 2 flotta flotta 4096 Jul 26 12:58 sockets.target.wants
+</code></pre></div></div>
+<p>and test their status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span>systemctl status nginx1-21-6-xmkdetkh.service
+</code></pre></div></div>
+
+<p>Examine podman service status:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@1ca4bf233b2f ~]<span class="nv">$ </span>systemctl <span class="nt">--user</span> status podman
+● podman.service - Podman API Service
+     Loaded: loaded <span class="o">(</span>/usr/lib/systemd/user/podman.service<span class="p">;</span> disabled<span class="p">;</span> vendor preset: disabled<span class="o">)</span>
+     Active: active <span class="o">(</span>running<span class="o">)</span> since Wed 2022-07-27 12:05:58 UTC<span class="p">;</span> 47min ago
+TriggeredBy: ● podman.socket
+       Docs: man:podman-system-service<span class="o">(</span>1<span class="o">)</span>
+   Main PID: 203 <span class="o">(</span>podman<span class="o">)</span>
+      Tasks: 13 <span class="o">(</span>limit: 5671<span class="o">)</span>
+     Memory: 18.6M
+        CPU: 10.142s
+     CGroup: /user.slice/user-1001.slice/user@1001.service/app.slice/podman.service
+             └─ 203 /usr/bin/podman <span class="nt">--log-level</span><span class="o">=</span>info system service
+</code></pre></div></div>
+<p>And view podman logs to find for issues to run the workload:</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>flotta@366d67a90f10 ~]<span class="nv">$ </span>journalctl <span class="nt">--user</span> <span class="nt">-u</span> podman
+</code></pre></div></div>
+
+<p>If you find an issue with <em>flotta-dev-cli</em>, please report it to the <a href="https://github.com/project-flotta/flotta-dev-cli/issues">Github issue tracker</a>.</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- blog -->
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="section-title">Similar Stories</h2>
+      </div>
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/28/run-ansible-playbooks.html">Running Ansible Playbooks on Edge Devices</a>
+      </h4>
+      <p class="card-text">There may be cases in which you would like to be able to execute a scripts or commands in a device or on a group of devices. For example, in...</p>
+      <a href="/flotta/2022/09/28/run-ansible-playbooks.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html">Edge Example App: Sense the Internet Part 2</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features: Sensing the Internet (which helps...</p>
+      <a href="/flotta/2022/09/05/edge-example-app-sense-the-internet-part-2.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+      <div class="col-lg-4 col-sm-6 mb-4">
+  <article class="card shadow">
+    
+    <div class="card-body">
+      <h4 class="card-title">
+        <a class="text-dark" href="/flotta/2022/09/05/edge-example-app-cpu-temp.html">Edge Example App: CPU Temperature</a>
+      </h4>
+      <p class="card-text">Edge Example App is an app for Flotta Edge devices, with a workload that will be deployed on the device that has two main features:
+</p>
+      <a href="/flotta/2022/09/05/edge-example-app-cpu-temp.html" class="btn btn-xs btn-primary">Read More</a>
+    </div>
+  </article>
+</div>
+
+      
+    </div>
+  </div>
+</section>
+<!-- /blog -->
+
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script id="dpal" src="//www.redhat.com/ma/dpal.js" type="text/javascript"></script>
+  <meta charset="utf-8">
+  <title>Developer guide</title>
+
+  <!-- mobile responsive meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="this is meta description">
+
+  
+
+  <!-- ** Plugins Needed for the Project ** -->
+  
+  <link rel="stylesheet" href="/assets/plugins/bootstrap/bootstrap.min.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/themify-icons/themify-icons.css">
+  
+  <link rel="stylesheet" href="/assets/plugins/slick/slick.css">
+  
+
+  <link href="/assets/scss/syntax_monokai.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link href="/assets/scss/style.css" rel="stylesheet">
+
+  <!--Favicon-->
+  <link rel="shortcut icon" href="/assets/images/favicon.png " type="image/x-icon">
+  <link rel="icon" href="/assets/images/flotta-logo-stacked.ico " type="image/x-icon">
+
+  <!-- google analytics -->
+  
+
+</head>
+
+
+<body>
+
+  <header class="navigation fixed-top nav-bg">
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand font-tertiary h3" href="/">
+      
+        <img src="/assets/images/flotta-logo.png" alt="Project Flotta" style="height: 60px;">
+        
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+      aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse text-center" id="navigation">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/blog.html">Blog</a>
+          </li>
+        
+          <li class="nav-item ">
+            <a class="nav-link" href="/documentation/v0_2_0/intro/overview.html">Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </nav>
+</header>
+
+
+  <section class="section skip_top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        
+        
+        <ul class="list-group list-group-collapse border-0">
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Intro
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html">What is flotta</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/usecases.html">Use cases</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/vs.html">Flotta vs others</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/concepts.html">Concepts</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Getting started
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/minikube.html">Minikube</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/kind.html">Kind</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/ocp.html">OCP</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/gsg/running_workloads.html">Running workloads</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              Operations
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/requirements.html">System Requirements</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/deployment_options.html">Deployment options</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/configuration.html">Configuration</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/remote_data_store.html">Remote Edge Configuration API</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/observability.html">Observability</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/data_synchronization.html">Data Synchronization</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/troubleshooting.html">Troubleshooting</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/api.html">API reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/crd.html">CRD reference</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/operations/host_devices.html">Accessing host devices</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+          <li class="list-group-item border-0">
+            <h5>
+              
+              For developers
+              
+            </h5>
+            
+            <ul class="list-group border-0">
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/installation.html">Manual installation & tips</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/guide.html">Development Guide</a> </li>
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/dev/profiling.html">Profiling</a> </li>
+              
+            </ul>
+            
+          </li>
+          
+        </ul>
+        <p>Documentation for version: <b>latest</b></p>
+        <ul class="list-group list-group-collapse border-0">
+          <li class="list-group-item border-0">
+            <h5>Other versions</h5>
+
+            <ul class="list-group border-0">
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_1_0/intro/overview.html"> v0.1.0</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/latest/intro/overview.html"> latest</a> </li>
+              
+              
+              
+              
+              <li class="list-group-item border-0"> <a href="/documentation/v0_2_0/intro/overview.html"> v0.2.0</a> </li>
+              
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="documentation content">
+          
+          <!-- Some cases we don't want to show the title -->
+          <h1 class="font-tertiary mb-5">Developer guide</h1>
+          
+          
+
+          <h1 id="operator">Operator</h1>
+
+<h2 id="ci-jobs">CI Jobs</h2>
+
+<ul>
+  <li><em>Kind</em>: E2E test running on each PR, can be found on
+<code class="language-plaintext highlighter-rouge">.github/workflows/kind.yaml</code></li>
+  <li><em>Go/build</em>: Builds current code and checks that unit-test are working</li>
+  <li><em>Go/Lint</em>: Check that code is correctly linted</li>
+  <li><em>Go/YamlLint</em>: Checks that Yaml files are correctly linted</li>
+  <li><em>Go/SecurityScanner</em>: Checks that the current code is statically checked by
+<a href="https://github.com/securego/gosec">gosec</a></li>
+  <li><em>Go/Test Coverage</em>: Reports the unit test code coverage, fails if went down.</li>
+</ul>
+
+<h2 id="logging">Logging</h2>
+
+<p>Log configuration can be found <a href="/documentation/latest/operations/configuration.html">here</a></p>
+
+<p><a href="https://github.com/go-logr/logr">logr</a> is a logging API for Go. It provides a simple interface for logging under which there is an actual logger that implements the <code class="language-plaintext highlighter-rouge">logr</code> interface.</p>
+
+<p><a href="https://github.com/uber-go/zap">Zap</a> is a log library that implements <code class="language-plaintext highlighter-rouge">logr</code> interface.</p>
+
+<p><a href="https://sdk.operatorframework.io/docs/building-operators/golang/references/logging/">SDK-generated operators</a> use the logr interface to log. Operator SDK by default uses a <a href="https://pkg.go.dev/sigs.k8s.io/controller-runtime#section-readme">zap-based logger</a> that is ready for production use. The default verbosity is set to <code class="language-plaintext highlighter-rouge">info</code> level.</p>
+
+<p><em>logr</em> defines logger’s verbosity levels numerically. To write log lines that are more verbose, <code class="language-plaintext highlighter-rouge">logr.Logger</code> has a <a href="https://pkg.go.dev/github.com/go-logr/logr#hdr-Verbosity">V()</a> method. The higher the V-level of a log line, the less critical it is considered.
+Level <code class="language-plaintext highlighter-rouge">V(0)</code> is the default, and <code class="language-plaintext highlighter-rouge">logger.V(0).Info()</code> has the same meaning as <code class="language-plaintext highlighter-rouge">logger.Info()</code>.</p>
+
+<p>Levels in <em>logr</em> correspond to <a href="https://pkg.go.dev/go.uber.org/zap/zapcore#Level">custom debug levels</a> in <em>Zap</em>. Any given level in logr is represented by its inverse in zap (zapLevel = -1*logrLevel).
+Thus, in <em>Zap</em>, higher levels are more important.</p>
+
+<p>For example: <em>logr</em> V(2) is equivalent to log level -2 in Zap, while <em>logr</em> V(1) is equivalent to debug level -1 in <em>Zap</em>.</p>
+
+<p><strong>To summarize:</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Zap logging priority</th>
+      <th>Zap enum</th>
+      <th>logr</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">-1</td>
+      <td>debug</td>
+      <td><code class="language-plaintext highlighter-rouge">.V(1).Info(...)</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: right">0</td>
+      <td>info</td>
+      <td><code class="language-plaintext highlighter-rouge">.V(0).Info(...)</code> or <code class="language-plaintext highlighter-rouge">.Info(...)</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td>warn</td>
+      <td>N.A.</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2</td>
+      <td>error</td>
+      <td><code class="language-plaintext highlighter-rouge">.Error(...)</code></td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td>dpanic</td>
+      <td>N.A.</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">4</td>
+      <td>panic</td>
+      <td>N.A.</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">5</td>
+      <td>fatal</td>
+      <td>N.A.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="e2e-tests">E2E tests</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+  <li>k8s cluster or Openshift Cluster</li>
+  <li>Make sure that your <code class="language-plaintext highlighter-rouge">oc</code> or <code class="language-plaintext highlighter-rouge">kubectl</code> is configured properly to communicate with your cluster</li>
+  <li>Not needed for all test, OpenShift Cluster Storage or at least NooBaa.</li>
+</ul>
+
+<h3 id="running-the-tests">Running the tests</h3>
+
+<ol>
+  <li>Create container image of flotta operator.</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Build the flotta operator</span>
+<span class="nv">$ </span>make build
+
+<span class="c"># Make sure you have configured k8s provider docker</span>
+<span class="c"># For example for minikube by running: eval $(minikube -p minikube docker-env)</span>
+<span class="c"># Then run the build of the container</span>
+<span class="nv">$ IMG</span><span class="o">=</span>flotta-operator:latest <span class="nv">HTTP_IMG</span><span class="o">=</span>flotta-edge-api:latest make docker-build
+
+<span class="c"># Deploy the operator on k8s</span>
+<span class="nv">$ IMG</span><span class="o">=</span>flotta-operator:latest <span class="nv">HTTP_IMG</span><span class="o">=</span>flotta-edge-api:latest make deploy
+
+<span class="c"># Wait until the operator is ready</span>
+<span class="nv">$ </span>kubectl <span class="nb">wait</span> <span class="nt">--timeout</span><span class="o">=</span>120s <span class="nt">--for</span><span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready pods <span class="nt">-l</span> <span class="nv">app</span><span class="o">=</span>flotta-controller-manager <span class="nt">-n</span> flotta
+</code></pre></div></div>
+
+<ol>
+  <li>Expose the flotta API</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kubectl port-forward deploy/flotta-edge-api <span class="nt">-n</span> flotta <span class="nt">--address</span> 0.0.0.0 8043:8043 &amp;
+</code></pre></div></div>
+
+<ol>
+  <li>Run the tests</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>make integration-test
+</code></pre></div></div>
+
+<h3 id="troubleshooting">Troubleshooting</h3>
+
+<p><strong>kubectl wait timeouts:</strong></p>
+
+<p>If timeout, debug the deployment logs by running:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl logs deploy/flotta-controller-manager <span class="nt">-n</span> flotta
+</code></pre></div></div>
+
+<p><strong>Waiting for edge device timeouts in integration tests</strong>:</p>
+
+<p>Debug the edge device container by executing shell inside the container:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="nt">-it</span> edgedevice1 journalctl <span class="nt">-u</span> yggdrasild.service
+</code></pre></div></div>
+
+<p><strong>Error: “No such image: quay.io/project-flotta/edgedevice:latest”</strong></p>
+
+<p>This error happens when KinD does not have the image stored in the control plane. To solve it, use</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker pull quay.io/project-flotta/edgedevice:latest
+kind load docker-image quay.io/project-flotta/edgedevice:latest
+</code></pre></div></div>
+
+<p>command to upload the missing image.</p>
+
+<p><strong>How can I see the running containers in the device?</strong></p>
+
+<p>To list the podman managed pods running in a device, run this command in the target device:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="nt">-it</span> edgedevice1 machinectl shell <span class="nt">-q</span> flotta@.host /usr/bin/podman pod ps
+</code></pre></div></div>
+
+<p>or</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>machinectl shell <span class="nt">-q</span> flotta@.host /usr/bin/podman pod ps
+</code></pre></div></div>
+
+<p>if you’re running it inside the container.</p>
+
+<p><strong>How can I see the logs produced by the flotta user in the device?</strong></p>
+
+<p>When running podman in rootless mode, the logs from the agent and podman are captured for the flotta user running in the device. Run the following command to see the journalctl logs:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>machinectl shell <span class="nt">-q</span> flotta@.host /usr/bin/journalctl <span class="nt">--user</span>
+</code></pre></div></div>
+
+<h1 id="device-worker">Device Worker</h1>
+
+<h2 id="ci-jobs-1">CI jobs</h2>
+<ul>
+  <li><em>Go/build</em>: Builds current code and checks that unittest are working</li>
+  <li><em>Go/Lint</em>: Checks that code is correctly linted</li>
+  <li><em>Go/SecurityScanner</em>: Checks that the current code is statically checked by
+<a href="https://github.com/securego/gosec">gosec</a></li>
+</ul>
+
+<h1 id="developer-cli">Developer CLI</h1>
+
+<h3 id="prerequisites-1">Prerequisites</h3>
+<ul>
+  <li>Install the flotta operator as mentioned <a href="https://project-flotta.io/documentation/latest/dev/installation.html">here</a>.</li>
+  <li>Clone the flotta-dev-cli repository and build the project:</li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git clone https://github.com/project-flotta/flotta-dev-cli.git
+<span class="nv">$ </span><span class="nb">cd </span>flotta-dev-cli
+<span class="nv">$ </span>make build
+</code></pre></div></div>
+
+<h3 id="running-the-cli">Running the CLI</h3>
+<ul>
+  <li>Use the developer CLI to easily create edge devices and deploy predefine workloads on them:</li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./bin/flotta add device <span class="nt">-n</span> device1
+device <span class="s1">'device1'</span> was added
+<span class="nv">$ </span>./bin/flotta add workload <span class="nt">-d</span> device1
+workload <span class="s1">'nginx1-21-6-rrxkqkiz'</span> was added to device <span class="s1">'device1'</span>
+</code></pre></div></div>
+
+<ul>
+  <li>For more information, please refer to the flotta-dev-cli <a href="https://project-flotta.io/flotta/2022/07/20/developer-cli.html">guide</a>.</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- footer -->
+<footer class="bg-dark footer-section">
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5 class="text-light">Email</h5>
+          <p class="text-white paragraph-lg font-secondary">flotta@redhat.com</p>
+        </div>
+        <div class="col-md-4">
+          <h5><a href="http://www.redhat.com"><img id="sponsorship" class="footerLogo" src="/assets/images/Logo-Red_Hat-Supported_By-A-Reverse-RGB.svg"></a>.</h5>
+        </div>
+        <!-- <div class="col-md-4"> -->
+        <!--   <h5 class="text-light">Address</h5> -->
+        <!--   <p class="text-white paragraph-lg font-secondary"></p> -->
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+  <div class="border-top text-center border-dark py-5">
+    <p class="mb-0 text-light"><p>Copyright © 2020 Designed by <a href="https://themefisher.com">Themefisher</a> &amp; Developed by <a href="https://getjekyllthemes.com">Getjekyllthemes</a></p>
+</p>
+  </div>
+</footer>
+<!-- /footer -->
+
+
+<!-- JS Plugins -->
+
+<script src="/assets/plugins/jQuery/jquery.min.js"></script>
+
+<script src="/assets/plugins/bootstrap/bootstrap.min.js"></script>
+
+<script src="/assets/plugins/shuffle/shuffle.min.js"></script>
+
+<script src="/assets/plugins/slick/slick.min.js"></script>
+
+
+<!-- Main Script -->
+<script src="/assets/js/script.js"></script>
+
+<!-- This comes from DTM/DPAL and must be latest entry in body-->
+<script type="text/javascript">
+  if (("undefined" !== typeof _satellite) && ("function" === typeof _satellite.pageBottom)) {
+      _satellite.pageBottom();
+  }
+</script>
+
+
+<script>
+  $(function() {
+    return $("h2, h3, h4, h5, h6").each(function(i, el) {
+      var $el, icon, id;
+      $el = $(el);
+      id = $el.attr('id');
+      icon = '<i class="ti-link"></i>';
+      console.log("test test"+id)
+      if (id) {
+        return $el.prepend($("<a />").addClass("header-link").attr("href", "#" + id).html(icon));
+      }
+    });
+  });
+</script>
+
+
+</body>
+
+</html>
